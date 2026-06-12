@@ -11775,6 +11775,300 @@ button.activePetSlot:hover{
   }
 }
 
+@media (max-width: 700px) and (orientation: portrait){
+  :root{
+    --mobile-bottom-ui:132px;
+  }
+
+  body{
+    width:100%;
+    min-height:100dvh;
+    padding:
+      max(8px, env(safe-area-inset-top))
+      max(8px, env(safe-area-inset-right))
+      calc(var(--mobile-bottom-ui) + env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left));
+    align-items:stretch;
+    overflow-x:hidden;
+  }
+
+  #topHud{
+    width:100%;
+    margin:0 auto 8px;
+    padding:10px 12px;
+    grid-template-columns:1fr;
+    gap:8px;
+    border-radius:20px;
+  }
+
+  h1{
+    font-size:clamp(24px, 8vw, 31px);
+  }
+
+  #rebirthLabel{
+    margin-top:4px;
+    font-size:11px;
+    line-height:1.25;
+  }
+
+  #topCurrencies{
+    width:100%;
+    min-width:0;
+    justify-items:center;
+  }
+
+  #ui{
+    width:100%;
+    justify-content:center;
+    gap:10px;
+    font-size:clamp(21px, 6.5vw, 27px);
+  }
+
+  #stats{
+    font-size:11px;
+  }
+
+  .accountStatus{
+    position:fixed;
+    top:max(8px, env(safe-area-inset-top));
+    right:max(8px, env(safe-area-inset-right));
+    max-width:46vw;
+    min-height:34px;
+    padding:6px 7px;
+    gap:5px;
+    border-radius:16px;
+    font-size:10px;
+    z-index:240;
+  }
+
+  .accountStatus button{
+    padding:7px 9px;
+    border-radius:12px;
+    font-size:10px;
+  }
+
+  #autoOpenToggle,
+  #autoCrateToggle{
+    position:fixed;
+    left:max(8px, env(safe-area-inset-left));
+    width:150px;
+    min-width:0;
+    min-height:34px;
+    margin:0;
+    padding:8px 10px;
+    border-radius:15px;
+    font-size:10px;
+    z-index:235;
+  }
+
+  #autoOpenToggle{top:max(8px, env(safe-area-inset-top));}
+  #autoCrateToggle{top:calc(max(8px, env(safe-area-inset-top)) + 40px);}
+
+  .gameInfoBtn,
+  .appInstallBtn,
+  .freeRewardsBtn,
+  .streakHud,
+  .codesBtn{
+    position:fixed;
+    top:auto;
+    bottom:calc(72px + env(safe-area-inset-bottom));
+    z-index:238;
+    margin:0;
+  }
+
+  .gameInfoBtn{left:calc(max(8px, env(safe-area-inset-left)) + 0px);}
+  .streakHud{left:calc(max(8px, env(safe-area-inset-left)) + 46px);}
+  .appInstallBtn{left:calc(max(8px, env(safe-area-inset-left)) + 106px);}
+  .freeRewardsBtn{left:calc(max(8px, env(safe-area-inset-left)) + 152px);}
+  .codesBtn{
+    right:max(8px, env(safe-area-inset-right));
+    left:auto;
+    min-width:78px;
+    min-height:38px;
+    padding:0 12px;
+    border-radius:18px;
+    font-size:11px;
+  }
+
+  #leftDock,
+  #rightDock{
+    position:fixed;
+    left:max(8px, env(safe-area-inset-left));
+    right:max(8px, env(safe-area-inset-right));
+    top:auto;
+    bottom:calc(8px + env(safe-area-inset-bottom));
+    width:auto;
+    max-height:none;
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    justify-content:flex-start;
+    gap:8px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    padding:7px;
+    border-radius:20px;
+    background:rgba(7,10,18,.72);
+    border:1px solid rgba(255,255,255,.12);
+    box-shadow:0 16px 42px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.12);
+    backdrop-filter:blur(16px) saturate(1.25);
+    scrollbar-width:none;
+    z-index:236;
+  }
+
+  #leftDock{
+    bottom:calc(8px + env(safe-area-inset-bottom));
+    right:calc(50vw + 4px);
+  }
+
+  #rightDock{
+    bottom:calc(8px + env(safe-area-inset-bottom));
+    left:calc(50vw + 4px);
+  }
+
+  #leftDock::-webkit-scrollbar,
+  #rightDock::-webkit-scrollbar{
+    display:none;
+  }
+
+  .dockBtn{
+    flex:0 0 44px;
+    width:44px;
+    height:44px;
+    min-width:44px;
+    border-radius:16px;
+    font-size:22px;
+  }
+
+  #mainPlay{
+    width:100%;
+    min-height:auto;
+    margin:10px auto 0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+  }
+
+  #kretWrap{
+    width:min(82vw, 330px);
+    height:min(82vw, 330px);
+    margin:4px auto 0;
+  }
+
+  #kret{
+    width:min(64vw, 245px);
+    height:min(64vw, 245px);
+  }
+
+  .rebirthButton,
+  #rebirthButton{
+    width:min(92vw, 360px);
+    margin:8px auto;
+  }
+
+  #rightPanels{
+    width:min(94vw, 360px);
+    margin:2px auto 0 !important;
+  }
+
+  #holdPanel,
+  #autoPanel,
+  #diamondClickPanel{
+    width:100%;
+    max-width:360px;
+    border-radius:18px;
+  }
+
+  #shop,
+  #shop.voidPreviewLayout{
+    width:100%;
+    margin:12px auto 0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+  }
+
+  .shopColumn,
+  .shopColumn.endlessColumn,
+  #shop.voidPreviewLayout .normalColumn,
+  #shop.voidPreviewLayout .endlessColumn.voidPreview{
+    width:100%;
+    max-width:390px;
+    transform:none;
+  }
+
+  .card{
+    width:min(100%, 360px);
+    box-sizing:border-box;
+  }
+
+  .slidePanel,
+  .slidePanel.rightSide{
+    left:max(8px, env(safe-area-inset-left)) !important;
+    right:max(8px, env(safe-area-inset-right)) !important;
+    bottom:calc(var(--mobile-bottom-ui) + env(safe-area-inset-bottom)) !important;
+    width:auto !important;
+    max-width:none !important;
+    max-height:calc(100dvh - var(--mobile-bottom-ui) - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    border-radius:26px;
+    z-index:950;
+  }
+
+  .slideHeader{
+    position:sticky;
+    top:0;
+    z-index:5;
+    background:linear-gradient(180deg, rgba(21,24,36,.96), rgba(21,24,36,.78));
+    backdrop-filter:blur(12px);
+  }
+
+  .panelScroll{
+    max-height:none;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .itemDropFeed{
+    bottom:calc(var(--mobile-bottom-ui) + 18px + env(safe-area-inset-bottom));
+    width:calc(100vw - 18px);
+  }
+
+  .potionBuffHud{
+    bottom:calc(var(--mobile-bottom-ui) + 14px + env(safe-area-inset-bottom));
+    left:max(8px, env(safe-area-inset-left));
+    z-index:180;
+  }
+
+  #weatherHud{
+    bottom:calc(var(--mobile-bottom-ui) + 72px + env(safe-area-inset-bottom));
+    left:max(8px, env(safe-area-inset-left));
+    z-index:210;
+  }
+
+  .nextUpdateCountdown{
+    bottom:calc(var(--mobile-bottom-ui) + 12px + env(safe-area-inset-bottom));
+    left:max(8px, env(safe-area-inset-left));
+    max-width:calc(100vw - 16px);
+    z-index:209;
+  }
+
+  #adminToggle{
+    right:max(8px, env(safe-area-inset-right));
+    bottom:calc(var(--mobile-bottom-ui) + 12px + env(safe-area-inset-bottom));
+    z-index:245;
+  }
+
+  #adminPanel{
+    left:max(8px, env(safe-area-inset-left));
+    right:max(8px, env(safe-area-inset-right));
+    bottom:calc(var(--mobile-bottom-ui) + 8px + env(safe-area-inset-bottom));
+    width:auto;
+    max-height:calc(100dvh - var(--mobile-bottom-ui) - 24px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce){
   .eggCard,
   .petCard,
