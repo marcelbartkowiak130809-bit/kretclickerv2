@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#090c16">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kret Clicker">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>KRET CLICKER</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/icons/app-icon-192.png">
+<link rel="icon" href="assets/icons/app-icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/main.css?v=drop-count-1">
+</head>
+<body>
+
+<div id="topHud">
+  <div id="topTitle">
+    <h1>KRET CLICKER</h1>
+    <div id="rebirthLabel"></div>
+  </div>
+  <div id="topCurrencies">
+    <div id="ui"></div>
+    <div id="stats"></div>
+  </div>
+</div>
+
+<button id="autoOpenToggle" class="autoOpenToggle locked" type="button">AUTO OPEN: 🔒</button>
+<button id="autoCrateToggle" class="autoOpenToggle autoCrateToggle locked" type="button">AUTO SKRZYNKI: LOCK</button>
+<button id="gameInfoBtn" class="gameInfoBtn" type="button" title="Info">i</button>
+<button id="appInstallBtn" class="appInstallBtn" type="button" title="Wersja aplikacji">📱</button>
+<button id="freeRewardsBtn" class="freeRewardsBtn" type="button" title="Free Rewards">🎁</button>
+<div id="streakHud" class="streakHud">
+  <span class="streakFlame">🔥</span>
+  <b id="streakCount">0</b>
+  <div id="streakTooltip" class="streakTooltip"></div>
+</div>
+<div id="streakRecoveryBox" class="streakRecoveryBox">
+  <span>STREAK UTRACONY</span>
+  <b id="streakRecoveryText"></b>
+  <small id="streakRecoveryTimer"></small>
+  <button id="streakRecoveryBtn" type="button">Odzyskaj</button>
+</div>
+<button id="codesBtn" class="codesBtn" type="button">KODY</button>
+<div id="nextUpdateCountdown" class="nextUpdateCountdown" style="display:none"></div>
+
+<div id="appInstallOverlay" class="appInstallOverlay">
+  <div id="appInstallCard">
+    <div class="appInstallTop">
+      <div>
+        <span>WERSJA APLIKACJI</span>
+        <b>Dodaj do ekranu głównego</b>
+      </div>
+      <button id="appInstallClose" type="button">x</button>
+    </div>
+    <div class="appInstallBonus">
+      <span>📱</span>
+      <div>
+        <b>Permanentny bonus</b>
+        <small>Uruchom grę jako aplikację choć raz, żeby odblokować +5% klików i obrażeń bossa.</small>
+      </div>
+    </div>
+    <div id="appInstallStatus" class="appInstallStatus">Status: sprawdzanie...</div>
+    <div class="appInstallSteps">
+      <b>Android</b>
+      <span>Jeśli przycisk jest dostępny, kliknij „Zainstaluj grę”. Możesz też użyć menu przeglądarki → „Dodaj do ekranu głównego”.</span>
+      <b>iPhone</b>
+      <span>Safari → Udostępnij → „Do ekranu początkowego”, potem uruchom ikonę z ekranu telefonu.</span>
+    </div>
+    <button id="appInstallPromptBtn" class="appInstallPromptBtn" type="button">Zainstaluj grę</button>
+  </div>
+</div>
+
+<div id="freeRewardsOverlay" class="freeRewardsOverlay">
+  <div id="freeRewardsCard">
+    <div class="freeRewardsTop">
+      <div>
+        <span>DARMOWE NAGRODY</span>
+        <b>Free Rewards!</b>
+      </div>
+      <button id="freeRewardsClose" type="button">x</button>
+    </div>
+    <div id="freeRewardsGrid" class="freeRewardsGrid"></div>
+    <div class="freeRewardsFooter">
+      <b id="freeRewardsProgress">0/12 nagród odebranych</b>
+      <span>Graj aktywnie, wracaj po prezenty i zgarniaj lepsze nagrody pod koniec dnia.</span>
+    </div>
+  </div>
+</div>
+
+<div id="accountStatus" class="accountStatus">
+  <span id="accountStatusText">Offline</span>
+  <span id="cloudSaveStatus" class="cloudSaveStatus offline">Lokalnie</span>
+  <button id="logoutBtn" type="button">Zaloguj się</button>
+</div>
+
+<div id="accountMenuOverlay" class="accountMenuOverlay">
+  <div id="accountMenuCard" class="accountMenuCard">
+    <div class="accountMenuTop">
+      <div>
+        <span>KONTO</span>
+        <b id="accountMenuNick">Gracz</b>
+      </div>
+      <button id="accountMenuClose" type="button">x</button>
+    </div>
+    <button id="accountLogoutBtn" type="button">Wyloguj</button>
+    <button id="accountChangePasswordBtn" type="button">Zmień hasło</button>
+    <div id="changePasswordForm" class="changePasswordForm">
+      <input id="oldPasswordInput" type="password" maxlength="64" placeholder="Stare hasło">
+      <input id="newPasswordInput" type="password" maxlength="64" placeholder="Nowe hasło">
+      <button id="confirmChangePasswordBtn" type="button">Zapisz nowe hasło</button>
+    </div>
+    <div id="accountMenuMessage"></div>
+  </div>
+</div>
+
+<div id="globalEventBanner"></div>
+
+<button id="globalBossEventBannerBtn" class="globalBossEventBannerBtn" type="button">
+  <b>GLOBALNY KRET BOSS</b>
+</button>
+<div id="activeBoostPanel"></div>
+<div id="bossDropFeed" class="bossDropFeed" aria-live="polite"></div>
+<div id="itemDropFeed" class="itemDropFeed" aria-live="polite"></div>
+<div id="potionBuffHud" class="potionBuffHud" aria-live="polite"></div>
+
+<div id="globalBossEventView" class="globalBossEventView">
+  <div class="globalBossEventShell">
+    <div class="globalBossEventTop">
+      <div>
+        <span>GLOBALNY EVENT ONLINE</span>
+        <h2>Globalny Kret Boss</h2>
+      </div>
+      <div class="globalBossEventTopActions">
+        <button id="globalBossBackBtn" class="globalBossBackBtn" type="button">Powrot do gry</button>
+      </div>
+    </div>
+    <div id="globalBossEventContent"></div>
+  </div>
+</div>
+
+<div id="crystalEventView" class="crystalEventView">
+  <div class="crystalTransitionVeil"></div>
+  <div class="crystalCaveShell">
+    <div class="crystalEventTop">
+      <div>
+        <span>CRYSTAL EVENT</span>
+        <h2>Crystal Cave</h2>
+      </div>
+      <div class="crystalEventCountdown">
+        <small>Koniec eventu</small>
+        <b id="crystalEventCountdownText">--:--</b>
+      </div>
+      <div class="crystalCurrencyPill">
+        <small>Krysztaly</small>
+        <b><i class="crystalCurrencyIcon"></i><span id="crystalCurrencyText">0</span></b>
+      </div>
+      <button id="crystalEventBackBtn" type="button">Powrót</button>
+    </div>
+    <div class="crystalEventGrid">
+      <section class="crystalMineCard">
+        <div class="crystalParticles"></div>
+        <div id="crystalMole" class="crystalMole" role="button" tabindex="0" aria-label="Kop kryształy">
+          <div class="crystalPickaxe"></div>
+          <div class="crystalMoleFace"></div>
+        </div>
+        <div id="crystalMineStatus" class="crystalMineStatus">
+          <span id="crystalMineStatusText">Kilof gotowy</span>
+          <div class="crystalCooldownBar"><i id="crystalCooldownFill"></i></div>
+        </div>
+      </section>
+      <section class="crystalUpgradeCard">
+        <h3>Ulepszenia kilofa</h3>
+        <div id="crystalUpgradeList"></div>
+      </section>
+      <section class="crystalEggCard">
+        <h3>Krysztalowe Jajko</h3>
+        <div class="crystalEggVisual"></div>
+        <div id="crystalEggInfo"></div>
+        <button id="crystalOpenEggBtn" type="button">OTWORZ KRYSZTALOWE JAJKO</button>
+      </section>
+      <section class="crystalShopCard">
+        <div class="crystalShopTop">
+          <h3>Crystal Shop</h3>
+          <span id="crystalShopTimer"></span>
+        </div>
+        <div id="crystalShopList"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div id="authOverlay" class="authOverlay open">
+  <div id="authCard">
+    <div class="authBrand">KRET CLICKER</div>
+    <h2 id="authTitle">Wybierz tryb gry</h2>
+    <p id="authSubtitle">Konto zapisuje progres online. Gość gra tylko lokalnie.</p>
+
+    <div id="authMenu" class="authMenu">
+      <button id="showRegisterBtn" type="button">Utwórz konto</button>
+      <button id="showLoginBtn" type="button">Zaloguj</button>
+      <button id="guestPlayBtn" type="button" class="secondary">Graj jako gość</button>
+    </div>
+
+    <div id="authForm" class="authForm">
+      <label>
+        Nick
+        <input id="authNick" type="text" maxlength="24" autocomplete="username" placeholder="Twoj nick">
+      </label>
+      <label>
+        Hasło
+        <input id="authPassword" type="password" maxlength="64" autocomplete="current-password" placeholder="Haslo">
+      </label>
+      <div class="authActions">
+        <button id="authSubmitBtn" type="button">OK</button>
+        <button id="authBackBtn" type="button" class="secondary">Wróć</button>
+      </div>
+    </div>
+
+    <div id="authMessage"></div>
+  </div>
+</div>
+
+<div id="leftDock">
+  <button class="dockBtn" id="eggDockBtn" title="Jajka">&#129370;</button>
+  <button class="dockBtn" id="crateDockBtn" title="Skrzynki">&#128230;</button>
+  <button class="dockBtn" id="petDockBtn" title="Plecak">&#127890;</button>
+  <button class="dockBtn" id="upgradeHubDockBtn" title="Ulepszania">&#9881;</button>
+</div>
+
+<div id="rightDock">
+  <button class="dockBtn" id="diamondDockBtn" title="Diamenty">&#128142;</button>
+  <button class="dockBtn" id="indexDockBtn" title="Index">&#128214;</button>
+  <button class="dockBtn" id="leaderboardDockBtn" title="Rankingi">&#127942;</button>
+  <button class="dockBtn" id="weatherDockBtn" title="Pogoda">&#9729;</button>
+  <button class="dockBtn eventDockBtn" id="limitedEventDockBtn" title="Crystal Event"><span class="crystalCurrencyIcon dockCrystalIcon"></span></button>
+</div>
+
+<div id="eggPanel" class="slidePanel">
+  <div class="slideHeader">
+    <b>JAJKA</b>
+    <span>Otwieraj po jednym jajku.</span>
+  </div>
+  <div class="panelScroll" id="eggList"></div>
+</div>
+
+<div id="cratePanel" class="slidePanel">
+  <div class="slideHeader">
+    <b>SKRZYNKI</b>
+    <span>Skiny sa kosmetyczne i zmieniaja tylko wyglad glownego kreta.</span>
+  </div>
+  <div class="panelScroll" id="crateList"></div>
+</div>
+
+<div id="limitedEventPanel" class="slidePanel limitedEventPanel">
+  <div class="slideHeader">
+    <b>LIMITED EVENT</b>
+    <span>Bonusy eventowe, exclusive pet i nagrody.</span>
+  </div>
+  <div class="panelScroll" id="limitedEventContent"></div>
+</div>
+
+<div id="weatherPanel" class="slidePanel rightSide weatherPanel">
+  <div class="slideHeader">
+    <b>POGODA</b>
+    <span>Aktualna pogoda, prognoza, index i muszelki z powodzi.</span>
+  </div>
+  <div class="panelScroll" id="weatherContent"></div>
+</div>
+
+<div id="petPanel" class="slidePanel">
+  <div class="slideHeader">
+    <b>PLECAK</b>
+    <span>Wybierz aktywne pety i skiny.</span>
+  </div>
+  <div class="panelTabs">
+    <button class="panelTab active" id="petTabBtn" onclick="setInventoryTab('pets')">Pety</button>
+    <button class="panelTab" id="skinTabBtn" onclick="setInventoryTab('skins')">Skiny</button>
+    <button class="panelTab" id="potionTabBtn" onclick="setInventoryTab('potions')">Mikstury</button>
+    <button class="panelTab" id="bagTabBtn" onclick="setInventoryTab('bags')">Sakiewki</button>
+    <button class="panelTab" id="inventoryEggTabBtn" onclick="setInventoryTab('eggs')">Jajka</button>
+    <button class="panelTab" id="enchantTabBtn" onclick="setInventoryTab('enchants')">Enchanty</button>
+  </div>
+  <div class="panelActions" id="petActions">
+    <button class="panelAction" onclick="equipBestPets()">Zaloz najlepsze</button>
+    <button class="panelAction secondary" onclick="clearAllPets()">Zdejmij wszystkie</button>
+  </div>
+  <div class="panelScroll" id="petList"></div>
+  <div class="panelScroll" id="skinList" style="display:none"></div>
+  <div class="panelScroll" id="potionList" style="display:none"></div>
+  <div class="panelScroll" id="bagList" style="display:none"></div>
+  <div class="panelScroll" id="inventoryEggList" style="display:none"></div>
+  <div class="panelScroll" id="enchantList" style="display:none"></div>
+</div>
+
+<div id="upgradeHubPanel" class="slidePanel">
+  <div class="slideHeader">
+    <b>ULEPSZANIA</b>
+    <span>Wybierz system ulepszania.</span>
+  </div>
+  <div class="panelScroll" id="upgradeHubList"></div>
+</div>
+
+<div id="potionCraftPanel" class="slidePanel">
+  <div class="slideHeader">
+    <b>ULEPSZANIE MIKSTUR</b>
+    <span>5 identycznych mikstur laczy sie w 1 wyzszy tier.</span>
+  </div>
+  <div id="potionCraftFx"></div>
+  <div class="panelScroll" id="potionCraftList"></div>
+</div>
+
+<div id="enchantCraftPanel" class="slidePanel">
+  <div class="slideHeader">
+    <b>ULEPSZANIE ENCHANTOW</b>
+    <span>5 identycznych ksiazek laczy sie w 1 wyzszy tier.</span>
+  </div>
+  <div id="enchantCraftFx"></div>
+  <div class="panelScroll" id="enchantCraftList"></div>
+</div>
+
+<div id="codesOverlay" class="codesOverlay">
+  <div id="codesCard">
+    <div class="codesTop">
+      <div>
+        <span>BONUSY</span>
+        <b>KODY</b>
+      </div>
+      <button id="codesClose" type="button">x</button>
+    </div>
+    <p>Wpisz kod i odbierz jednorazowa nagrode.</p>
+    <input id="codesInput" type="text" maxlength="32" placeholder="Wpisz kod">
+    <button id="codesClaim" type="button">Odbierz</button>
+    <div id="codesStatus"></div>
+  </div>
+</div>
+
+<div id="petForgePanel" class="slidePanel">
+  <div class="slideHeader">
+    <b>GOLDENOWANIE</b>
+    <span>5 normalnych petow laczy sie w gold peta.</span>
+  </div>
+  <div id="petForgeFx"></div>
+  <div class="panelScroll" id="petForgeList"></div>
+</div>
+
+<div id="petDiamondPanel" class="slidePanel">
+  <div class="slideHeader">
+    <b>DIAMENTOWANIE</b>
+    <span>5 gold petow laczy sie w diamond peta.</span>
+  </div>
+  <div id="petDiamondFx"></div>
+  <div class="panelScroll" id="petDiamondList"></div>
+</div>
+
+<div id="diamondPanel" class="slidePanel rightSide">
+  <div class="slideHeader">
+    <b>DIAMENTY</b>
+    <span>Meta ulepszenia sa trwale i nie resetuja sie po rebirthach.</span>
+  </div>
+  <div class="panelScroll" id="diamondUpgradeList"></div>
+</div>
+
+<div id="leaderboardPanel" class="slidePanel rightSide">
+  <div class="slideHeader">
+    <b>RANKINGI</b>
+    <span>Online TOP 50 i Twoje statystyki.</span>
+  </div>
+  <div class="panelScroll" id="leaderboardContent"></div>
+</div>
+
+<div id="indexPanel" class="slidePanel rightSide">
+  <div class="slideHeader">
+    <b>INDEX</b>
+    <span>Pety, skiny i itemy z exist countem.</span>
+  </div>
+  <div class="panelScroll" id="indexContent"></div>
+</div>
+
+<div id="globalBossPanel" class="slidePanel rightSide">
+  <div class="slideHeader">
+    <b>GLOBALNY KRET BOSS</b>
+    <span>Wspolny boss online. Ranking bossa jest osobny.</span>
+  </div>
+  <div class="panelScroll" id="globalBossContent"></div>
+</div>
+
+<div id="mainPlay">
+  <div id="kretWrap">
+    <div id="activePetStage"></div>
+    <div id="kret">
+      <div class="eye left"></div>
+      <div class="eye right"></div>
+      <div class="nose"></div>
+    </div>
+  </div>
+
+  <div id="rightPanels">
+    <div id="holdPanel">
+      <div id="holdTitle">PRZYTRZYMANIE</div>
+      <div id="holdState">ZABLOKOWANE OD REBIRTH 3</div>
+      <div id="holdMeta">
+        <div id="holdCooldownLine">Cooldown: 10.0s</div>
+        <div id="holdPowerLine">Moc: I</div>
+        <div id="holdDurationLine">Czas trwania: 1.0s</div>
+      </div>
+      <div id="holdBar"><div id="holdFill"></div></div>
+      <div id="holdHint">Przytrzymaj, zeby nabijac punkty.</div>
+    </div>
+
+    <div id="autoPanel">
+      <div id="autoTitle">AUTOCLICK</div>
+      <div id="autoState">ZABLOKOWANE OD REBIRTH 3</div>
+      <div id="autoMeta">
+        <div id="autoIntervalLine">Tempo: 5.0s</div>
+        <div id="autoValueLine">Moc: 0</div>
+        <div id="autoGainLine">Na strzal: 0</div>
+      </div>
+      <div id="autoBar"><div id="autoFill"></div></div>
+      <div id="autoHint">Autoclick dziala sam i moze znalezc diamenty.</div>
+    </div>
+
+    <div id="diamondClickPanel">
+      <div id="diamondClickTitle">DIAMOND CLICK</div>
+      <div id="diamondClickMeta">
+        <div id="diamondClickCooldownLine">Cooldown: 300s</div>
+        <div id="diamondClickDurationLine">Czas: 15s</div>
+        <div id="diamondClickBoostLine">Boost: x10 szansy</div>
+      </div>
+      <div id="diamondClickBar"><div id="diamondClickFill"></div></div>
+      <div id="diamondClickHint">Aktywuje sie automatycznie po zakupie.</div>
+    </div>
+  </div>
+</div>
+
+<button id="rebirthBtn" onclick="rebirth()"></button>
+
+<div id="hatchOverlay">
+  <div id="hatchCard">
+    <div id="hatchPhaseLabel">JAJKO SIE OTWIERA</div>
+    <div id="hatchEggsRow"></div>
+    <div id="hatchResult">
+      <div id="hatchPetsGrid"></div>
+    </div>
+    <button id="stopAutoEggBtn" class="eggChoiceBtn cancel">WYLACZ AUTOOTWIERANIE</button>
+  </div>
+</div>
+
+<div id="eggChoiceOverlay">
+  <div id="eggChoiceCard">
+    <div id="eggChoiceTitle">Kupowanie jajka</div>
+    <div id="eggChoiceInfo"></div>
+    <div id="eggChoiceActions">
+      <button class="eggChoiceBtn" id="buyOneEggBtn">Kup 1</button>
+      <button class="eggChoiceBtn secondary" id="buyBatchEggBtn">Kup x</button>
+    </div>
+    <button class="eggChoiceBtn cancel" id="cancelEggChoiceBtn">Anuluj</button>
+  </div>
+</div>
+
+<div id="shop"></div>
+
+<div id="adminToggle">!ADMIN!</div>
+
+<div id="adminPanel">
+  <h3>Admin Panel</h3>
+  <div class="adminRow">
+    <input id="adminInput" type="number" placeholder="Dodaj punkty">
+    <button onclick="addPoints()">Dodaj</button>
+    <button onclick="quickAdd(1000000)">+1M</button>
+  </div>
+  <div class="adminRow">
+    <input id="adminDiamondInput" type="number" placeholder="Dodaj diamenty">
+    <button onclick="addDiamondsAdmin()">Dodaj</button>
+    <button onclick="quickDiamondAdd(100)">+100</button>
+  </div>
+  <div class="adminRow">
+    <input id="adminRebirthInput" type="number" placeholder="Ustaw rebirth">
+    <button onclick="setRebirthLevel()">Ustaw</button>
+    <button onclick="setRebirthLevel(10)">MAX</button>
+  </div>
+  <div id="adminLeaderboardVisibilityBox" class="adminLeaderboardVisibilityBox">
+    <div>
+      <b>Widoczność w leaderboardach</b>
+      <small id="adminLeaderboardVisibilityStatus">Ładowanie...</small>
+    </div>
+    <button id="adminLeaderboardVisibilityBtn" type="button">Przełącz</button>
+  </div>
+  <div id="adminAbuse">
+    <h4>Admin Abuse</h4>
+    <div class="adminAbuseGrid">
+      <button onclick="adminOpenEventsPanel()">Eventy</button>
+      <button onclick="adminOpenGivePlayerItem()">Akcje na gracza</button>
+      <button onclick="adminStartGlobalMessage()">Wiadomosc globalna</button>
+      <button class="danger" onclick="adminOpenResetPanel()">Reset / czyszczenie</button>
+      <button onclick="adminScrollToBossPanel()">Boss / Globalny Kret</button>
+    </div>
+    <div id="adminAbuseMessage"></div>
+  </div>
+  <div id="adminBossControls">
+    <h4>Globalny Kret Boss</h4>
+    <div class="adminBossGrid">
+      <label>
+        Aktualne HP
+        <input id="adminBossHpInput" type="number" min="0" placeholder="np. 1000000">
+      </label>
+      <button type="button" onclick="adminSetBossHp()">Ustaw HP</button>
+      <label>
+        Stałe max HP nowych bossów
+        <input id="adminBossMaxHpInput" type="number" min="1" placeholder="np. 2500000">
+      </label>
+      <button type="button" onclick="adminSetBossMaxHp(false)">Zapisz max</button>
+      <button type="button" class="adminBossWideBtn" onclick="adminSetBossMaxHp(true)">Zapisz i zastosuj do aktualnego</button>
+      <label>
+        Zmień HP (+/-)
+        <input id="adminBossHpDeltaInput" type="number" placeholder="np. -50000 albo 50000">
+      </label>
+      <button type="button" onclick="adminModifyBossHp()">Zmień HP</button>
+      <label>
+        Damage bez rankingu
+        <input id="adminBossDamageInput" type="number" min="1" placeholder="np. 250000">
+      </label>
+      <button type="button" onclick="adminDamageGlobalBoss()">Zadaj damage</button>
+      <label>
+        Zmień bossa
+        <select id="adminBossTypeSelect"></select>
+      </label>
+      <button type="button" onclick="adminChangeGlobalBoss()">Zmień bossa</button>
+    </div>
+    <div id="adminBossStatus">Sterowanie bossem nie dodaje admina do rankingu.</div>
+  </div>
+  <div id="adminNextUpdatePanel">
+    <h4>Next Update</h4>
+    <div class="adminNextUpdateGrid">
+      <input id="adminNextUpdateTitle" type="text" maxlength="48" placeholder="Np. Nowy update">
+      <input id="adminNextUpdateAt" type="datetime-local">
+      <button id="adminNextUpdateSave" type="button">Zapisz licznik</button>
+      <button id="adminNextUpdateClear" type="button" class="danger">Wylacz licznik</button>
+    </div>
+    <div id="adminNextUpdateStatus">Ustaw date, zeby gracze widzieli odliczanie.</div>
+  </div>
+  <div id="adminWeatherPanel">
+    <h4>Pogoda</h4>
+    <div class="adminNextUpdateGrid">
+      <select id="adminWeatherSelect"></select>
+      <label class="adminWeatherMegaToggle"><input id="adminWeatherMega" type="checkbox"> MEGA</label>
+      <button id="adminWeatherStart" type="button">Ustaw teraz</button>
+      <button id="adminWeatherPlanNext" type="button">Zaplanuj nastepna</button>
+      <button id="adminWeatherClear" type="button" class="danger">Wyczysc pogode</button>
+    </div>
+    <div id="adminWeatherStatus">Admin moze wymusic aktualna pogode lokalnie/globalnie w UI gry.</div>
+  </div>
+  <div id="adminSupportInbox">
+    <h4>Inbox zgłoszeń</h4>
+    <div id="adminSupportStatus">Zgłoszenia od graczy pojawią się tutaj.</div>
+    <div id="adminSupportList"></div>
+  </div>
+  <div id="adminCodesPanel">
+    <h4>Kody</h4>
+    <div class="adminCodesGrid">
+      <input id="adminCodeName" type="text" maxlength="32" placeholder="Kod, np. START">
+      <select id="adminCodeRewardType">
+        <option value="diamonds">Diamenty</option>
+        <option value="coins">Monety</option>
+        <option value="potion">Potka</option>
+        <option value="bag">Sakiewka</option>
+      </select>
+      <select id="adminCodePotionType">
+        <option value="luck">Luck</option>
+        <option value="money">Coins</option>
+        <option value="diamonds">Diamenty</option>
+      </select>
+      <select id="adminCodePotionTier">
+        <option value="1">Potka tier I</option>
+        <option value="2">Potka tier II</option>
+        <option value="3">Potka tier III</option>
+      </select>
+      <select id="adminCodeBagType">
+        <option value="weak">Slaba sakiewka</option>
+        <option value="medium">Srednia sakiewka</option>
+        <option value="best">Najlepsza sakiewka</option>
+      </select>
+      <input id="adminCodeAmount" type="number" min="1" placeholder="Ilosc">
+      <input id="adminCodeMaxUses" type="number" min="0" placeholder="Max uzyc globalnie, 0 = bez limitu">
+      <input id="adminCodeExpiresAt" type="datetime-local">
+      <button id="adminCodeSaveBtn" type="button">Dodaj kod</button>
+    </div>
+    <div id="adminCodesStatus"></div>
+    <div id="adminCodesList"></div>
+  </div>
+</div>
+
+<div id="rocketScene">
+  <div id="rocketFlash"></div>
+  <div id="rocketTrail"></div>
+  <div id="rocketClouds">
+    <i></i><i></i><i></i><i></i><i></i>
+  </div>
+  <div id="rocket">
+    <div class="rocketMole">
+      <span></span>
+    </div>
+    <div class="rocketBody">
+      <b></b>
+      <em></em>
+    </div>
+    <div class="rocketFlame"></div>
+  </div>
+  <div class="rocketSceneText">REBIRTH START</div>
+</div>
+<div id="bgRocket">&#128640;</div>
+
+<div id="upgradeInfoOverlay">
+  <div id="upgradeInfoCard">
+    <div id="upgradeInfoTop">
+      <div id="upgradeInfoTitle"></div>
+      <button id="upgradeInfoClose">x</button>
+    </div>
+    <div id="upgradeInfoBody"></div>
+    <div id="supportForm" class="supportForm">
+      <div class="supportFormTitle">Pomoc / kontakt</div>
+      <input id="supportTitleInput" type="text" maxlength="80" placeholder="Tytuł problemu">
+      <textarea id="supportMessageInput" maxlength="900" rows="5" placeholder="Opisz problem. Nie musisz podawać maila."></textarea>
+      <button id="supportSubmitBtn" type="button">Wyślij zgłoszenie</button>
+      <div id="supportFormStatus"></div>
+    </div>
+  </div>
+</div>
+
+<div id="rebirthOverlay">
+  <div id="rebirthCard">
+    <div id="rebirthHero">
+      <div id="rebirthHeroRing"></div>
+      <div id="rebirthHeroTitle">REBIRTH</div>
+      <div id="rebirthHeroSubtitle">Nowe odblokowania</div>
+    </div>
+    <div id="rebirthUnlockList"></div>
+    <button id="rebirthContinueBtn">OK</button>
+  </div>
+</div>
+
+<div id="adminBoostModal">
+  <div id="adminBoostCard">
+    <h3 id="adminBoostModalTitle">Admin Boost</h3>
+    <label id="adminEventTypeLabel" for="adminEventType">Typ eventu</label>
+    <select id="adminEventType">
+      <option value="luck">Luck Boost</option>
+      <option value="money">Money Boost</option>
+      <option value="diamonds">Diamonds Boost</option>
+      <option value="petChance">Pet Chance Boost</option>
+      <option value="communityMoleDamage">DMG Globalnego Kreta</option>
+      <option value="mega">Mega Event</option>
+    </select>
+    <label id="adminBoostValueLabel" for="adminBoostModalValue">Mnoznik albo procent</label>
+    <input id="adminBoostModalValue" type="number" step="0.1" min="0" placeholder="np. 2 albo 5%">
+    <label id="adminBoostTypeLabel" for="adminBoostType">Typ pet boosta</label>
+    <select id="adminBoostType">
+      <option value="goldPetChance">Gold Pet Chance</option>
+      <option value="shinyPetChance">Shiny Pet Chance</option>
+      <option value="rainbowPetChance">Rainbow Pet Chance</option>
+    </select>
+    <div id="adminGiveFields">
+      <label for="adminGiveTarget">Adresat</label>
+      <select id="adminGiveTarget">
+        <option value="player">Konkretny nick</option>
+        <option value="all">Wszyscy gracze</option>
+      </select>
+      <label id="adminGiveNickLabel" for="adminGiveNick">Nick gracza</label>
+      <input id="adminGiveNick" type="text" maxlength="24" placeholder="Nick">
+      <label for="adminGiveType">Co dac graczowi</label>
+      <select id="adminGiveType">
+        <option value="coins">Monety</option>
+        <option value="diamonds">Diamenty</option>
+        <option value="pet">Pet</option>
+        <option value="skin">Skin</option>
+        <option value="potion">Mikstura / potka</option>
+        <option value="bag">Sakiewka / bag</option>
+        <option value="enchant">Enchant</option>
+        <option value="egg">Jajko</option>
+        <option value="boost">Boost</option>
+        <option value="resetGame">Reset gry</option>
+        <option value="resetLeaderboard">Reset statystyk leaderboardu</option>
+        <option value="clearInventory">Wyczysc inventory/equipment</option>
+        <option value="clearEvents">Wyczysc eventy globalne</option>
+      </select>
+      <label id="adminGiveBoostTypeLabel" for="adminGiveBoostType">Typ boosta</label>
+      <select id="adminGiveBoostType">
+        <option value="money">Money Boost</option>
+        <option value="luck">Luck Boost</option>
+        <option value="diamonds">Diamonds Boost</option>
+        <option value="communityMoleDamage">DMG Globalnego Kreta</option>
+        <option value="goldPetChance">Gold Pet Chance</option>
+        <option value="shinyPetChance">Shiny Pet Chance</option>
+        <option value="rainbowPetChance">Rainbow Pet Chance</option>
+      </select>
+      <label for="adminGiveValue">Wartosc / item</label>
+      <input id="adminGiveValue" type="text" maxlength="80" placeholder="np. 1000 albo nazwa itemu">
+      <label id="adminGivePetLabel" for="adminGivePetSelect">Wybierz peta</label>
+      <select id="adminGivePetSelect"></select>
+      <label id="adminGivePetVariantLabel" for="adminGivePetVariant">Wariant peta</label>
+      <select id="adminGivePetVariant">
+        <option value="normal">Normal</option>
+        <option value="gold">Gold</option>
+        <option value="diamond">Diamond</option>
+        <option value="shiny">Shiny</option>
+        <option value="shinyGold">Shiny Gold</option>
+        <option value="shinyDiamond">Shiny Diamond</option>
+      </select>
+      <div id="adminGivePetPreview" class="adminItemPreview"></div>
+      <label id="adminGiveSkinLabel" for="adminGiveSkinSelect">Wybierz skina</label>
+      <select id="adminGiveSkinSelect"></select>
+      <div id="adminGiveSkinPreview" class="adminItemPreview"></div>
+      <label id="adminGivePotionLabel" for="adminGivePotionSelect">Wybierz miksture</label>
+      <select id="adminGivePotionSelect"></select>
+      <label id="adminGiveBagLabel" for="adminGiveBagSelect">Wybierz sakiewke</label>
+      <select id="adminGiveBagSelect"></select>
+      <label id="adminGiveEnchantLabel" for="adminGiveEnchantSelect">Wybierz enchant</label>
+      <select id="adminGiveEnchantSelect"></select>
+      <label id="adminGiveEggLabel" for="adminGiveEggSelect">Wybierz jajko</label>
+      <select id="adminGiveEggSelect"></select>
+    </div>
+    <label id="adminBoostDurationLabel" for="adminBoostModalDuration">Czas trwania</label>
+    <input id="adminBoostModalDuration" type="number" min="1" step="1" placeholder="Minuty, np. 5">
+    <input id="adminBoostModalCustomDuration" type="hidden" min="1" placeholder="Custom minuty">
+    <label id="adminBoostMessageLabel" for="adminBoostModalMessage">Wiadomosc eventowa</label>
+    <input id="adminBoostModalMessage" type="text" maxlength="80" placeholder="Opcjonalna wiadomosc dla wszystkich">
+    <div id="adminBoostModalStatus"></div>
+    <div class="adminBoostModalActions">
+      <button id="adminBoostModalCancel">Anuluj</button>
+      <button id="adminBoostModalConfirm">Odpal boost</button>
+    </div>
+  </div>
+</div>
+
+<div id="communityBossDepositModal" class="communityBossDepositModal">
+  <div class="communityBossDepositCard">
+    <div class="communityBossDepositTop">
+      <div>
+        <span>WSPÓLNY UPGRADE</span>
+        <h3>Dorzuć diamenty</h3>
+      </div>
+      <button id="communityBossDepositClose" type="button">x</button>
+    </div>
+    <p>Gracze wspólnie zbierają diamenty. Po uzbieraniu celu wszyscy dostają +30% obrażeń do Globalnego Kreta.</p>
+    <div class="communityBossDepositStats">
+      <div>
+        <b>Postęp</b>
+        <span id="communityBossDepositProgressText">0 / 0</span>
+      </div>
+      <div>
+        <b>Twoje diamenty</b>
+        <span id="communityBossDepositDiamondsText">0</span>
+      </div>
+    </div>
+    <div class="communityBossDepositBar"><div id="communityBossDepositBarFill"></div></div>
+    <label class="communityBossDepositSliderLabel" for="communityBossDepositModalRange">
+      <span>Wpłata: <b id="communityBossDepositModalValue">0</b></span>
+      <input id="communityBossDepositModalRange" type="range" min="0" max="0" value="0">
+    </label>
+    <div class="communityBossDepositActions">
+      <button id="communityBossDepositCancel" type="button">Anuluj</button>
+      <button id="communityBossDepositConfirm" type="button">Wpłać</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/core.js?v=enchant-system-1"></script>
+<script src="assets/js/patches.js?v=drop-count-1"></script>
+<script src="assets/js/firebase-auth.js?v=admin-weather-mega-1"></script>
+<script src="assets/js/audio.js?v=final-polish-1"></script>
+
+</body>
+</html>
