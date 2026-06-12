@@ -11777,7 +11777,8 @@ button.activePetSlot:hover{
 
 @media (max-width: 700px) and (orientation: portrait){
   :root{
-    --mobile-bottom-ui:132px;
+    --mobile-bottom-ui:118px;
+    --mobile-top-ui:92px;
   }
 
   body{
@@ -11794,15 +11795,15 @@ button.activePetSlot:hover{
 
   #topHud{
     width:100%;
-    margin:0 auto 8px;
-    padding:10px 12px;
+    margin:var(--mobile-top-ui) auto 8px;
+    padding:9px 11px;
     grid-template-columns:1fr;
-    gap:8px;
+    gap:6px;
     border-radius:20px;
   }
 
   h1{
-    font-size:clamp(24px, 8vw, 31px);
+    font-size:clamp(23px, 7.3vw, 29px);
   }
 
   #rebirthLabel{
@@ -11820,8 +11821,12 @@ button.activePetSlot:hover{
   #ui{
     width:100%;
     justify-content:center;
-    gap:10px;
-    font-size:clamp(21px, 6.5vw, 27px);
+    gap:8px;
+    font-size:clamp(20px, 6vw, 25px);
+  }
+
+  #ui .diamondCurrency{
+    font-size:clamp(20px, 6vw, 25px) !important;
   }
 
   #stats{
@@ -11832,17 +11837,23 @@ button.activePetSlot:hover{
     position:fixed;
     top:max(8px, env(safe-area-inset-top));
     right:max(8px, env(safe-area-inset-right));
-    max-width:46vw;
+    box-sizing:border-box;
+    max-width:calc(100vw - 180px - env(safe-area-inset-left) - env(safe-area-inset-right));
     min-height:34px;
-    padding:6px 7px;
-    gap:5px;
+    padding:5px 6px;
+    gap:4px;
     border-radius:16px;
-    font-size:10px;
+    font-size:9px;
     z-index:240;
   }
 
+  .cloudSaveStatus{
+    padding:4px 7px;
+    font-size:10px;
+  }
+
   .accountStatus button{
-    padding:7px 9px;
+    padding:7px 8px;
     border-radius:12px;
     font-size:10px;
   }
@@ -11851,13 +11862,13 @@ button.activePetSlot:hover{
   #autoCrateToggle{
     position:fixed;
     left:max(8px, env(safe-area-inset-left));
-    width:150px;
+    width:142px;
     min-width:0;
     min-height:34px;
     margin:0;
-    padding:8px 10px;
+    padding:8px 9px;
     border-radius:15px;
-    font-size:10px;
+    font-size:9px;
     z-index:235;
   }
 
@@ -11871,20 +11882,20 @@ button.activePetSlot:hover{
   .codesBtn{
     position:fixed;
     top:auto;
-    bottom:calc(72px + env(safe-area-inset-bottom));
+    bottom:calc(70px + env(safe-area-inset-bottom));
     z-index:238;
     margin:0;
   }
 
   .gameInfoBtn{left:calc(max(8px, env(safe-area-inset-left)) + 0px);}
   .streakHud{left:calc(max(8px, env(safe-area-inset-left)) + 46px);}
-  .appInstallBtn{left:calc(max(8px, env(safe-area-inset-left)) + 106px);}
-  .freeRewardsBtn{left:calc(max(8px, env(safe-area-inset-left)) + 152px);}
+  .appInstallBtn{left:calc(max(8px, env(safe-area-inset-left)) + 136px);}
+  .freeRewardsBtn{left:calc(max(8px, env(safe-area-inset-left)) + 182px);}
   .codesBtn{
     right:max(8px, env(safe-area-inset-right));
     left:auto;
-    min-width:78px;
-    min-height:38px;
+    min-width:74px;
+    min-height:36px;
     padding:0 12px;
     border-radius:18px;
     font-size:11px;
@@ -11906,7 +11917,7 @@ button.activePetSlot:hover{
     gap:8px;
     overflow-x:auto;
     overflow-y:hidden;
-    padding:7px;
+    padding:6px;
     border-radius:20px;
     background:rgba(7,10,18,.72);
     border:1px solid rgba(255,255,255,.12);
@@ -11932,44 +11943,54 @@ button.activePetSlot:hover{
   }
 
   .dockBtn{
-    flex:0 0 44px;
-    width:44px;
-    height:44px;
-    min-width:44px;
+    flex:0 0 42px;
+    width:42px;
+    height:42px;
+    min-width:42px;
     border-radius:16px;
-    font-size:22px;
+    font-size:21px;
   }
 
   #mainPlay{
     width:100%;
     min-height:auto;
-    margin:10px auto 0;
+    margin:4px auto 0;
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:8px;
+    gap:4px;
   }
 
   #kretWrap{
-    width:min(82vw, 330px);
-    height:min(82vw, 330px);
-    margin:4px auto 0;
+    width:min(72vw, 285px);
+    height:min(72vw, 285px);
+    margin:0 auto;
   }
 
   #kret{
-    width:min(64vw, 245px);
-    height:min(64vw, 245px);
+    width:min(57vw, 220px);
+    height:min(57vw, 220px);
   }
 
-  .rebirthButton,
-  #rebirthButton{
-    width:min(92vw, 360px);
-    margin:8px auto;
+  #rebirthBtn{
+    width:min(100%, 360px);
+    margin:8px auto calc(var(--mobile-bottom-ui) + 14px + env(safe-area-inset-bottom));
+    padding:12px 14px;
+    gap:8px;
+    border-radius:20px;
+  }
+
+  .rebirthBtnTop b{
+    font-size:clamp(19px, 7vw, 24px);
+  }
+
+  .rebirthBtnBottom{
+    font-size:12px;
   }
 
   #rightPanels{
     width:min(94vw, 360px);
-    margin:2px auto 0 !important;
+    margin:0 auto !important;
   }
 
   #holdPanel,
@@ -12042,9 +12063,27 @@ button.activePetSlot:hover{
   }
 
   #weatherHud{
-    bottom:calc(var(--mobile-bottom-ui) + 72px + env(safe-area-inset-bottom));
+    bottom:calc(var(--mobile-bottom-ui) + 4px + env(safe-area-inset-bottom));
     left:max(8px, env(safe-area-inset-left));
+    max-width:min(40vw, 178px);
     z-index:210;
+  }
+
+  .weatherHudCard{
+    min-width:0;
+    padding:8px 10px;
+    border-radius:17px;
+  }
+
+  .weatherHudCard span{
+    width:38px;
+    height:38px;
+    font-size:22px;
+    border-radius:13px;
+  }
+
+  .weatherHudCard b{
+    font-size:14px;
   }
 
   .nextUpdateCountdown{
@@ -12066,6 +12105,82 @@ button.activePetSlot:hover{
     bottom:calc(var(--mobile-bottom-ui) + 8px + env(safe-area-inset-bottom));
     width:auto;
     max-height:calc(100dvh - var(--mobile-bottom-ui) - 24px);
+  }
+}
+
+@media (max-width: 700px) and (orientation: portrait) and (max-height: 760px){
+  :root{
+    --mobile-bottom-ui:110px;
+    --mobile-top-ui:86px;
+  }
+
+  #topHud{
+    padding:8px 10px;
+    gap:5px;
+  }
+
+  h1{
+    font-size:clamp(22px, 6.8vw, 26px);
+  }
+
+  #ui,
+  #ui .diamondCurrency{
+    font-size:clamp(18px, 5.6vw, 22px) !important;
+  }
+
+  #stats,
+  #rebirthLabel{
+    font-size:10px;
+  }
+
+  #autoOpenToggle,
+  #autoCrateToggle{
+    width:130px;
+    min-height:32px;
+    padding:7px 8px;
+    font-size:8px;
+  }
+
+  #autoCrateToggle{
+    top:calc(max(8px, env(safe-area-inset-top)) + 38px);
+  }
+
+  .accountStatus{
+    max-width:calc(100vw - 170px - env(safe-area-inset-left) - env(safe-area-inset-right));
+    padding:5px 6px;
+  }
+
+  #mainPlay{
+    margin-top:2px;
+    gap:2px;
+  }
+
+  #kretWrap{
+    width:min(50vw, 190px);
+    height:min(50vw, 190px);
+  }
+
+  #kret{
+    width:min(42vw, 160px);
+    height:min(42vw, 160px);
+  }
+
+  #rebirthBtn{
+    min-height:0;
+    padding:10px 12px;
+    gap:7px;
+  }
+
+  .rebirthBtnTop b{
+    font-size:clamp(18px, 6vw, 22px);
+  }
+
+  .rebirthBtnTop small{
+    padding:4px 8px;
+  }
+
+  #weatherHud{
+    display:none;
   }
 }
 
