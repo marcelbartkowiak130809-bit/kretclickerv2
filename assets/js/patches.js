@@ -59,6 +59,7 @@ let lastWeatherSlotKey = "";
 let weatherRollBusy = false;
 let lastWeatherClickableAt = 0;
 let lastFloodShipAt = 0;
+let weatherClickableBurstId = 0;
 
 game.endlessUpgrades = game.endlessUpgrades && typeof game.endlessUpgrades === "object" ? game.endlessUpgrades : {};
 game.ultraCores = game.ultraCores || 0;
@@ -456,6 +457,247 @@ function syncWeatherSystem(){
   if(weatherPanel?.classList.contains("open")) renderWeatherPanel();
 }
 
+function weatherRand(min, max){
+  return min + Math.random() * (max - min);
+}
+
+function weatherPickWeighted(items){
+  const total = items.reduce((sum, item)=>sum + (Number(item.weight) || 0), 0);
+  let roll = Math.random() * Math.max(1, total);
+  for(const item of items){
+    roll -= Number(item.weight) || 0;
+    if(roll <= 0) return item;
+  }
+  return items[0];
+}
+
+function grantWeatherMiniDiamonds(amount, label="Diamentowy pyl"){
+  const whole = typeof addDiamonds === "function" ? addDiamonds(amount) : 0;
+  if(whole > 0){
+    showItemDropTile("diamonds", {icon:"&#128142;", color:"#72ecff", name:`Diamenty x${whole}`, amount:whole});
+  }else{
+    spawnPopup(`${label} +${amount.toFixed(2)}`, false, false, true);
+  }
+}
+
+function grantWeatherLooseReward(pool){
+  const reward = weatherPickWeighted(pool);
+  if(reward.type === "coins"){
+    const base = typeof getClickPower === "function" ? getClickPower() : 1;
+    const amount = Math.max(1, Math.floor(base * reward.mult));
+    game.score += amount;
+    spawnPopup(`+${formatPoint(amount)}`, false, false, true);
+    return true;
+  }
+  if(reward.type === "diamonds"){
+    grantWeatherMiniDiamonds(weatherRand(reward.min, reward.max), reward.label || "Diamentowy pyl");
+    return true;
+  }
+  if(reward.type === "potion"){
+    game.potions.push(makePotionInstance(reward.potionType || getRandomPotionTypeId(), reward.tier || 1));
+    return true;
+  }
+  if(reward.type === "bag"){
+    addBagToInventory(reward.bag || "weak", 1);
+    return true;
+  }
+  if(reward.type === "egg"){
+    addInventoryEggs(reward.eggId || "water_event_egg", 1);
+    showItemDropTile("egg", {icon:"&#129370;", color:"#7ee7ff", name:"Jajko z pogody"});
+    return true;
+  }
+  if(reward.type === "shells"){
+    const amount = reward.amount || 1;
+    game.weather.shells = (Number(game.weather.shells) || 0) + amount;
+    showItemDropTile("shells", {icon:"&#128026;", color:"#7ee7ff", name:`Muszelki x${amount}`, amount});
+    return true;
+  }
+  return false;
+}
+
+const WEATHER_ITEM_VARIANTS = [
+  {rarity:"common", weight:72, icon:"&#128230;", label:"Lekki pakunek", size:[34,54], speed:[3.2,5.4], chance:.22},
+  {rarity:"common", weight:38, icon:"&#129370;", label:"Spadajace jajko", size:[30,48], speed:[3.0,5.0], chance:.20},
+  {rarity:"common", weight:34, icon:"&#129514;", label:"Fiolka", size:[28,46], speed:[2.8,4.8], chance:.18},
+  {rarity:"rare", weight:16, icon:"&#127873;", label:"Rzadki prezent", size:[42,62], speed:[3.4,5.8], chance:.10},
+  {rarity:"epic", weight:6, icon:"&#128188;", label:"Ciezka torba", size:[48,70], speed:[3.8,6.2], chance:.045},
+  {rarity:"legendary", weight:1.2, icon:"&#10024;", label:"Lsnacy pakunek", size:[54,76], speed:[4.2,6.8], chance:.014}
+];
+
+const WEATHER_ITEM_REWARDS = {
+  common:[
+    {weight:58, type:"coins", mult:1.5},
+    {weight:28, type:"diamonds", min:.18, max:.45},
+    {weight:11, type:"potion", tier:1},
+    {weight:3, type:"bag", bag:"weak"}
+  ],
+  rare:[
+    {weight:35, type:"diamonds", min:.55, max:1.1},
+    {weight:34, type:"potion", tier:1},
+    {weight:24, type:"bag", bag:"weak"},
+    {weight:7, type:"bag", bag:"medium"}
+  ],
+  epic:[
+    {weight:35, type:"diamonds", min:1.0, max:2.0},
+    {weight:32, type:"potion", tier:2},
+    {weight:26, type:"bag", bag:"medium"},
+    {weight:7, type:"bag", bag:"best"}
+  ],
+  legendary:[
+    {weight:42, type:"diamonds", min:2.0, max:4.0},
+    {weight:30, type:"bag", bag:"medium"},
+    {weight:20, type:"bag", bag:"best"},
+    {weight:8, type:"egg", eggId:"water_event_egg"}
+  ]
+};
+
+function getWeatherSpawnInterval(weather, def){
+  if(def.id === "items") return weather.mega ? 650 : 900;
+  if(def.id === "diamonds") return weather.mega ? 1250 : 1800;
+  if(def.id === "tornado") return weather.mega ? 1700 : 2600;
+  return 12000;
+}
+
+function getWeatherBatchCount(weather, def){
+  const roll = Math.random();
+  if(def.id === "items"){
+    if(roll < (weather.mega ? .18 : .08)) return 3;
+    if(roll < (weather.mega ? .48 : .28)) return 2;
+    return 1;
+  }
+  if(def.id === "diamonds"){
+    return roll < (weather.mega ? .28 : .12) ? 2 : 1;
+  }
+  if(def.id === "tornado"){
+    return roll < (weather.mega ? .16 : .05) ? 2 : 1;
+  }
+  return 1;
+}
+
+function setupWeatherClickableMotion(node, variant, index=0){
+  const size = Math.round(weatherRand(variant.size[0], variant.size[1]));
+  node.style.setProperty("--weather-size", `${size}px`);
+  node.style.setProperty("--weather-speed", `${weatherRand(variant.speed[0], variant.speed[1]).toFixed(2)}s`);
+  node.style.setProperty("--weather-drift", `${weatherRand(-90, 90)}px`);
+  node.style.setProperty("--weather-fall", `${weatherRand(145, 250)}px`);
+  node.style.setProperty("--weather-rotate-start", `${weatherRand(-22, 18)}deg`);
+  node.style.setProperty("--weather-rotate-end", `${weatherRand(14, 42)}deg`);
+  node.style.left = `${8 + Math.random() * 82}%`;
+  node.style.top = `${-6 + Math.random() * 18 + index * 4}%`;
+}
+
+function spawnWeatherItemClickable(weather, index=0){
+  const variant = weatherPickWeighted(WEATHER_ITEM_VARIANTS);
+  const node = document.createElement("button");
+  node.type = "button";
+  node.className = `weatherClickable weatherClickable-items weatherClickable-${variant.rarity}`;
+  node.innerHTML = `<span class="weatherClickableIcon">${variant.icon}</span>`;
+  node.title = `${variant.label}: kliknij i sproboj zlapac`;
+  setupWeatherClickableMotion(node, variant, index);
+  node.onclick = () => {
+    const chance = Math.min(.38, variant.chance * (weather.mega ? 1.25 : 1));
+    if(Math.random() < chance) grantWeatherLooseReward(WEATHER_ITEM_REWARDS[variant.rarity] || WEATHER_ITEM_REWARDS.common);
+    else spawnPopup("Ucieklo!", false, false, true);
+    node.remove();
+    update(true, true);
+  };
+  document.body.appendChild(node);
+  setTimeout(()=>node.remove(), 7200);
+}
+
+function spawnWeatherDiamondClickable(weather, index=0){
+  const special = Math.random() < (weather.mega ? .07 : .035);
+  const variant = special
+    ? {rarity:"special", size:[56,76], speed:[2.8,4.4], chance:.28}
+    : weatherPickWeighted([
+      {rarity:"small", weight:48, size:[28,42], speed:[2.4,4.8], chance:.54},
+      {rarity:"medium", weight:34, size:[38,58], speed:[3.0,5.6], chance:.48},
+      {rarity:"large", weight:14, size:[52,70], speed:[3.6,6.4], chance:.38}
+    ]);
+  const node = document.createElement("button");
+  node.type = "button";
+  node.className = `weatherClickable weatherClickable-diamonds weatherDiamond-${variant.rarity}`;
+  node.innerHTML = "&#128142;";
+  node.title = special ? "Specjalny diament: mala szansa na wiecej" : "Diamentowy okruch";
+  setupWeatherClickableMotion(node, variant, index);
+  node.style.setProperty("--weather-drift", `${weatherRand(-130, 130)}px`);
+  node.onclick = () => {
+    const chance = Math.min(.7, variant.chance * (weather.mega ? 1.15 : 1));
+    if(Math.random() < chance){
+      const amount = special ? weatherRand(1.4, 3.2) : weatherRand(.16, variant.rarity === "large" ? .75 : .48);
+      grantWeatherMiniDiamonds(amount, special ? "Specjalny diament" : "Okruch");
+    }else{
+      spawnPopup("Diament pekl!", false, false, true);
+    }
+    node.remove();
+    update(true, true);
+  };
+  document.body.appendChild(node);
+  setTimeout(()=>node.remove(), 7400);
+}
+
+function spawnWeatherTornadoClickable(weather){
+  const variant = weatherPickWeighted([
+    {rarity:"small", weight:42, scale:.72, speed:[4.4,6.2], chance:.16},
+    {rarity:"medium", weight:40, scale:1, speed:[4.8,6.8], chance:.10},
+    {rarity:"large", weight:16, scale:1.26, speed:[5.2,7.6], chance:.065},
+    {rarity:"huge", weight:2, scale:1.55, speed:[5.8,8.4], chance:.035}
+  ]);
+  const side = weatherPickWeighted([
+    {id:"left", weight:36},
+    {id:"right", weight:36},
+    {id:"top", weight:18},
+    {id:"bottom", weight:10}
+  ]).id;
+  const node = document.createElement("button");
+  node.type = "button";
+  node.className = `weatherClickable weatherClickable-tornado weatherTornado-${variant.rarity} from-${side}`;
+  node.innerHTML = `
+    <span class="tornadoCore"><i></i><i></i><i></i><i></i></span>
+    <span class="tornadoLoot"><em>&#128142;</em><em>&#127873;</em><em>&#128188;</em></span>
+    <span class="tornadoDust"></span>
+  `;
+  node.style.setProperty("--tornado-scale", variant.scale);
+  node.style.setProperty("--weather-speed", `${weatherRand(variant.speed[0], variant.speed[1]).toFixed(2)}s`);
+  node.style.setProperty("--tornado-drift-x", `${weatherRand(-90, 90)}px`);
+  node.style.setProperty("--tornado-drift-y", `${weatherRand(90, 220)}px`);
+  if(side === "left"){
+    node.style.left = "-120px";
+    node.style.top = `${18 + Math.random() * 54}%`;
+  }else if(side === "right"){
+    node.style.left = "auto";
+    node.style.right = "-120px";
+    node.style.top = `${18 + Math.random() * 54}%`;
+    node.style.setProperty("--tornado-drift-x", `${weatherRand(-220, -90)}px`);
+  }else if(side === "bottom"){
+    node.style.left = `${10 + Math.random() * 74}%`;
+    node.style.top = "86%";
+    node.style.setProperty("--tornado-drift-y", `${weatherRand(-190, -90)}px`);
+  }else{
+    node.style.left = `${10 + Math.random() * 74}%`;
+    node.style.top = "-130px";
+  }
+  node.title = "Kliknij oko tornada";
+  node.onclick = () => {
+    const chance = Math.min(.22, variant.chance * (weather.mega ? 1.25 : 1));
+    if(Math.random() < chance){
+      grantWeatherLooseReward([
+        {weight:46, type:"diamonds", min:.4, max:1.2},
+        {weight:30, type:"shells", amount:3 + Math.floor(Math.random() * 4)},
+        {weight:17, type:"bag", bag:"weak"},
+        {weight:5, type:"bag", bag:"medium"},
+        {weight:2, type:"bag", bag:"tornado"}
+      ]);
+    }else{
+      spawnPopup("Tornado wyrwalo sie!", false, false, true);
+    }
+    node.remove();
+    update(true, true);
+  };
+  document.body.appendChild(node);
+  setTimeout(()=>node.remove(), 9000);
+}
+
 function maybeSpawnWeatherClickable(weather){
   if(!weather) return;
   const def = getWeatherDef(weather.id);
@@ -465,9 +707,18 @@ function maybeSpawnWeatherClickable(weather){
     return;
   }
   const canSpawn = def.id === "items" || def.id === "tornado" || def.id === "diamonds";
-  if(!canSpawn || now - lastWeatherClickableAt < (def.id === "items" ? 3000 : def.id === "tornado" && weather.mega ? 6000 : 12000)) return;
+  if(!canSpawn || now - lastWeatherClickableAt < getWeatherSpawnInterval(weather, def)) return;
   lastWeatherClickableAt = now;
-  if(Math.random() > (weather.mega ? 0.85 : 0.55)) return;
+  if(Math.random() > (weather.mega ? .92 : .78)) return;
+  const burstId = ++weatherClickableBurstId;
+  for(let i = 0; i < getWeatherBatchCount(weather, def); i++){
+    setTimeout(()=>{
+      if(def.id === "items") spawnWeatherItemClickable(weather, i);
+      else if(def.id === "diamonds") spawnWeatherDiamondClickable(weather, i);
+      else spawnWeatherTornadoClickable(weather, i);
+    }, i * 140 + (burstId % 3) * 35);
+  }
+  return;
   const node = document.createElement("button");
   node.type = "button";
   node.className = `weatherClickable weatherClickable-${def.id}`;
@@ -501,20 +752,36 @@ function maybeSpawnWeatherClickable(weather){
 
 function maybeSpawnFloodShip(weather){
   const now = Date.now();
-  if(now - lastFloodShipAt < 30000) return;
+  if(document.querySelectorAll(".weatherShip").length >= (weather.mega ? 3 : 2)) return;
+  if(now - lastFloodShipAt < (weather.mega ? 8000 : 11000)) return;
   lastFloodShipAt = now;
   const ships = [
-    {kind:"raft", name:"Tratwa", hp:8, reward:()=>{ game.weather.shells += 5; return "Muszelki x5"; }},
-    {kind:"boat", name:"Lodka", hp:25, reward:()=>{ game.weather.shells += 15; return "Muszelki x15"; }},
-    {kind:"ship", name:"Statek", hp:70, reward:()=>{ addBagToInventory("water", 1); return "Wodna sakiewka"; }},
-    {kind:"ark", name:"Arka", hp:180, reward:()=>{ addInventoryEggs("water_event_egg", 1); return "Wodne Jajko"; }}
+    {kind:"raft", name:"Tratwa", weight:46, hp:10, scale:.82, speed:15, reward:()=>{ game.weather.shells += 3; return "Muszelki x3"; }},
+    {kind:"boat", name:"Lodka", weight:32, hp:28, scale:1, speed:17, reward:()=>{ game.weather.shells += 7; return "Muszelki x7"; }},
+    {kind:"ship", name:"Statek", weight:17, hp:74, scale:1.12, speed:19, reward:()=>{
+      game.weather.shells += 12;
+      if(Math.random() < .18) addBagToInventory("water", 1);
+      return "Muszelki x12";
+    }},
+    {kind:"ark", name:"Arka", weight:5, hp:150, scale:1.28, speed:23, reward:()=>{
+      game.weather.shells += 22;
+      if(Math.random() < .08) addBagToInventory("water", 1);
+      if(Math.random() < .015){
+        addInventoryEggs("water_event_egg", 1);
+        showItemDropTile("egg", {icon:"&#129370;", color:"#7ee7ff", name:"Wodne Jajko"});
+      }
+      return "Muszelki x22";
+    }}
   ];
-  const ship = ships[Math.min(ships.length - 1, Math.floor(Math.random() * ships.length))];
+  const ship = weatherPickWeighted(ships);
   const node = document.createElement("button");
   node.type = "button";
   node.className = `weatherShip weatherShip-${ship.kind}`;
-  node.style.top = `${18 + Math.random() * 54}%`;
+  if(Math.random() < .32) node.classList.add("fromRight");
+  node.style.top = `${54 + Math.random() * 25}%`;
   node.style.setProperty("--shipBob", `${Math.random() > 0.5 ? 1 : -1}`);
+  node.style.setProperty("--ship-scale", ship.scale);
+  node.style.setProperty("--ship-speed", `${weatherRand(ship.speed - 2, ship.speed + 3).toFixed(1)}s`);
   node.innerHTML = `
     <div class="weatherShipHp"><i style="width:100%"></i></div>
     <div class="weatherShipShape">
@@ -526,8 +793,8 @@ function maybeSpawnFloodShip(weather){
   `;
   let hp = ship.hp;
   const maxHp = ship.hp;
-  const damage = Math.max(1, (game.rebirths || 0) + (game.ultraCores || 0) * 10);
   node.onclick = () => {
+    const damage = Math.max(1, 2 + Math.floor((game.rebirths || 0) / 2) + (game.ultraCores || 0) * 4);
     hp -= damage;
     const hpFill = node.querySelector(".weatherShipHp i");
     if(hpFill) hpFill.style.width = `${Math.max(0, Math.min(100, (hp / maxHp) * 100))}%`;
