@@ -3854,6 +3854,15 @@ function runEggReveal(egg, pets){
     hatchResult.classList.remove("show");
     hatchBusy = false;
     update(true, true);
+    if(game.autoEggMode && String(lastAutoEggId || "").startsWith("inventory:")){
+      const inventoryEggId = String(lastAutoEggId).slice("inventory:".length);
+      const owned = (Array.isArray(game.inventoryEggs) ? game.inventoryEggs : []).filter(item=>item.eggId === inventoryEggId).length;
+      if(owned > 0){
+        setTimeout(()=>hatchInventoryEggBatch(inventoryEggId, Math.min(getEggBatchSize(), owned)), 160);
+        return;
+      }
+      lastAutoEggId = null;
+    }
     if(game.autoEggMode && lastAutoEggId === egg.id && isEggUnlocked(egg) && game.score >= egg.cost){
       setTimeout(()=>hatchEggBatch(egg.id, Math.min(getEggBatchSize(), getAffordableEggCount(egg))), 160);
     }
@@ -5082,8 +5091,8 @@ function togglePetStack(groupKey){
   const stack = getOwnedPets().filter(p=>getPetVariantKey(p)===groupKey || p.templateId===groupKey);
   if(!stack.length) return;
 
-  const activeForTemplate = stack.find(p=>game.activePetIds.includes(p.uid));
-  if(activeForTemplate){
+  const next = stack.find(p=>!game.activePetIds.includes(p.uid));
+  if(!next){
     game.activePetIds = game.activePetIds.filter(id=>!stack.some(p=>p.uid===id));
     game.uiDirty = true;
     update(true, true);
@@ -5095,8 +5104,6 @@ function togglePetStack(groupKey){
     return;
   }
 
-  const next = stack.find(p=>!game.activePetIds.includes(p.uid));
-  if(!next) return;
   game.activePetIds.push(next.uid);
   game.uiDirty = true;
   update(true, true);
@@ -5483,7 +5490,6 @@ function renderBagPanel(){
     card.type = "button";
     card.className = `bagCard bag-${bag.id}`;
     card.style.setProperty("--bag-color", bag.color);
-    card.title = appendExistTitle(bag.rewards.map(reward=>`${reward.label}: ${reward.chance}%`).join("\n"), "items", `bag_${bag.id}`);
     card.onclick = ()=>useBagGroup(bag.id);
     card.innerHTML = `
       <div class="bagStack">x${group.items.length}</div>
@@ -5493,6 +5499,7 @@ function renderBagPanel(){
         <small>${bag.rarity}<br>Najedz, zeby zobaczyc dropy.</small>
       </div>
       <div class="bagUse">Otworz</div>
+      ${renderChanceTooltip(`${bag.name} | ${getExistLabel("items", `bag_${bag.id}`)}`, getBagChanceRows(bag), "bagChanceTooltip")}
     `;
     bagList.appendChild(card);
   });
@@ -5686,6 +5693,66 @@ function getCrystalEggChanceRows(){
   }));
 }
 
+function getWaterEggChanceRows(){
+  const pool = [
+    {chance:50, id:"water_splash_mole", name:"Kret Kropla", icon:"K", rarity:"Exclusive", color:"#8eeaff"},
+    {chance:30, id:"water_wave_mole", name:"Kret Fala", icon:"K", rarity:"Exclusive", color:"#55c8ff"},
+    {chance:15, id:"water_tide_mole", name:"Kret Przyplywu", icon:"K", rarity:"Exclusive", color:"#378bff"},
+    {chance:5, id:"water_flooded_mole", name:"Zalany Kret", icon:"K", rarity:"Sekretny", color:"#1c5fd8", secret:true}
+  ];
+  return pool.map(pet=>({pet, chance:`${pet.chance.toFixed(2)}%`}));
+}
+
+function getInventoryEggChanceRows(eggId){
+  return eggId === "water_event_egg" ? getWaterEggChanceRows() : getCrystalEggChanceRows();
+}
+
+function getRewardIcon(reward){
+  if(reward.type === "diamonds") return "&#128142;";
+  if(reward.type === "potion") return "&#129514;";
+  if(reward.type === "bag") return (BAG_CATALOG[reward.bag || "weak"] || BAG_CATALOG.weak).icon;
+  if(reward.type === "inventoryEgg") return "&#129370;";
+  if(reward.type === "weatherPet") return "&#127786;";
+  if(reward.type === "enchant") return "&#128214;";
+  if(reward.type === "shells") return "&#128026;";
+  return "&#10022;";
+}
+
+function getRewardColor(reward){
+  if(reward.type === "diamonds") return "#72ecff";
+  if(reward.type === "potion") return "#9cffbf";
+  if(reward.type === "bag") return (BAG_CATALOG[reward.bag || "weak"] || BAG_CATALOG.weak).color;
+  if(reward.type === "inventoryEgg") return "#7ee7ff";
+  if(reward.type === "weatherPet") return "#d9f3ff";
+  if(reward.type === "enchant") return "#d8b6ff";
+  if(reward.type === "shells") return "#7ee7ff";
+  return "#bdf9ff";
+}
+
+function getBagChanceRows(bag){
+  return (bag?.rewards || []).map(reward=>({
+    icon:getRewardIcon(reward),
+    name:reward.label || getRewardDisplayText(reward),
+    chance:`${Number(reward.chance || 0).toFixed(Number(reward.chance) % 1 ? 1 : 0)}%`,
+    color:getRewardColor(reward)
+  }));
+}
+
+function renderChanceTooltip(title, rows, className=""){
+  return `
+    <div class="chanceTooltip ${className}">
+      <strong>${title}</strong>
+      ${rows.map(row=>`
+        <span class="chanceTooltipRow">
+          <i style="${row.color ? `--chance-color:${row.color}` : ""}">${row.icon || "?"}</i>
+          <b>${row.name}</b>
+          <em>${row.chance}</em>
+        </span>
+      `).join("")}
+    </div>
+  `;
+}
+
 function hatchInventoryEggBatch(eggId, requestedCount){
   if(hatchBusy) return;
   const egg = INVENTORY_EGG_CATALOG[eggId];
@@ -5707,6 +5774,7 @@ function hatchInventoryEggBatch(eggId, requestedCount){
   game.uiDirty = true;
   eggChoiceOverlay.classList.remove("open");
   pendingEggChoice = null;
+  lastAutoEggId = game.autoEggMode ? `inventory:${eggId}` : null;
   petPanel.classList.remove("open");
   window.kretAudio?.crystalEgg?.();
   saveCrystalEvent("inventoryEggOpen");
@@ -5718,6 +5786,10 @@ function showInventoryEggChoice(eggId){
   const owned = (Array.isArray(game.inventoryEggs) ? game.inventoryEggs : []).filter(item=>item.eggId === eggId).length;
   if(!egg || !owned) return;
   const batchCount = Math.min(getEggBatchSize(), owned);
+  if(hasAutoEggUnlock() && game.autoEggMode){
+    hatchInventoryEggBatch(eggId, batchCount);
+    return;
+  }
   if(batchCount <= 1){
     hatchInventoryEggBatch(eggId, 1);
     return;
@@ -5744,7 +5816,7 @@ function renderInventoryEggPanel(){
     return;
   }
   groups.forEach(group=>{
-    const rows = getCrystalEggChanceRows();
+    const rows = getInventoryEggChanceRows(group.egg.id);
     const card = document.createElement("button");
     card.type = "button";
     card.className = "inventoryEggCard";
@@ -5753,16 +5825,12 @@ function renderInventoryEggPanel(){
       <div class="inventoryEggStack">x${group.items.length}</div>
       <div class="inventoryEggVisual" style="background:${group.egg.tint}"></div>
       <b>${group.egg.name}</b>
-      <div class="inventoryEggTooltip">
-        <strong>${group.egg.name}</strong>
-        ${rows.map(({pet, chance})=>`
-          <span class="inventoryEggPetRow">
-            <i class="inventoryEggPetVisual ${pet.secret ? "secret" : ""}">${pet.icon}</i>
-            <b>${pet.name}</b>
-            <em>${chance}</em>
-          </span>
-        `).join("")}
-      </div>
+      ${renderChanceTooltip(group.egg.name, rows.map(({pet, chance})=>({
+        icon:pet.icon,
+        name:pet.name,
+        chance,
+        color:pet.color
+      })), "inventoryEggTooltip")}
     `;
     eggList.appendChild(card);
   });
