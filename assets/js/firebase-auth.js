@@ -39,6 +39,13 @@ let cloudSaveDirty = false;
 let cloudSaveLastAt = Number(localStorage.getItem(CLOUD_SAVE_LAST_KEY) || 0);
 let loadingRemoteSave = false;
 let localSaveTimer = null;
+let marketplaceOffers = {};
+let marketplaceOffersUnsub = null;
+let marketplacePayoutsUnsub = null;
+let marketplaceTab = "offers";
+let pendingMarketBuyOffer = null;
+let pendingMarketSaleAck = null;
+let marketplaceCloseTimer = null;
 
 const authOverlay = document.getElementById("authOverlay");
 const authTitle = document.getElementById("authTitle");
@@ -76,6 +83,28 @@ const globalBossEventBannerBtn = document.getElementById("globalBossEventBannerB
 const globalBossEventView = document.getElementById("globalBossEventView");
 const globalBossEventContent = document.getElementById("globalBossEventContent");
 const globalBossBackBtn = document.getElementById("globalBossBackBtn");
+const marketplaceDockBtn = document.getElementById("marketplaceDockBtn");
+const marketplaceView = document.getElementById("marketplaceView");
+const marketBackBtn = document.getElementById("marketBackBtn");
+const marketRefreshBtn = document.getElementById("marketRefreshBtn");
+const marketOffersTab = document.getElementById("marketOffersTab");
+const marketMineTab = document.getElementById("marketMineTab");
+const marketStatus = document.getElementById("marketStatus");
+const marketOffersView = document.getElementById("marketOffersView");
+const marketMineView = document.getElementById("marketMineView");
+const marketBuyModal = document.getElementById("marketBuyModal");
+const marketBuyClose = document.getElementById("marketBuyClose");
+const marketBuyCancel = document.getElementById("marketBuyCancel");
+const marketBuyConfirm = document.getElementById("marketBuyConfirm");
+const marketBuyTitle = document.getElementById("marketBuyTitle");
+const marketBuyInfo = document.getElementById("marketBuyInfo");
+const marketBuyRange = document.getElementById("marketBuyRange");
+const marketBuyQtyText = document.getElementById("marketBuyQtyText");
+const marketBuyTotal = document.getElementById("marketBuyTotal");
+const marketDiamondText = document.getElementById("marketDiamondText");
+const marketSaleModal = document.getElementById("marketSaleModal");
+const marketSaleText = document.getElementById("marketSaleText");
+const marketSaleOk = document.getElementById("marketSaleOk");
 const activeBoostPanel = document.getElementById("activeBoostPanel");
 const bossDropFeed = document.getElementById("bossDropFeed");
 const globalEventBanner = document.getElementById("globalEventBanner");
@@ -345,7 +374,8 @@ async function runAccountPostLoadTasks(){
     ["startGlobalAdminInboxLive", () => startGlobalAdminInboxLive()],
     ["startUserAdminNoticesLive", () => startUserAdminNoticesLive()],
     ["claimGlobalAdminRewards", async () => claimGlobalAdminRewards(await firebaseGet("globalAdminInbox") || {})],
-    ["claimPendingOnlineRewards", () => claimPendingOnlineRewards()]
+    ["claimPendingOnlineRewards", () => claimPendingOnlineRewards()],
+    ["startMarketplaceStreams", () => startMarketplaceStreams()]
   ];
   for(const [name, task] of tasks){
     try{
@@ -393,6 +423,7 @@ function makeFreshSave(){
     enchants:[],
     activeEnchantIds:[],
     inventoryEggs:[],
+    fruits:[],
     dailyStreak:{},
     appBonusUnlocked:false,
     appBonusUnlockedAt:0,
@@ -405,6 +436,10 @@ function makeFreshSave(){
     bagSeq:1,
     enchantSeq:1,
     inventoryEggSeq:1,
+    fruitSeq:1,
+    marketSlots:1,
+    tutorialAsked:false,
+    tutorialCompleted:false,
     featureUnlocks:{},
     inventoryTab:"pets",
     metaUpgrades:{},
@@ -436,6 +471,7 @@ function normalizeSave(save){
   normalized.enchants = Array.isArray(normalized.enchants) ? normalized.enchants : [];
   normalized.activeEnchantIds = Array.isArray(normalized.activeEnchantIds) ? normalized.activeEnchantIds : [];
   normalized.inventoryEggs = Array.isArray(normalized.inventoryEggs) ? normalized.inventoryEggs : [];
+  normalized.fruits = Array.isArray(normalized.fruits) ? normalized.fruits : [];
   normalized.dailyStreak = normalized.dailyStreak && typeof normalized.dailyStreak === "object" ? normalized.dailyStreak : {};
   normalized.appBonusUnlocked = !!normalized.appBonusUnlocked;
   normalized.appBonusUnlockedAt = Number(normalized.appBonusUnlockedAt) || 0;
@@ -444,6 +480,10 @@ function normalizeSave(save){
   normalized.bagSeq = Number.isFinite(+normalized.bagSeq) ? +normalized.bagSeq : 1;
   normalized.enchantSeq = Number.isFinite(+normalized.enchantSeq) ? +normalized.enchantSeq : 1;
   normalized.inventoryEggSeq = Number.isFinite(+normalized.inventoryEggSeq) ? +normalized.inventoryEggSeq : 1;
+  normalized.fruitSeq = Number.isFinite(+normalized.fruitSeq) ? +normalized.fruitSeq : 1;
+  normalized.marketSlots = Math.max(1, Math.min(5, Math.floor(Number(normalized.marketSlots) || 1)));
+  normalized.tutorialAsked = !!normalized.tutorialAsked;
+  normalized.tutorialCompleted = !!normalized.tutorialCompleted;
   normalized.featureUnlocks = normalized.featureUnlocks && typeof normalized.featureUnlocks === "object" ? normalized.featureUnlocks : {};
   normalized.activePetIds = Array.isArray(normalized.activePetIds) ? normalized.activePetIds : [];
   normalized.metaUpgrades = normalized.metaUpgrades && typeof normalized.metaUpgrades === "object" ? normalized.metaUpgrades : {};
@@ -623,6 +663,9 @@ function applySave(save, options={}){
       writeLocalSaveNow();
     }
     update(true, true);
+    if(typeof applyPlText === "function"){
+      applyPlText();
+    }
     if(mode === "account"){
       markCloudSaveSaved();
     }else{
@@ -634,6 +677,7 @@ function applySave(save, options={}){
 }
 
 function loadGuestSave(){
+  stopMarketplaceUserStream();
   currentAccount = null;
   window.__kretSaveMode = "guest";
   cloudSaveDirty = false;
@@ -645,6 +689,7 @@ function loadGuestSave(){
   renderAccountStatus();
   renderLeaderboardPanel();
   renderGlobalBossPanel();
+  setTimeout(()=>window.maybeAskTutorial?.(), 180);
 }
 
 function makeAdminGiftPet(name, variantChoice){
@@ -1420,6 +1465,7 @@ function openAuthOverlay(){
 
 function closeAuthOverlay(){
   authOverlay?.classList.remove("open");
+  setTimeout(()=>window.maybeAskTutorial?.(), 180);
 }
 
 function showAuthMenu(){
@@ -1553,6 +1599,7 @@ async function finishAuthAccountSession(user, nick, safe){
   closeAuthOverlay();
   renderAccountStatus();
   renderGlobalBossPanel();
+  setTimeout(()=>window.maybeAskTutorial?.(), 180);
 }
 
 async function registerAccount(){
@@ -1687,10 +1734,617 @@ async function loadAccountSave(createIfMissing=false){
   }
 }
 
+const MARKET_SLOT_COSTS = [0, 500, 2500, 10000, 40000];
+const MARKET_CATEGORIES = [
+  {id:"pets", label:"Pety"},
+  {id:"potions", label:"Mikstury"},
+  {id:"bags", label:"Sakiewki"},
+  {id:"eggs", label:"Jajka"},
+  {id:"enchants", label:"Enchanty"},
+  {id:"fruits", label:"Owoce i ryby"}
+];
+
+function isMarketplaceUnlocked(){
+  return (Number(game.rebirths) || 0) >= 2;
+}
+
+function setMarketStatus(text="", isError=false){
+  if(!marketStatus) return;
+  marketStatus.textContent = text;
+  marketStatus.style.color = isError ? "#ff9a9a" : "";
+}
+
+function getMarketCapacity(){
+  game.marketSlots = Math.max(1, Math.min(5, Math.floor(Number(game.marketSlots) || 1)));
+  return game.marketSlots;
+}
+
+function getMyMarketOffers(){
+  if(!currentAccount) return [];
+  return Object.values(marketplaceOffers || {})
+    .filter(offer=>offer && offer.ownerUid === currentAccount.uid && offer.status === "active")
+    .sort((a,b)=>(b.createdAt || 0) - (a.createdAt || 0));
+}
+
+function getPublicMarketOffers(){
+  return Object.values(marketplaceOffers || {})
+    .filter(offer=>offer && offer.status === "active")
+    .sort((a,b)=>(b.createdAt || 0) - (a.createdAt || 0));
+}
+
+function makeMarketOfferId(){
+  const uid = currentAccount?.uid || "guest";
+  return `${uid}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`.replace(/[^a-zA-Z0-9_-]/g, "_");
+}
+
+function marketItemKey(category, item){
+  if(category === "pets") return item.uid;
+  if(category === "potions") return `${item.type}:${item.tier}`;
+  if(category === "bags") return item.bagId;
+  if(category === "eggs") return item.eggId;
+  if(category === "enchants") return `${item.type}:${item.tier}`;
+  if(category === "fruits") return item.id;
+  return "";
+}
+
+function marketItemLabel(category, item){
+  if(category === "pets") return item.displayName || item.name || "Pet";
+  if(category === "potions"){
+    const type = typeof POTION_TYPES !== "undefined" ? (POTION_TYPES[item.type] || POTION_TYPES.money) : {label:item.type || "Mikstura"};
+    const tier = typeof POTION_TIERS !== "undefined" ? (POTION_TIERS[item.tier] || POTION_TIERS[1]) : {roman:item.tier || 1};
+    return `${type.label} T${tier.roman}`;
+  }
+  if(category === "bags"){
+    const bag = typeof BAG_CATALOG !== "undefined" ? (BAG_CATALOG[item.bagId] || BAG_CATALOG.weak) : null;
+    return bag?.name || "Sakiewka";
+  }
+  if(category === "eggs"){
+    const egg = typeof INVENTORY_EGG_CATALOG !== "undefined" ? INVENTORY_EGG_CATALOG[item.eggId] : null;
+    return egg?.name || "Jajko";
+  }
+  if(category === "enchants"){
+    const def = typeof ENCHANT_CATALOG !== "undefined" ? (ENCHANT_CATALOG[item.type] || ENCHANT_CATALOG.luck) : null;
+    const tier = typeof ENCHANT_TIERS !== "undefined" ? (ENCHANT_TIERS[item.tier] || ENCHANT_TIERS[1]) : {roman:item.tier || 1};
+    return `${def?.name || "Enchant"} ${tier.roman}`;
+  }
+  if(category === "fruits"){
+    const def = typeof PET_FRUIT_CATALOG !== "undefined" ? PET_FRUIT_CATALOG[item.id] : null;
+    return def?.name || "Owoc";
+  }
+  return "Item";
+}
+
+function marketItemIcon(category, item){
+  if(category === "pets") return item.icon || "P";
+  if(category === "potions") return (typeof POTION_TYPES !== "undefined" && POTION_TYPES[item.type]?.icon) || "XP";
+  if(category === "bags") return (typeof BAG_CATALOG !== "undefined" && BAG_CATALOG[item.bagId]?.icon) || "B";
+  if(category === "eggs") return (typeof INVENTORY_EGG_CATALOG !== "undefined" && INVENTORY_EGG_CATALOG[item.eggId]?.icon) || "&#129370;";
+  if(category === "enchants") return (typeof ENCHANT_CATALOG !== "undefined" && ENCHANT_CATALOG[item.type]?.icon) || "EN";
+  if(category === "fruits") return (typeof PET_FRUIT_CATALOG !== "undefined" && PET_FRUIT_CATALOG[item.id]?.icon) || "F";
+  return "?";
+}
+
+function marketItemColor(category, item){
+  if(category === "pets") return item.color || "#9fe8ff";
+  if(category === "potions") return (typeof POTION_TYPES !== "undefined" && POTION_TYPES[item.type]?.color) || "#f7fbff";
+  if(category === "bags") return (typeof BAG_CATALOG !== "undefined" && BAG_CATALOG[item.bagId]?.color) || "#9cc7ff";
+  if(category === "enchants") return (typeof ENCHANT_CATALOG !== "undefined" && ENCHANT_CATALOG[item.type]?.color) || "#d8b6ff";
+  if(category === "fruits") return (typeof PET_FRUIT_CATALOG !== "undefined" && PET_FRUIT_CATALOG[item.id]?.color) || "#f7fbff";
+  return "#9fe8ff";
+}
+
+function getMarketSellGroups(category){
+  const groups = new Map();
+  const add = (item)=>{
+    const key = marketItemKey(category, item);
+    if(!key) return;
+    const group = groups.get(key) || {
+      category,
+      key,
+      label:marketItemLabel(category, item),
+      icon:marketItemIcon(category, item),
+      color:marketItemColor(category, item),
+      items:[]
+    };
+    group.items.push(item);
+    groups.set(key, group);
+  };
+  if(category === "pets") (Array.isArray(game.pets) ? game.pets : []).forEach(add);
+  if(category === "potions") (Array.isArray(game.potions) ? game.potions : []).forEach(add);
+  if(category === "bags") (Array.isArray(game.bags) ? game.bags : []).forEach(add);
+  if(category === "eggs") (Array.isArray(game.inventoryEggs) ? game.inventoryEggs : []).forEach(add);
+  if(category === "enchants") (Array.isArray(game.enchants) ? game.enchants : []).forEach(add);
+  if(category === "fruits") (Array.isArray(game.fruits) ? game.fruits : []).forEach(add);
+  return Array.from(groups.values()).sort((a,b)=>a.label.localeCompare(b.label, "pl"));
+}
+
+function removeMarketItemsFromInventory(category, key, qty){
+  const count = Math.max(1, Math.floor(Number(qty) || 1));
+  const removed = [];
+  const takeFrom = (prop, matcher)=>{
+    const source = Array.isArray(game[prop]) ? game[prop] : [];
+    const keep = [];
+    source.forEach(item=>{
+      if(removed.length < count && matcher(item)) removed.push(item);
+      else keep.push(item);
+    });
+    game[prop] = keep;
+  };
+  if(category === "pets"){
+    takeFrom("pets", item=>item.uid === key);
+    const removedIds = new Set(removed.map(item=>item.uid));
+    game.activePetIds = (Array.isArray(game.activePetIds) ? game.activePetIds : []).filter(id=>!removedIds.has(id));
+  }else if(category === "potions") takeFrom("potions", item=>marketItemKey(category, item) === key);
+  else if(category === "bags") takeFrom("bags", item=>marketItemKey(category, item) === key);
+  else if(category === "eggs") takeFrom("inventoryEggs", item=>marketItemKey(category, item) === key);
+  else if(category === "enchants"){
+    takeFrom("enchants", item=>marketItemKey(category, item) === key);
+    const removedIds = new Set(removed.map(item=>item.uid));
+    game.activeEnchantIds = (Array.isArray(game.activeEnchantIds) ? game.activeEnchantIds : []).filter(id=>!removedIds.has(id));
+  }else if(category === "fruits") takeFrom("fruits", item=>marketItemKey(category, item) === key);
+  return removed.length === count ? removed : [];
+}
+
+function restoreMarketItemsToInventory(offer, qty){
+  const count = Math.max(1, Math.min(Math.floor(Number(qty) || 1), offer.quantity || 1));
+  const category = offer.category;
+  const payload = Array.isArray(offer.payload) ? offer.payload.slice(0, count) : [];
+  if(category === "pets"){
+    game.pets = Array.isArray(game.pets) ? game.pets : [];
+    payload.forEach(item=>game.pets.push(item));
+  }else if(category === "potions"){
+    game.potions = Array.isArray(game.potions) ? game.potions : [];
+    payload.forEach(item=>game.potions.push(item));
+  }else if(category === "bags"){
+    game.bags = Array.isArray(game.bags) ? game.bags : [];
+    payload.forEach(item=>game.bags.push(item));
+  }else if(category === "eggs"){
+    game.inventoryEggs = Array.isArray(game.inventoryEggs) ? game.inventoryEggs : [];
+    payload.forEach(item=>game.inventoryEggs.push(item));
+  }else if(category === "enchants"){
+    game.enchants = Array.isArray(game.enchants) ? game.enchants : [];
+    payload.forEach(item=>game.enchants.push(item));
+  }else if(category === "fruits"){
+    game.fruits = Array.isArray(game.fruits) ? game.fruits : [];
+    payload.forEach(item=>game.fruits.push(item));
+  }
+}
+
+function grantMarketItemsToBuyer(offer, qty){
+  const count = Math.max(1, Math.floor(Number(qty) || 1));
+  const category = offer.category;
+  const sample = Array.isArray(offer.payload) ? offer.payload[0] : null;
+  if(category === "pets"){
+    game.pets = Array.isArray(game.pets) ? game.pets : [];
+    (offer.payload || []).slice(0, count).forEach(item=>{
+      const pet = JSON.parse(JSON.stringify(item));
+      pet.uid = `pet_${game.petSeq++}`;
+      game.pets.push(pet);
+    });
+  }else if(category === "potions"){
+    game.potions = Array.isArray(game.potions) ? game.potions : [];
+    for(let i = 0; i < count; i++) game.potions.push(typeof makePotionInstance === "function" ? makePotionInstance(sample?.type || offer.key.split(":")[0], Number(sample?.tier || offer.key.split(":")[1]) || 1) : Object.assign({}, sample));
+  }else if(category === "bags"){
+    game.bags = Array.isArray(game.bags) ? game.bags : [];
+    for(let i = 0; i < count; i++) game.bags.push(typeof makeBagInstance === "function" ? makeBagInstance(sample?.bagId || offer.key) : Object.assign({}, sample));
+  }else if(category === "eggs"){
+    game.inventoryEggs = Array.isArray(game.inventoryEggs) ? game.inventoryEggs : [];
+    for(let i = 0; i < count; i++){
+      const egg = typeof makeInventoryEggInstance === "function" ? makeInventoryEggInstance(sample?.eggId || offer.key) : Object.assign({}, sample);
+      if(egg) game.inventoryEggs.push(egg);
+    }
+  }else if(category === "enchants"){
+    game.enchants = Array.isArray(game.enchants) ? game.enchants : [];
+    for(let i = 0; i < count; i++) game.enchants.push(typeof makeEnchantInstance === "function" ? makeEnchantInstance(sample?.type || offer.key.split(":")[0], Number(sample?.tier || offer.key.split(":")[1]) || 1) : Object.assign({}, sample));
+  }else if(category === "fruits"){
+    game.fruits = Array.isArray(game.fruits) ? game.fruits : [];
+    for(let i = 0; i < count; i++) game.fruits.push(typeof makeFruitInstance === "function" ? makeFruitInstance(sample?.id || offer.key) : Object.assign({}, sample));
+  }
+}
+
+function renderMarketOfferCard(offer, owned=false){
+  const mine = currentAccount && offer.ownerUid === currentAccount.uid;
+  const disabled = mine ? " disabled" : "";
+  const action = owned
+    ? `<button class="marketActionBtn" data-market-cancel="${escapeHtml(offer.id)}" type="button">Anuluj oferte</button>`
+    : `<button class="marketActionBtn buy"${disabled} data-market-buy="${escapeHtml(offer.id)}" type="button">${mine ? "Twoja oferta" : "Kup"}</button>`;
+  return `
+    <div class="marketCard">
+      <div class="marketItemTop">
+        <div class="marketIcon" style="background:${offer.color || "#9fe8ff"}">${offer.icon || "?"}</div>
+        <div class="marketItemMeta">
+          <b>${escapeHtml(offer.label || "Item")}</b>
+          <small>${escapeHtml(offer.ownerNick || "Gracz")} | ${escapeHtml(offer.category || "")}</small>
+        </div>
+      </div>
+      <div class="marketPrice">
+        <span>Ilość: ${format(offer.quantity || 1)}</span>
+        <span>${formatDiamond(offer.unitPrice || 0)} &#128142; / szt.</span>
+      </div>
+      ${action}
+    </div>
+  `;
+}
+
+function renderMarketplace(){
+  if(!marketplaceView) return;
+  marketplaceDockBtn?.classList.toggle("locked", !isMarketplaceUnlocked());
+  updateMarketDiamondText();
+  const offers = getPublicMarketOffers();
+  if(marketOffersView){
+    marketOffersView.innerHTML = !currentAccount
+      ? `<div class="marketCard"><b>Marketplace wymaga konta online.</b><p>Zaloguj sie, zeby kupowac i sprzedawac bez ryzyka utraty itemow.</p></div>`
+      : offers.length
+        ? `<div class="marketGrid">${offers.map(offer=>renderMarketOfferCard(offer)).join("")}</div>`
+        : `<div class="marketCard"><b>Brak ofert.</b><p>Na razie nikt nic nie sprzedaje.</p></div>`;
+  }
+  renderMyMarketplace();
+}
+
+function updateMarketDiamondText(){
+  if(marketDiamondText) marketDiamondText.textContent = formatDiamond(Number(game.diamonds) || 0);
+}
+
+function renderMyMarketplace(){
+  if(!marketMineView) return;
+  if(!currentAccount){
+    marketMineView.innerHTML = `<div class="marketCard"><b>Zaloguj sie.</b><p>Swoje oferty dzialaja tylko na koncie online.</p></div>`;
+    return;
+  }
+  const myOffers = getMyMarketOffers();
+  const capacity = getMarketCapacity();
+  const slots = Array.from({length:5}, (_, index)=>{
+    const unlocked = index < capacity;
+    const cost = MARKET_SLOT_COSTS[index] || 0;
+    return `
+      <div class="marketSlotCard ${unlocked ? "" : "locked"}">
+        <b>Slot ${index + 1}</b>
+        <p>${unlocked ? "Odblokowany" : `Koszt: ${formatDiamond(cost)} diaxow`}</p>
+        ${!unlocked && index === capacity ? `<button class="marketSlotBtn" data-market-slot="${index + 1}" type="button">Kup slot</button>` : ""}
+      </div>
+    `;
+  }).join("");
+  const canCreate = myOffers.length < capacity;
+  marketMineView.innerHTML = `
+    <div class="marketMineTop">${slots}</div>
+    <div class="marketCreateBox">
+      <b>Dodaj oferte</b>
+      <div class="marketFormRow">
+        <label>Kategoria</label>
+        <select id="marketSellCategory">${MARKET_CATEGORIES.map(cat=>`<option value="${cat.id}">${cat.label}</option>`).join("")}</select>
+      </div>
+      <div class="marketFormRow">
+        <label>Item z EQ</label>
+        <select id="marketSellItem"></select>
+      </div>
+      <div class="marketFormRow">
+        <label>Ilosc</label>
+        <input id="marketSellQty" type="number" min="1" value="1">
+      </div>
+      <div class="marketFormRow">
+        <label>Cena za sztuke w diamentach</label>
+        <input id="marketSellPrice" type="number" min="1" step="1" value="10">
+      </div>
+      <button class="marketActionBtn sell" id="marketCreateOfferBtn" type="button" ${canCreate ? "" : "disabled"}>${canCreate ? "Wystaw oferte" : "Brak wolnego slotu"}</button>
+    </div>
+    ${myOffers.length ? `<div class="marketGrid">${myOffers.map(offer=>renderMarketOfferCard(offer, true)).join("")}</div>` : `<div class="marketCard"><b>Nie masz aktywnych ofert.</b></div>`}
+  `;
+  refreshMarketSellItems();
+}
+
+function refreshMarketSellItems(){
+  const categorySelect = document.getElementById("marketSellCategory");
+  const itemSelect = document.getElementById("marketSellItem");
+  const qtyInput = document.getElementById("marketSellQty");
+  if(!categorySelect || !itemSelect || !qtyInput) return;
+  const groups = getMarketSellGroups(categorySelect.value);
+  itemSelect.innerHTML = groups.length
+    ? groups.map(group=>`<option value="${escapeHtml(group.key)}" data-max="${group.items.length}">${escapeHtml(group.label)} x${group.items.length}</option>`).join("")
+    : `<option value="">Brak itemow</option>`;
+  const max = Number(itemSelect.selectedOptions?.[0]?.dataset?.max) || 1;
+  qtyInput.max = String(max);
+  qtyInput.value = "1";
+  qtyInput.disabled = categorySelect.value === "pets";
+}
+
+function setMarketplaceTab(tab){
+  marketplaceTab = tab === "mine" ? "mine" : "offers";
+  marketOffersTab?.classList.toggle("active", marketplaceTab === "offers");
+  marketMineTab?.classList.toggle("active", marketplaceTab === "mine");
+  if(marketOffersView) marketOffersView.style.display = marketplaceTab === "offers" ? "grid" : "none";
+  if(marketMineView) marketMineView.style.display = marketplaceTab === "mine" ? "grid" : "none";
+  renderMarketplace();
+}
+
+async function openMarketplace(){
+  if(!isMarketplaceUnlocked()){
+    spawnPopup?.("Marketplace od rebirth 2!", false, false, true);
+    return;
+  }
+  if(!currentAccount){
+    spawnPopup?.("Marketplace wymaga konta!", false, false, true);
+  }
+  clearTimeout(marketplaceCloseTimer);
+  marketplaceView?.classList.remove("closing");
+  marketplaceView?.classList.add("open");
+  window.kretAudio?.marketOpen?.();
+  updateMarketDiamondText();
+  if(location.hash !== "#marketplace") history.pushState(null, "", "#marketplace");
+  setMarketplaceTab(marketplaceTab);
+  await startMarketplaceStreams();
+}
+
+function closeMarketplace(){
+  if(marketplaceView?.classList.contains("open")){
+    marketplaceView.classList.add("closing");
+    marketplaceView.classList.remove("open");
+    clearTimeout(marketplaceCloseTimer);
+    marketplaceCloseTimer = setTimeout(()=>marketplaceView?.classList.remove("closing"), 240);
+    window.kretAudio?.marketClose?.();
+  }else{
+    marketplaceView?.classList.remove("closing");
+  }
+  marketBuyModal?.classList.remove("open");
+  if(location.hash === "#marketplace") history.pushState(null, "", location.pathname + location.search);
+}
+
+async function startMarketplaceStreams(){
+  if(!await initFirebase()) return;
+  if(!marketplaceOffersUnsub){
+    marketplaceOffersUnsub = firebaseModules.onValue(firebaseModules.ref(firebaseDb, "marketplaceOffers"), snapshot=>{
+      marketplaceOffers = snapshot.val() || {};
+      renderMarketplace();
+    });
+  }
+  if(currentAccount && !marketplacePayoutsUnsub){
+    marketplacePayoutsUnsub = firebaseModules.onValue(firebaseModules.ref(firebaseDb, "marketplacePayouts/" + currentAccount.uid), async snapshot=>{
+      await claimMarketplacePayouts(snapshot.val() || {});
+    });
+  }
+}
+
+function stopMarketplaceUserStream(){
+  if(typeof marketplacePayoutsUnsub === "function"){
+    try{ marketplacePayoutsUnsub(); }catch(err){}
+  }
+  marketplacePayoutsUnsub = null;
+}
+
+async function claimMarketplacePayouts(payouts){
+  if(!currentAccount || !payouts || !Object.keys(payouts).length) return;
+  const entries = Object.entries(payouts).filter(([, payout])=>payout && !payout.claimed && Math.max(0, Number(payout.amount) || 0) > 0);
+  if(!entries.length) return;
+  const previousIds = pendingMarketSaleAck?.map?.(([id])=>id).join("|") || "";
+  pendingMarketSaleAck = entries;
+  showMarketplaceSaleModal(entries, previousIds);
+}
+
+function showMarketplaceSaleModal(entries, previousIds = ""){
+  const nextIds = entries.map(([id])=>id).join("|");
+  const total = entries.reduce((sum, [, payout])=>sum + Math.max(0, Number(payout.amount) || 0), 0);
+  const first = entries[0]?.[1] || {};
+  const more = entries.length > 1 ? ` +${entries.length - 1}` : "";
+  if(marketSaleText){
+    const template = typeof t === "function"
+      ? t("market.soldText")
+      : "Sprzedano: {item}{more}. Do odbioru: {amount} diamentow.";
+    marketSaleText.textContent = template
+      .replace("{item}", first.item || "Item")
+      .replace("{more}", more)
+      .replace("{amount}", formatDiamond(total));
+  }
+  const wasOpen = marketSaleModal?.classList.contains("open") && previousIds === nextIds;
+  marketSaleModal?.classList.add("open");
+  if(!wasOpen) window.kretAudio?.marketSold?.();
+}
+
+async function acceptMarketplaceSale(){
+  if(!currentAccount || !pendingMarketSaleAck?.length) return marketSaleModal?.classList.remove("open");
+  const entries = pendingMarketSaleAck;
+  const total = entries.reduce((sum, [, payout])=>sum + Math.max(0, Number(payout.amount) || 0), 0);
+  const patch = {};
+  entries.forEach(([id])=>{ patch[id] = null; });
+  if(total <= 0) return marketSaleModal?.classList.remove("open");
+  game.diamonds = (Number(game.diamonds) || 0) + total;
+  await firebaseUpdate("marketplacePayouts/" + currentAccount.uid, patch);
+  pendingMarketSaleAck = null;
+  marketSaleModal?.classList.remove("open");
+  updateMarketDiamondText();
+  update(true, true);
+  requestCloudSave({force:true, reason:"marketplacePayout"});
+  spawnPopup?.(`Marketplace +${formatDiamond(total)} diaxow`, false, false, true);
+  window.kretAudio?.marketBuy?.();
+}
+
+async function createMarketplaceOffer(){
+  if(!currentAccount) return setMarketStatus("Zaloguj sie, zeby wystawiac oferty.", true);
+  if(getMyMarketOffers().length >= getMarketCapacity()) return setMarketStatus("Nie masz wolnego slotu oferty.", true);
+  const category = document.getElementById("marketSellCategory")?.value || "pets";
+  const key = document.getElementById("marketSellItem")?.value || "";
+  const price = Math.max(1, Math.floor(Number(document.getElementById("marketSellPrice")?.value) || 0));
+  const qtyRaw = Math.max(1, Math.floor(Number(document.getElementById("marketSellQty")?.value) || 1));
+  if(!key || !price) return setMarketStatus("Wybierz item i cene.", true);
+  const groups = getMarketSellGroups(category);
+  const group = groups.find(item=>item.key === key);
+  if(!group) return setMarketStatus("Tego itemu nie ma juz w EQ.", true);
+  const qty = category === "pets" ? 1 : Math.min(qtyRaw, group.items.length);
+  const removed = removeMarketItemsFromInventory(category, key, qty);
+  if(removed.length !== qty){
+    restoreMarketItemsToInventory({category, payload:removed, quantity:removed.length}, removed.length);
+    return setMarketStatus("Nie udalo sie zdjac itemu z EQ.", true);
+  }
+  const offerId = makeMarketOfferId();
+  const offer = {
+    id:offerId,
+    status:"active",
+    ownerUid:currentAccount.uid,
+    ownerNick:currentAccount.nick || currentAccount.safeNick || "Gracz",
+    category,
+    key,
+    label:group.label,
+    icon:group.icon,
+    color:group.color,
+    unitPrice:price,
+    quantity:qty,
+    payload:JSON.parse(JSON.stringify(removed)),
+    createdAt:Date.now()
+  };
+  try{
+    await firebaseSet("marketplaceOffers/" + offerId, offer);
+    update(true, true);
+    requestCloudSave({force:true, reason:"marketplaceCreate"});
+    setMarketStatus("Oferta wystawiona.");
+    window.kretAudio?.marketList?.();
+    renderMarketplace();
+  }catch(err){
+    restoreMarketItemsToInventory(offer, qty);
+    update(true, true);
+    console.warn("Marketplace offer create failed:", err);
+    setMarketStatus("Nie udalo sie wystawic oferty.", true);
+  }
+}
+
+async function cancelMarketplaceOffer(offerId){
+  if(!currentAccount || !offerId) return;
+  let canceled = null;
+  const tx = await firebaseModules.runTransaction(firebaseModules.ref(firebaseDb, "marketplaceOffers/" + offerId), offer=>{
+    if(!offer || offer.ownerUid !== currentAccount.uid || offer.status !== "active") return offer;
+    canceled = offer;
+    return null;
+  });
+  if(!canceled || !tx.committed){
+    return setMarketStatus("Nie mozna anulowac tej oferty.", true);
+  }
+  restoreMarketItemsToInventory(canceled, canceled.quantity || 1);
+  update(true, true);
+  requestCloudSave({force:true, reason:"marketplaceCancel"});
+  setMarketStatus("Oferta anulowana, item wrocil do EQ.");
+  renderMarketplace();
+}
+
+function openMarketBuyModal(offerId){
+  const offer = marketplaceOffers?.[offerId];
+  if(!offer || offer.status !== "active") return;
+  if(currentAccount && offer.ownerUid === currentAccount.uid) return setMarketStatus("Nie mozesz kupic wlasnej oferty.", true);
+  pendingMarketBuyOffer = offer;
+  const maxQty = Math.max(1, Number(offer.quantity) || 1);
+  if(marketBuyTitle) marketBuyTitle.textContent = offer.label || "Item";
+  if(marketBuyInfo) marketBuyInfo.innerHTML = renderMarketOfferCard(offer).replace(/<button[\s\S]*?<\/button>/, "");
+  if(marketBuyRange){
+    marketBuyRange.min = "1";
+    marketBuyRange.max = String(maxQty);
+    marketBuyRange.value = "1";
+  }
+  updateMarketBuyTotal();
+  marketBuyModal?.classList.add("open");
+}
+
+function updateMarketBuyTotal(){
+  const offer = pendingMarketBuyOffer;
+  const qty = Math.max(1, Math.floor(Number(marketBuyRange?.value) || 1));
+  if(marketBuyQtyText) marketBuyQtyText.textContent = format(qty);
+  if(marketBuyTotal) marketBuyTotal.textContent = formatDiamond(qty * Math.max(1, Number(offer?.unitPrice) || 1));
+}
+
+async function confirmMarketBuy(){
+  const offer = pendingMarketBuyOffer;
+  if(!currentAccount || !offer) return setMarketStatus("Zaloguj sie, zeby kupowac.", true);
+  if(offer.ownerUid === currentAccount.uid) return setMarketStatus("Nie mozesz kupic wlasnej oferty.", true);
+  const qty = Math.max(1, Math.floor(Number(marketBuyRange?.value) || 1));
+  const total = qty * Math.max(1, Number(offer.unitPrice) || 1);
+  if((Number(game.diamonds) || 0) < total) return setMarketStatus("Za malo diamentow.", true);
+  let boughtOffer = null;
+  const tx = await firebaseModules.runTransaction(firebaseModules.ref(firebaseDb, "marketplaceOffers/" + offer.id), current=>{
+    if(!current || current.status !== "active" || current.ownerUid === currentAccount.uid) return current;
+    if((Number(current.quantity) || 0) < qty) return current;
+    boughtOffer = JSON.parse(JSON.stringify(current));
+    if((Number(current.quantity) || 0) === qty) return null;
+    current.quantity = (Number(current.quantity) || 0) - qty;
+    current.payload = Array.isArray(current.payload) ? current.payload.slice(qty) : [];
+    return current;
+  });
+  if(!boughtOffer || !tx.committed) return setMarketStatus("Oferta jest juz nieaktualna.", true);
+  game.diamonds = Math.max(0, (Number(game.diamonds) || 0) - total);
+  grantMarketItemsToBuyer(boughtOffer, qty);
+  const payoutId = `${offer.id}_${currentAccount.uid}_${Date.now()}`.replace(/[^a-zA-Z0-9_-]/g, "_");
+  await firebaseSet(`marketplacePayouts/${boughtOffer.ownerUid}/${payoutId}`, {
+    amount:total,
+    buyerUid:currentAccount.uid,
+    buyerNick:currentAccount.nick || currentAccount.safeNick || "Gracz",
+    item:boughtOffer.label || "Item",
+    quantity:qty,
+    createdAt:Date.now()
+  });
+  update(true, true);
+  requestCloudSave({force:true, reason:"marketplaceBuy"});
+  marketBuyModal?.classList.remove("open");
+  pendingMarketBuyOffer = null;
+  setMarketStatus("Kupiono oferte.");
+  updateMarketDiamondText();
+  window.kretAudio?.marketBuy?.();
+  renderMarketplace();
+}
+
+async function buyMarketSlot(slotNumber){
+  const target = Math.max(2, Math.min(5, Math.floor(Number(slotNumber) || 2)));
+  if(target !== getMarketCapacity() + 1) return;
+  const cost = MARKET_SLOT_COSTS[target - 1] || 0;
+  if((Number(game.diamonds) || 0) < cost) return setMarketStatus("Za malo diamentow na slot.", true);
+  game.diamonds -= cost;
+  game.marketSlots = target;
+  update(true, true);
+  requestCloudSave({force:true, reason:"marketplaceSlot"});
+  setMarketStatus(`Odblokowano slot ${target}.`);
+  updateMarketDiamondText();
+  window.kretAudio?.marketBuy?.();
+  renderMarketplace();
+}
+
+marketplaceDockBtn?.addEventListener("click", openMarketplace);
+marketBackBtn?.addEventListener("click", closeMarketplace);
+marketRefreshBtn?.addEventListener("click", async()=>{ await startMarketplaceStreams(); renderMarketplace(); setMarketStatus("Odswiezono."); });
+marketOffersTab?.addEventListener("click", ()=>setMarketplaceTab("offers"));
+marketMineTab?.addEventListener("click", ()=>setMarketplaceTab("mine"));
+marketMineView?.addEventListener("change", event=>{
+  if(event.target?.id === "marketSellCategory") refreshMarketSellItems();
+  if(event.target?.id === "marketSellItem"){
+    const qtyInput = document.getElementById("marketSellQty");
+    const max = Number(event.target.selectedOptions?.[0]?.dataset?.max) || 1;
+    if(qtyInput){
+      qtyInput.max = String(max);
+      qtyInput.value = "1";
+    }
+  }
+});
+marketMineView?.addEventListener("click", event=>{
+  const create = event.target instanceof Element ? event.target.closest("#marketCreateOfferBtn") : null;
+  const cancel = event.target instanceof Element ? event.target.closest("[data-market-cancel]") : null;
+  const slot = event.target instanceof Element ? event.target.closest("[data-market-slot]") : null;
+  if(create) createMarketplaceOffer();
+  if(cancel) cancelMarketplaceOffer(cancel.dataset.marketCancel);
+  if(slot) buyMarketSlot(slot.dataset.marketSlot);
+});
+marketOffersView?.addEventListener("click", event=>{
+  const buy = event.target instanceof Element ? event.target.closest("[data-market-buy]") : null;
+  if(buy) openMarketBuyModal(buy.dataset.marketBuy);
+});
+marketBuyRange?.addEventListener("input", updateMarketBuyTotal);
+marketBuyClose?.addEventListener("click", ()=>marketBuyModal?.classList.remove("open"));
+marketBuyCancel?.addEventListener("click", ()=>marketBuyModal?.classList.remove("open"));
+marketBuyConfirm?.addEventListener("click", confirmMarketBuy);
+marketSaleOk?.addEventListener("click", acceptMarketplaceSale);
+window.addEventListener("hashchange", ()=>{
+  if(location.hash === "#marketplace") openMarketplace();
+  else closeMarketplace();
+});
+if(location.hash === "#marketplace") setTimeout(openMarketplace, 0);
+setInterval(()=>marketplaceDockBtn?.classList.toggle("locked", !isMarketplaceUnlocked()), 1000);
+
 const globalEventMeta = {
   luck:{name:"Luck Boost", icon:"🍀", mode:"multiplier", color:"linear-gradient(135deg,#62ff9a,#19c7ff,#ffe86b)"},
   money:{name:"Money Boost", icon:"💰", mode:"multiplier", color:"linear-gradient(135deg,#ffe96b,#ff9c35,#ff4f8f)"},
   diamonds:{name:"Diamonds Boost", icon:"💎", mode:"multiplier", color:"linear-gradient(135deg,#9ff8ff,#3b8cff,#a875ff)"},
+  petXp:{name:"Pet XP Boost", icon:"XP", mode:"percent", color:"linear-gradient(135deg,#ffffff,#bde8ff,#77bfff)"},
   goldPetChance:{name:"Gold Pet Chance", icon:"⭐", mode:"chance", color:"linear-gradient(135deg,#fff2a0,#ffc233,#ff7a35)"},
   shinyPetChance:{name:"Shiny Pet Chance", icon:"✨", mode:"chance", color:"linear-gradient(135deg,#fff,#ff8df4,#62e8ff)"},
   rainbowPetChance:{name:"Rainbow Pet Chance", icon:"🌈", mode:"chance", color:"linear-gradient(135deg,#ff4f6d,#ffd24d,#5cff9d,#56c7ff,#a36bff)"},
@@ -1716,6 +2370,9 @@ function formatGlobalEventValue(event){
   if(event.mode === "message") return "";
   if(event.mode === "chance"){
     return "+" + ((Number(event.value) || 0) * 100).toFixed((Number(event.value) || 0) < 0.01 ? 2 : 1) + "%";
+  }
+  if(event.mode === "percent"){
+    return "+" + Math.max(0, ((Number(event.value) || 1) - 1) * 100).toFixed(0) + "%";
   }
   return "x" + (Number(event.value) || 1).toFixed((Number(event.value) || 1) % 1 ? 1 : 0);
 }
@@ -1908,12 +2565,15 @@ function getAdminBoostValue(type, fallbackValue){
   const modalRaw = Number(adminBoostModalValue?.value || 0);
   const panelRaw = Number(document.getElementById("adminCustomValue")?.value || 0);
   const raw = modalRaw || panelRaw || Number(fallbackValue) || (mode === "chance" ? 1 : 2);
-  return mode === "chance" ? raw / 100 : raw;
+  if(mode === "chance") return raw / 100;
+  if(mode === "percent") return 1 + raw / 100;
+  return raw;
 }
 
 function getAdminEventValue(eventType){
   const raw = Number(adminBoostModalValue?.value || 0);
   if(eventType === "petChance") return Math.max(0, raw || 50) / 100;
+  if(globalEventMeta[eventType]?.mode === "percent") return 1 + Math.max(0, raw || 50) / 100;
   return Math.max(1, raw || 2);
 }
 
@@ -5326,6 +5986,7 @@ showRegisterBtn?.addEventListener("click", () => showAuthForm("register"));
 showLoginBtn?.addEventListener("click", () => showAuthForm("login"));
 guestPlayBtn?.addEventListener("click", async () => {
   stopUserAdminNoticesLive();
+  stopMarketplaceUserStream();
   if(await initFirebase()){
     try{ await firebaseModules.signOut(firebaseAuth); }catch(err){}
   }
@@ -5368,6 +6029,7 @@ accountChangePasswordBtn?.addEventListener("click", () => {
 accountLogoutBtn?.addEventListener("click", async () => {
   await flushCloudSaveBeforeLogout();
   stopUserAdminNoticesLive();
+  stopMarketplaceUserStream();
   if(await initFirebase()){
     try{ await firebaseModules.signOut(firebaseAuth); }catch(err){}
   }
@@ -5410,7 +6072,7 @@ adminCodeRewardType?.dispatchEvent(new Event("change"));
 adminEventType?.addEventListener("change", () => {
   setAdminBoostModalMode("events");
   if(adminBoostModalValue){
-    adminBoostModalValue.value = adminEventType.value === "petChance" ? "50" : "2";
+    adminBoostModalValue.value = adminEventType.value === "petChance" || adminEventType.value === "petXp" ? "50" : "2";
   }
 });
 adminBoostModalConfirm?.addEventListener("click", async () => {

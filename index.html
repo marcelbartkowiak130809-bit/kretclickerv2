@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="assets/icons/app-icon-192.png">
 <link rel="icon" href="assets/icons/app-icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/main.css?v=mobile-portrait-ui-1">
+<link rel="stylesheet" href="assets/css/main.css?v=tutorial-rain-1">
 </head>
 <body>
 
@@ -93,6 +93,28 @@
   <span id="accountStatusText">Offline</span>
   <span id="cloudSaveStatus" class="cloudSaveStatus offline">Lokalnie</span>
   <button id="logoutBtn" type="button">Zaloguj się</button>
+</div>
+
+<div id="tutorialAskOverlay" class="tutorialAskOverlay">
+  <div class="tutorialAskCard">
+    <b data-pl-key="tutorial.ask">Czy chcesz włączyć krótki tutorial?</b>
+    <div class="tutorialAskActions">
+      <button id="tutorialStartBtn" type="button" data-pl-key="tutorial.start">Start</button>
+      <button id="tutorialDeclineBtn" type="button" data-pl-key="tutorial.skip">Pomiń</button>
+    </div>
+  </div>
+</div>
+
+<div id="tutorialOverlay" class="tutorialOverlay">
+  <div id="tutorialHighlight" class="tutorialHighlight"></div>
+  <div id="tutorialArrow" class="tutorialArrow"></div>
+  <div id="tutorialBubble" class="tutorialBubble">
+    <p id="tutorialText"></p>
+    <div class="tutorialActions">
+      <button id="tutorialSkipBtn" type="button" data-pl-key="tutorial.skip">Pomiń</button>
+      <button id="tutorialNextBtn" type="button" data-pl-key="tutorial.next">Dalej</button>
+    </div>
+  </div>
 </div>
 
 <div id="accountMenuOverlay" class="accountMenuOverlay">
@@ -231,10 +253,68 @@
 
 <div id="rightDock">
   <button class="dockBtn" id="diamondDockBtn" title="Diamenty">&#128142;</button>
+  <button class="dockBtn locked" id="marketplaceDockBtn" title="Marketplace">&#128722;</button>
   <button class="dockBtn" id="indexDockBtn" title="Index">&#128214;</button>
   <button class="dockBtn" id="leaderboardDockBtn" title="Rankingi">&#127942;</button>
   <button class="dockBtn" id="weatherDockBtn" title="Pogoda">&#9729;</button>
   <button class="dockBtn eventDockBtn" id="limitedEventDockBtn" title="Crystal Event"><span class="crystalCurrencyIcon dockCrystalIcon"></span></button>
+</div>
+
+<div id="marketplaceView" class="marketplaceView">
+  <div class="marketplaceShell">
+    <div class="marketplaceTop">
+      <div>
+        <span>MARKETPLACE ONLINE</span>
+        <h2>Marketplace</h2>
+      </div>
+      <div class="marketplaceTopActions">
+        <div class="marketDiamondPill">
+          <small data-pl-key="market.diamonds">Diamenty</small>
+          <b><span id="marketDiamondText">0</span> &#128142;</b>
+        </div>
+        <button id="marketRefreshBtn" type="button">Odswiez</button>
+        <button id="marketBackBtn" type="button">Powrot do gry</button>
+      </div>
+    </div>
+    <div class="marketTabs">
+      <button class="active" id="marketOffersTab" type="button">Oferty</button>
+      <button id="marketMineTab" type="button">Swoje oferty</button>
+    </div>
+    <div id="marketStatus" class="marketStatus"></div>
+    <div id="marketOffersView" class="marketPanel"></div>
+    <div id="marketMineView" class="marketPanel" style="display:none"></div>
+  </div>
+</div>
+
+<div id="marketBuyModal" class="marketBuyModal">
+  <div class="marketBuyCard">
+    <div class="marketBuyTop">
+      <div>
+        <span>KUP OFERTE</span>
+        <h3 id="marketBuyTitle">Item</h3>
+      </div>
+      <button id="marketBuyClose" type="button">x</button>
+    </div>
+    <div id="marketBuyInfo"></div>
+    <label class="marketRangeLabel">
+      <span>Ilosc: <b id="marketBuyQtyText">1</b></span>
+      <input id="marketBuyRange" type="range" min="1" max="1" value="1">
+    </label>
+    <div class="marketBuyTotal">Koszt: <b id="marketBuyTotal">0</b> &#128142;</div>
+    <div class="marketBuyActions">
+      <button id="marketBuyCancel" type="button">Anuluj</button>
+      <button id="marketBuyConfirm" type="button">Kup</button>
+    </div>
+  </div>
+</div>
+
+<div id="marketSaleModal" class="marketSaleModal">
+  <div class="marketSaleCard">
+    <div class="marketSaleIcon">&#128142;</div>
+    <h3 data-pl-key="market.soldTitle">Oferta sprzedana!</h3>
+    <p id="marketSaleText">Twoja oferta zostala kupiona.</p>
+    <button id="marketSaleOk" type="button">OK</button>
+  </div>
 </div>
 
 <div id="eggPanel" class="slidePanel">
@@ -280,6 +360,7 @@
     <button class="panelTab" id="potionTabBtn" onclick="setInventoryTab('potions')">Mikstury</button>
     <button class="panelTab" id="bagTabBtn" onclick="setInventoryTab('bags')">Sakiewki</button>
     <button class="panelTab" id="inventoryEggTabBtn" onclick="setInventoryTab('eggs')">Jajka</button>
+    <button class="panelTab" id="fruitTabBtn" onclick="setInventoryTab('fruits')">Owoce</button>
     <button class="panelTab" id="enchantTabBtn" onclick="setInventoryTab('enchants')">Enchanty</button>
   </div>
   <div class="panelActions" id="petActions">
@@ -291,6 +372,7 @@
   <div class="panelScroll" id="potionList" style="display:none"></div>
   <div class="panelScroll" id="bagList" style="display:none"></div>
   <div class="panelScroll" id="inventoryEggList" style="display:none"></div>
+  <div class="panelScroll" id="fruitList" style="display:none"></div>
   <div class="panelScroll" id="enchantList" style="display:none"></div>
 </div>
 
@@ -648,6 +730,7 @@
       <option value="luck">Luck Boost</option>
       <option value="money">Money Boost</option>
       <option value="diamonds">Diamonds Boost</option>
+      <option value="petXp">Pet XP Boost</option>
       <option value="petChance">Pet Chance Boost</option>
       <option value="communityMoleDamage">DMG Globalnego Kreta</option>
       <option value="mega">Mega Event</option>
@@ -765,10 +848,11 @@
   </div>
 </div>
 
+<script src="assets/js/tutorial.js?v=polish-tutorial-1"></script>
 <script src="assets/js/core.js?v=enchant-system-1"></script>
 <script src="assets/js/patches.js?v=drop-count-1"></script>
-<script src="assets/js/firebase-auth.js?v=admin-weather-mega-1"></script>
-<script src="assets/js/audio.js?v=final-polish-1"></script>
+<script src="assets/js/firebase-auth.js?v=marketplace-polish-1"></script>
+<script src="assets/js/audio.js?v=marketplace-audio-1"></script>
 
 </body>
 </html>

@@ -59,6 +59,7 @@ let lastWeatherSlotKey = "";
 let weatherRollBusy = false;
 let lastWeatherClickableAt = 0;
 let lastFloodShipAt = 0;
+let lastFloodFishAt = 0;
 let weatherClickableBurstId = 0;
 
 game.endlessUpgrades = game.endlessUpgrades && typeof game.endlessUpgrades === "object" ? game.endlessUpgrades : {};
@@ -81,6 +82,9 @@ game.activeEnchantIds = Array.isArray(game.activeEnchantIds) ? game.activeEnchan
 game.enchantSeq = game.enchantSeq || 1;
 game.inventoryEggs = Array.isArray(game.inventoryEggs) ? game.inventoryEggs : [];
 game.inventoryEggSeq = game.inventoryEggSeq || 1;
+game.fruits = Array.isArray(game.fruits) ? game.fruits : [];
+game.fruitSeq = game.fruitSeq || 1;
+game.marketSlots = Math.max(1, Math.min(5, Math.floor(Number(game.marketSlots) || 1)));
 game.featureUnlocks = game.featureUnlocks && typeof game.featureUnlocks === "object" ? game.featureUnlocks : {};
 game.dailyStreak = game.dailyStreak && typeof game.dailyStreak === "object" ? game.dailyStreak : {};
 game.leaderboardStats = game.leaderboardStats && typeof game.leaderboardStats === "object" ? game.leaderboardStats : {};
@@ -707,6 +711,7 @@ function maybeSpawnWeatherClickable(weather){
   const now = Date.now();
   if(def.id === "flood"){
     maybeSpawnFloodShip(weather);
+    maybeSpawnFloodFish(weather);
     return;
   }
   const canSpawn = def.id === "items" || def.id === "tornado" || def.id === "diamonds";
@@ -810,6 +815,38 @@ function maybeSpawnFloodShip(weather){
   };
   document.body.appendChild(node);
   setTimeout(()=>node.remove(), 16000);
+}
+
+function maybeSpawnFloodFish(weather){
+  if(!weather?.mega) return;
+  const now = Date.now();
+  if(document.querySelectorAll(".weatherFish").length >= 2) return;
+  if(now - lastFloodFishAt < 9000 + Math.random() * 9000) return;
+  lastFloodFishAt = now;
+  const fish = weatherPickWeighted([
+    {id:"fish_small", weight:76, scale:.82, speed:10},
+    {id:"fish_deep", weight:23.3, scale:1, speed:12},
+    {id:"fish_ancient", weight:.7, scale:1.18, speed:15}
+  ]);
+  const def = PET_FRUIT_CATALOG[fish.id];
+  if(!def) return;
+  const node = document.createElement("button");
+  node.type = "button";
+  node.className = `weatherFish weatherFish-${fish.id}`;
+  if(Math.random() < .5) node.classList.add("fromRight");
+  node.style.top = `${63 + Math.random() * 22}%`;
+  node.style.setProperty("--fish-scale", fish.scale);
+  node.style.setProperty("--fish-speed", `${weatherRand(fish.speed - 2, fish.speed + 3).toFixed(1)}s`);
+  node.innerHTML = `<span>${def.icon}</span><small>${def.name}</small>`;
+  node.title = def.levelUp ? "+1 level dla peta" : `${def.name} do plecaka`;
+  node.onclick = () => {
+    addPetFruit(def.id, 1);
+    spawnPopup(`${def.name} zlapana!`, false, false, true);
+    node.remove();
+    update(true, true);
+  };
+  document.body.appendChild(node);
+  setTimeout(()=>node.remove(), 14000);
 }
 
 function grantWeatherAvatar(){
@@ -1773,6 +1810,7 @@ normalizeGameText();
 
 [
   {id:"diamondChance", name:"SZANSA NA DIAMENTY", desc:"Lekko wzmacnia aktualna szanse na drop diamentow.", base:180, scale:4.2, max:3},
+  {id:"autoPetXp", name:"AUTOCLICK NABIJA XP", desc:"Autoclick daje XP zalozonym petom: najpierw 30%, potem 70% normalnego kliku.", base:650, scale:4.5, max:2, category:"pety"},
   {id:"ultraKeepPets", name:"+1 PET PO ULTRA RDZENIU", desc:"Pozwala zabrac dodatkowego zwyklego peta przez Ultra Rdzen.", base:5200, scale:3.4, max:2}
 ].forEach(def=>{
   if(!diamondUpgradeCatalog.some(item=>item.id === def.id)){
@@ -1787,6 +1825,7 @@ for(let i = diamondUpgradeCatalog.length - 1; i >= 0; i--){
 
 Object.assign(upgradeInfoMap, {
   diamondChance:"Mnozy aktualna szanse dropu diamentow o 1%, 5% albo 10%.",
+  autoPetXp:"Po pierwszym zakupie autoclick daje 30% XP peta z normalnego klikniecia. Drugi poziom zwieksza to do 70%.",
   ultraKeepPets:"Zwieksza limit zwyklych petow, ktore mozesz zabrac po Ultra Rdzeniu."
 });
 
@@ -1833,6 +1872,8 @@ const POTION_TIERS = {
   3:{tier:3, roman:"III", mult:5, durationMs:15 * 60 * 1000, weight:8}
 };
 
+POTION_TYPES.petXp = {id:"petXp", label:"Pet XP", icon:"XP", color:"#f7fbff"};
+
 const ENCHANT_TIERS = {
   1:{tier:1, roman:"I", power:1, weight:80},
   2:{tier:2, roman:"II", power:1.75, weight:16},
@@ -1857,6 +1898,182 @@ Object.assign(ENCHANT_CATALOG.variants, {icon:"VAR"});
 Object.assign(ENCHANT_CATALOG.variantPlus, {icon:"VAR+"});
 Object.assign(ENCHANT_CATALOG.diamondDrop, {icon:"DIA"});
 Object.assign(ENCHANT_CATALOG.itemDrop, {icon:"DROP"});
+
+ENCHANT_CATALOG.petXp = {id:"petXp", name:"Ksiega Tresury", icon:"XP", color:"#f7fbff", effect:"petXp", base:0.04, desc:"Pety szybciej zdobywaja XP."};
+
+const PET_MAX_LEVEL = 100;
+const PET_MAX_XP = 1000000;
+const PET_XP_CURVE_POWER = 2.35;
+
+const PET_FRUIT_CATALOG = {
+  berry:{id:"berry", kind:"fruit", name:"Bialy Owoc", icon:"&#127827;", color:"#f7fbff", xp:100, rarity:"Zwykly"},
+  apple:{id:"apple", kind:"fruit", name:"Srebrne Jablko", icon:"&#127822;", color:"#dce7ff", xp:500, rarity:"Niepospolity"},
+  pear:{id:"pear", kind:"fruit", name:"Krysztalowa Gruszka", icon:"&#127824;", color:"#aef6ff", xp:1500, rarity:"Rzadki"},
+  melon:{id:"melon", kind:"fruit", name:"Zloty Arbuz", icon:"&#127817;", color:"#ffe27a", xp:4000, rarity:"Epicki"},
+  star:{id:"star", kind:"fruit", name:"Gwiezdny Owoc", icon:"&#11088;", color:"#ffec8b", xp:10000, rarity:"Legendarny"},
+  fish_small:{id:"fish_small", kind:"fish", name:"Mala Ryba XP", icon:"&#128031;", color:"#8fe6ff", xp:1000, rarity:"Rzadka"},
+  fish_deep:{id:"fish_deep", kind:"fish", name:"Glebinska Ryba", icon:"&#128032;", color:"#5aa8ff", xp:5000, rarity:"Bardzo rzadka"},
+  fish_ancient:{id:"fish_ancient", kind:"fish", name:"Starozytna Ryba", icon:"&#128033;", color:"#fff0a8", levelUp:true, rarity:"Ultra rzadka"}
+};
+
+function normalizePetLevelState(pet){
+  if(!pet) return pet;
+  pet.level = Math.max(1, Math.min(PET_MAX_LEVEL, Math.floor(Number(pet.level) || 1)));
+  pet.xp = Math.max(0, Math.min(PET_MAX_XP, Math.floor(Number(pet.xp) || 0)));
+  return pet;
+}
+
+function getPetLevelTotalXp(level){
+  const safeLevel = Math.max(1, Math.min(PET_MAX_LEVEL, Math.floor(Number(level) || 1)));
+  if(safeLevel <= 1) return 0;
+  if(safeLevel >= PET_MAX_LEVEL) return PET_MAX_XP;
+  return Math.floor(PET_MAX_XP * Math.pow((safeLevel - 1) / (PET_MAX_LEVEL - 1), PET_XP_CURVE_POWER));
+}
+
+function syncPetLevelFromXp(pet){
+  normalizePetLevelState(pet);
+  while(pet.level < PET_MAX_LEVEL && pet.xp >= getPetLevelTotalXp(pet.level + 1)) pet.level++;
+  return pet.level;
+}
+
+function getPetLevel(pet){
+  syncPetLevelFromXp(pet);
+  return pet?.level || 1;
+}
+
+function getPetLevelMultiplier(pet){
+  return Math.min(2, 1 + (getPetLevel(pet) - 1) / (PET_MAX_LEVEL - 1));
+}
+
+function getPetLevelBonusPercent(pet){
+  return Math.round((getPetLevelMultiplier(pet) - 1) * 100);
+}
+
+function formatPetXp(value){
+  return formatPoint(Math.max(0, Math.floor(Number(value) || 0)));
+}
+
+function getPetLevelProgress(pet){
+  normalizePetLevelState(pet);
+  syncPetLevelFromXp(pet);
+  if(pet.level >= PET_MAX_LEVEL) return {current:PET_MAX_XP, needed:PET_MAX_XP, percent:100, maxed:true};
+  const start = getPetLevelTotalXp(pet.level);
+  const end = getPetLevelTotalXp(pet.level + 1);
+  const current = Math.max(0, pet.xp - start);
+  const needed = Math.max(1, end - start);
+  return {current, needed, percent:Math.max(0, Math.min(100, current / needed * 100)), maxed:false};
+}
+
+function getPetLevelSummary(pet){
+  return `LEVEL ${getPetLevel(pet)} - +${getPetLevelBonusPercent(pet)}% statow!`;
+}
+
+function getPetLevelProgressHtml(pet){
+  const progress = getPetLevelProgress(pet);
+  const label = progress.maxed ? "MAX XP" : `${formatPetXp(progress.current)}/${formatPetXp(progress.needed)} xp`;
+  return `<div class="petLevelBlock"><span>${getPetLevelSummary(pet)}</span><div class="petLevelBar"><i style="width:${progress.percent.toFixed(1)}%"></i><em>${label}</em></div></div>`;
+}
+
+function getActivePetXpPotionMultiplier(){
+  cleanupActivePotions();
+  const active = (Array.isArray(game.activePotions) ? game.activePotions : [])
+    .filter(potion=>potion.type === "petXp" && potion.endsAt > Date.now())
+    .sort((a,b)=>(b.tier || 1) - (a.tier || 1))[0];
+  const tier = Math.max(0, Math.min(3, Number(active?.tier) || 0));
+  return [1, 1.08, 1.18, 1.30][tier] || 1;
+}
+
+function getPetXpBoostMultiplier(){
+  const enchantBonus = Math.max(0, getEnchantEffectTotal("petXp"));
+  const normalBoost = Math.min(1.67, getActivePetXpPotionMultiplier() * (1 + enchantBonus));
+  return normalBoost * getGlobalEventMultiplier("petXp");
+}
+
+function getAutoPetXpRatio(){
+  const level = Math.max(0, getMetaLevel("autoPetXp"));
+  if(level <= 0) return 0;
+  return level >= 2 ? 0.70 : 0.30;
+}
+
+function getPetXpFromClickSource(source="click"){
+  if(source === "auto") return 100 * getAutoPetXpRatio();
+  return 100;
+}
+
+function addPetXpToPet(pet, amount, options={}){
+  normalizePetLevelState(pet);
+  if(!pet || (pet.level >= PET_MAX_LEVEL && !options.forceLevel)) return 0;
+  if(options.forceLevel){
+    if(pet.level >= PET_MAX_LEVEL) return 0;
+    pet.level++;
+    pet.xp = Math.max(pet.xp || 0, getPetLevelTotalXp(pet.level));
+    return 1;
+  }
+  const gained = Math.max(0, Math.floor(Number(amount) || 0));
+  if(!gained) return 0;
+  pet.xp = Math.min(PET_MAX_XP, (pet.xp || 0) + gained);
+  const before = pet.level;
+  syncPetLevelFromXp(pet);
+  return pet.level - before;
+}
+
+function awardPetXpFromClick(source="click"){
+  const base = getPetXpFromClickSource(source);
+  if(base <= 0) return;
+  const active = getActivePets();
+  if(!active.length) return;
+  const gained = Math.max(1, Math.floor(base * getPetXpBoostMultiplier()));
+  let leveled = 0;
+  active.forEach(pet=>{ leveled += addPetXpToPet(pet, gained); });
+  if(leveled > 0) spawnPopup(`PET LEVEL +${leveled}`, false, false, true);
+}
+
+function makeFruitInstance(id){
+  const def = PET_FRUIT_CATALOG[id] || PET_FRUIT_CATALOG.berry;
+  return {uid:`fruit_${game.fruitSeq++}`, id:def.id, kind:def.kind};
+}
+
+function addPetFruit(id, amount=1){
+  const def = PET_FRUIT_CATALOG[id];
+  if(!def) return;
+  const count = Math.max(1, Math.floor(Number(amount) || 1));
+  for(let i = 0; i < count; i++) game.fruits.push(makeFruitInstance(id));
+  trackExist("items", `${def.kind}_${def.id}`, count);
+  showItemDropTile(def.kind, {icon:def.icon, color:def.color, name:def.name, amount:count});
+}
+
+function getFruitGroups(){
+  const groups = new Map();
+  (Array.isArray(game.fruits) ? game.fruits : []).forEach(item=>{
+    const def = PET_FRUIT_CATALOG[item.id];
+    if(!def) return;
+    const group = groups.get(def.id) || {key:def.id, def, items:[]};
+    group.items.push(item);
+    groups.set(def.id, group);
+  });
+  return Array.from(groups.values()).sort((a,b)=>{
+    if(a.def.kind !== b.def.kind) return a.def.kind === "fish" ? 1 : -1;
+    return (b.def.xp || 999999) - (a.def.xp || 999999);
+  });
+}
+
+function useFruitOnPet(fruitId, petUid){
+  const def = PET_FRUIT_CATALOG[fruitId];
+  const pet = getOwnedPets().find(item=>item.uid === petUid);
+  const fruit = (Array.isArray(game.fruits) ? game.fruits : []).find(item=>item.id === fruitId);
+  if(!def || !pet || !fruit) return;
+  game.fruits = game.fruits.filter(item=>item.uid !== fruit.uid);
+  trackExist("items", `${def.kind}_${def.id}`, -1);
+  if(def.levelUp){
+    const gained = addPetXpToPet(pet, 0, {forceLevel:true});
+    spawnPopup(gained ? `${def.name}: LEVEL +1` : "Pet ma juz MAX!", false, false, true);
+  }else{
+    const levelUps = addPetXpToPet(pet, def.xp || 0);
+    spawnPopup(`${def.name}: +${formatPetXp(def.xp)} XP${levelUps ? `, LEVEL +${levelUps}` : ""}`, false, false, true);
+  }
+  game.uiDirty = true;
+  update(true, true);
+}
 
 function updateFeatureUnlocks(){
   game.featureUnlocks = game.featureUnlocks && typeof game.featureUnlocks === "object" ? game.featureUnlocks : {};
@@ -1950,6 +2167,15 @@ BAG_CATALOG.tornado = {
 BAG_CATALOG.weak.rewards.splice(1, 0, {label:"Enchant tier I", chance:2, type:"enchant", tier:1});
 BAG_CATALOG.medium.rewards.splice(3, 0, {label:"Enchant tier I", chance:2, type:"enchant", tier:1});
 BAG_CATALOG.best.rewards.splice(8, 0, {label:"Enchant tier II", chance:1, type:"enchant", tier:2});
+BAG_CATALOG.weak.rewards.push({label:"Bialy Owoc", chance:1.2, type:"fruit", fruit:"berry"});
+BAG_CATALOG.weak.rewards.push({label:"Srebrne Jablko", chance:0.25, type:"fruit", fruit:"apple"});
+BAG_CATALOG.medium.rewards.push({label:"Bialy Owoc", chance:1.8, type:"fruit", fruit:"berry"});
+BAG_CATALOG.medium.rewards.push({label:"Krysztalowa Gruszka", chance:0.35, type:"fruit", fruit:"pear"});
+BAG_CATALOG.best.rewards.push({label:"Srebrne Jablko", chance:1.6, type:"fruit", fruit:"apple"});
+BAG_CATALOG.best.rewards.push({label:"Zloty Arbuz", chance:0.25, type:"fruit", fruit:"melon"});
+BAG_CATALOG.best.rewards.push({label:"Gwiezdny Owoc", chance:0.03, type:"fruit", fruit:"star"});
+BAG_CATALOG.water.rewards.push({label:"Mala Ryba XP", chance:0.5, type:"fruit", fruit:"fish_small"});
+BAG_CATALOG.tornado.rewards.push({label:"Krysztalowa Gruszka", chance:0.35, type:"fruit", fruit:"pear"});
 
 const FREE_REWARDS_OLD = [
   {time:60, icon:"🪙", title:"Monety", desc:"Startowy zastrzyk monet", type:"coins", amount:45},
@@ -2830,11 +3056,20 @@ function rollPotionType(){
 function getPotionName(potion){
   const type = POTION_TYPES[potion?.type] || POTION_TYPES.money;
   const tier = POTION_TIERS[potion?.tier] || POTION_TIERS[1];
-  return `${type.label} x${tier.mult} T${tier.roman}`;
+  return `${type.label} ${getPotionEffectLabel(type.id, tier.tier)} T${tier.roman}`;
 }
 
 function getPotionDurationLabel(ms){
   return `${Math.round(ms / 60000)} min`;
+}
+
+function getPotionEffectLabel(typeId, tierNumber){
+  if(typeId === "petXp"){
+    const mult = [1, 1.08, 1.18, 1.30][Math.max(0, Math.min(3, Number(tierNumber) || 0))] || 1;
+    return `+${Math.round((mult - 1) * 100)}% XP`;
+  }
+  const tier = POTION_TIERS[tierNumber] || POTION_TIERS[1];
+  return `x${tier.mult}`;
 }
 
 function tryDropPotion(source="click"){
@@ -2857,8 +3092,37 @@ function tryDropPotion(source="click"){
   game.uiDirty = true;
 }
 
+function getFruitDropChance(source="click"){
+  const base = source === "auto" ? 0.00008 : 0.00022;
+  return base * Math.min(3, getEnchantEffectTotal("itemDrop", true)) * (1 + getWeatherChanceBoost("itemDrop"));
+}
+
+function rollClickFruitId(){
+  const pool = [
+    {id:"berry", weight:620},
+    {id:"apple", weight:240},
+    {id:"pear", weight:100},
+    {id:"melon", weight:36},
+    {id:"star", weight:4}
+  ];
+  const total = pool.reduce((sum, item)=>sum + item.weight, 0);
+  let roll = Math.random() * total;
+  for(const item of pool){
+    roll -= item.weight;
+    if(roll <= 0) return item.id;
+  }
+  return "berry";
+}
+
+function tryDropPetFruit(source="click"){
+  if(Math.random() >= getFruitDropChance(source)) return;
+  addPetFruit(rollClickFruitId(), 1);
+  spawnPopup("Owoc peta!", false, false, true);
+}
+
 const maybeDropDiamondBeforePotions = maybeDropDiamond;
 maybeDropDiamond = function(source="click"){
+  awardPetXpFromClick(source);
   const diamondsBefore = game.diamonds || 0;
   maybeDropDiamondBeforePotions(source);
   const diamondsAfterBase = game.diamonds || 0;
@@ -2874,6 +3138,7 @@ maybeDropDiamond = function(source="click"){
   }
   if(hasPotionFeature()) tryDropPotion(source);
   tryDropEnchant(source);
+  tryDropPetFruit(source);
   tryWeatherSpecialDrops(source);
 };
 
@@ -2893,7 +3158,7 @@ function getGlobalEvent(type){
 
 function getGlobalEventMultiplier(type){
   const event = getGlobalEvent(type);
-  return event && event.mode === "multiplier" ? Math.max(1, Number(event.value) || 1) : 1;
+  return event && (event.mode === "multiplier" || event.mode === "percent") ? Math.max(1, Number(event.value) || 1) : 1;
 }
 
 function getGlobalEventChance(type){
@@ -3258,9 +3523,10 @@ function getUltraCoreSummary(){
 function getPetBonusTotals(){
   const resonance = getEndlessPetMultiplier();
   return getActivePets().reduce((acc, pet)=>{
-    acc.click += (pet.click || 0) * resonance;
-    acc.multi += (pet.multi || 0) * resonance;
-    acc.diamond += getPetDiamondBonusValue(pet) * resonance;
+    const levelMult = getPetLevelMultiplier(pet);
+    acc.click += (pet.click || 0) * resonance * levelMult;
+    acc.multi += (pet.multi || 0) * resonance * levelMult;
+    acc.diamond += getPetDiamondBonusValue(pet) * resonance * levelMult;
     return acc;
   }, {click:0, multi:0, diamond:0});
 }
@@ -4953,7 +5219,8 @@ function getPetDisplayNameWithVariant(baseName, variant, shiny){
 }
 
 function getPetPowerRank(pet){
-  return (pet.click || 0) * 1000 + Math.round((pet.multi || 0) * 10000) + Math.round(getPetDiamondBonusValue(pet) * 8000);
+  const levelMult = getPetLevelMultiplier(pet);
+  return ((pet.click || 0) * 1000 + Math.round((pet.multi || 0) * 10000) + Math.round(getPetDiamondBonusValue(pet) * 8000)) * levelMult;
 }
 
 function rollPetVariant(){
@@ -5065,9 +5332,11 @@ function petVisualClass(pet){
 function groupPetsByTemplate(){
   const groups = new Map();
   getOwnedPets().forEach(pet=>{
-    const key = getPetVariantKey(pet);
+    normalizePetLevelState(pet);
+    const key = `pet:${pet.uid}`;
     const group = groups.get(key) || {
       key,
+      baseKey:getPetVariantKey(pet),
       templateId: pet.templateId,
       variant: pet.variant || "normal",
       shiny: !!pet.shiny,
@@ -5091,7 +5360,9 @@ function groupPetsByTemplate(){
 }
 
 function togglePetStack(groupKey){
-  const stack = getOwnedPets().filter(p=>getPetVariantKey(p)===groupKey || p.templateId===groupKey);
+  const stack = getOwnedPets().filter(p=>{
+    return `pet:${p.uid}` === groupKey || getPetVariantKey(p) === groupKey || p.templateId === groupKey;
+  });
   if(!stack.length) return;
 
   const next = stack.find(p=>!game.activePetIds.includes(p.uid));
@@ -5152,7 +5423,8 @@ function renderActivePetSlots(){
           <span class="activePetSlotIndex">${index + 1}</span>
           <span class="petCircle ${getPetVisualClasses(pet)}" style="background:${petVisualClass(pet)}"></span>
           <span class="activePetSlotName">${pet.displayName || pet.name}</span>
-          <small>${getPetVariantLabel(pet)} | ${pet.rarity}</small>
+          <small>${getPetVariantLabel(pet)} | ${pet.rarity}<br>${getPetLevelSummary(pet)}</small>
+          ${getPetLevelProgressHtml(pet)}
         </button>
       ` : `
         <div class="activePetSlot empty">
@@ -5214,7 +5486,7 @@ function renderPetPanel(){
     const protectedItem = visibleItems.some(isProtectedPet);
     const stack = document.createElement("div");
     stack.className = "petCard petInventoryCard " + (group.secret ? "raritySecret" : getRarityClass(group.rarity)) + (selectedCount ? " petSelected" : "");
-    stack.title = appendExistTitle(getPetPowerSummary(pet), "pets", pet.templateId);
+    stack.title = appendExistTitle(`${getPetPowerSummary(pet)} | ${getPetLevelSummary(pet)}`, "pets", pet.templateId);
     stack.onclick = ()=>togglePetStack(group.key);
     const variantClass = getPetVariantClass(pet);
     const label = getPetVariantLabel(pet);
@@ -5227,9 +5499,10 @@ function renderPetPanel(){
         <div class="petCircle ${getPetVisualClasses(pet)}" style="background:${petVisualClass(pet)}"></div>
         <div class="petMeta">
           <b>${group.name}</b>
-          <small>${group.rarity}<br>${getPetPowerSummary(pet)}</small>
+          <small>${group.rarity}<br>${getPetPowerSummary(pet)}<br>${getPetLevelSummary(pet)}</small>
         </div>
       </div>
+      ${getPetLevelProgressHtml(pet)}
       <div class="petBadge">Kliknij, aby zalozyc</div>
     `;
     if(protectedItem) stack.querySelector("[data-delete-pet]")?.remove();
@@ -5245,7 +5518,7 @@ function renderPetPanel(){
 }
 
 setInventoryTab = function(tab){
-  game.inventoryTab = tab === "skins" ? "skins" : tab === "potions" ? "potions" : tab === "bags" ? "bags" : tab === "eggs" ? "eggs" : tab === "enchants" ? "enchants" : "pets";
+  game.inventoryTab = tab === "skins" ? "skins" : tab === "potions" ? "potions" : tab === "bags" ? "bags" : tab === "eggs" ? "eggs" : tab === "fruits" ? "fruits" : tab === "enchants" ? "enchants" : "pets";
   game.uiDirty = true;
   update(true, true);
 };
@@ -5274,7 +5547,7 @@ function usePotionGroup(groupKey){
   trackExist("items", `potion_${type.id}_t${tier.tier}`, -1);
   addActivePotionBuff(type.id, tier.tier, tier.durationMs);
   game.uiDirty = true;
-  spawnPopup(`${type.icon} ${type.label} x${tier.mult}`, false, false, true);
+  spawnPopup(`${type.icon} ${type.label} ${getPotionEffectLabel(type.id, tier.tier)}`, false, false, true);
   update(true, true);
 }
 
@@ -5313,7 +5586,7 @@ function renderPotionPanel(){
       <div class="potionStack">x${group.items.length}</div>
       <div class="potionIcon"><span>${type.icon}</span></div>
       <div class="potionMeta">
-        <b>${type.label} x${tier.mult}</b>
+        <b>${type.label} ${getPotionEffectLabel(type.id, tier.tier)}</b>
         <small>Tier ${tier.roman} | ${getPotionDurationLabel(tier.durationMs)}</small>
       </div>
       <div class="potionUse">Uzyj</div>
@@ -5375,6 +5648,13 @@ function applyBagReward(reward){
     showItemDropTile("egg", {icon:"&#129370;", color:"#7ee7ff", name:"Wodne Jajko"});
     return "Wodne Jajko";
   }
+  if(reward.type === "fruit"){
+    const fruitId = reward.fruit || "berry";
+    const def = PET_FRUIT_CATALOG[fruitId] || PET_FRUIT_CATALOG.berry;
+    const amount = Math.max(1, Math.floor(Number(reward.amount) || 1));
+    addPetFruit(fruitId, amount);
+    return `${def.name} x${amount}`;
+  }
   if(reward.type === "weatherPet"){
     grantWeatherPet(reward.petType || "tornado");
     return reward.label || "Event pet";
@@ -5425,6 +5705,10 @@ function getRewardDisplayText(reward, rewardText=""){
   if(reward.type === "bag"){
     const bag = BAG_CATALOG[reward.bag || "weak"] || BAG_CATALOG.weak;
     return bag.name;
+  }
+  if(reward.type === "fruit"){
+    const def = PET_FRUIT_CATALOG[reward.fruit || "berry"] || PET_FRUIT_CATALOG.berry;
+    return def.name;
   }
   if(reward.type === "enchant") return `Enchant T${reward.tier || 1}`;
   return reward.label || "Item";
@@ -5718,6 +6002,10 @@ function getRewardIcon(reward){
   if(reward.type === "weatherPet") return "&#127786;";
   if(reward.type === "enchant") return "&#128214;";
   if(reward.type === "shells") return "&#128026;";
+  if(reward.type === "fruit"){
+    const def = PET_FRUIT_CATALOG[reward.fruit || "berry"] || PET_FRUIT_CATALOG.berry;
+    return def.icon;
+  }
   return "&#10022;";
 }
 
@@ -5729,6 +6017,10 @@ function getRewardColor(reward){
   if(reward.type === "weatherPet") return "#d9f3ff";
   if(reward.type === "enchant") return "#d8b6ff";
   if(reward.type === "shells") return "#7ee7ff";
+  if(reward.type === "fruit"){
+    const def = PET_FRUIT_CATALOG[reward.fruit || "berry"] || PET_FRUIT_CATALOG.berry;
+    return def.color;
+  }
   return "#bdf9ff";
 }
 
@@ -5859,7 +6151,7 @@ function renderPotionBuffHud(){
       const node = hud.children[index];
       const timer = node?.querySelector(".potionHudInfo span");
       if(timer) timer.textContent = `${minutes}:${seconds}`;
-      if(node) node.title = `${type.label} x${tier.mult} | Tier ${tier.roman} | zostalo ${minutes}:${seconds}`;
+      if(node) node.title = `${type.label} ${getPotionEffectLabel(type.id, tier.tier)} | Tier ${tier.roman} | zostalo ${minutes}:${seconds}`;
     });
     return;
   }
@@ -5871,12 +6163,12 @@ function renderPotionBuffHud(){
     const totalSeconds = Math.ceil(left / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = String(totalSeconds % 60).padStart(2, "0");
-    const tooltip = `${type.label} x${tier.mult} | Tier ${tier.roman} | zostalo ${minutes}:${seconds}`;
+    const tooltip = `${type.label} ${getPotionEffectLabel(type.id, tier.tier)} | Tier ${tier.roman} | zostalo ${minutes}:${seconds}`;
     return `
       <div class="potionHudBuff potionTier${tier.tier} potionType-${type.id}" style="--potion-color:${type.color}" title="${tooltip}">
         <div class="potionHudIcon"><span>${type.icon}</span></div>
         <div class="potionHudInfo">
-          <b>x${tier.mult}</b>
+          <b>${getPotionEffectLabel(type.id, tier.tier)}</b>
           <span>${minutes}:${seconds}</span>
         </div>
       </div>
@@ -5884,14 +6176,69 @@ function renderPotionBuffHud(){
   }).join("");
 }
 
+function renderFruitPanel(){
+  const fruitListEl = document.getElementById("fruitList");
+  if(!fruitListEl) return;
+  fruitListEl.innerHTML = "";
+  const title = petPanel.querySelector(".slideHeader span");
+  const groups = getFruitGroups();
+  const activePets = getActivePets();
+  const header = document.createElement("div");
+  header.className = "inventorySectionHeader";
+  header.innerHTML = `<b>Owoce i ryby</b><span>${game.fruits.length}</span>`;
+  fruitListEl.appendChild(header);
+  if(!groups.length){
+    const empty = document.createElement("div");
+    empty.className = "petCard locked petEmpty";
+    empty.innerHTML = `<b>Brak owocow</b><small>Rzadko wypadaja z klikow, sakiewek i mega powodzi.</small>`;
+    fruitListEl.appendChild(empty);
+    if(title) title.textContent = "Owoce: 0";
+    return;
+  }
+  groups.forEach(group=>{
+    const def = group.def;
+    const card = document.createElement("div");
+    card.className = `petCard fruitCard fruit-${def.kind}`;
+    card.style.setProperty("--fruit-color", def.color);
+    const effect = def.levelUp ? "+1 level natychmiast" : `+${formatPetXp(def.xp)} XP`;
+    const targets = activePets.length ? activePets.map(pet=>`
+      <button type="button" class="fruitTargetBtn" data-fruit-id="${def.id}" data-pet-uid="${pet.uid}">
+        ${pet.displayName || pet.name} <span>Lv ${getPetLevel(pet)}</span>
+      </button>
+    `).join("") : `<small class="fruitNoTarget">Zaloz peta, zeby uzyc.</small>`;
+    card.innerHTML = `
+      <div class="potionStack">x${group.items.length}</div>
+      <div class="petTop">
+        <div class="fruitIcon" style="background:${def.color}">${def.icon}</div>
+        <div class="petMeta">
+          <b>${def.name}</b>
+          <small>${def.rarity} | ${effect}</small>
+        </div>
+      </div>
+      <div class="fruitTargets">${targets}</div>
+    `;
+    card.querySelectorAll("[data-fruit-id]").forEach(button=>{
+      button.onclick = (event)=>{
+        event.preventDefault();
+        event.stopPropagation();
+        useFruitOnPet(button.dataset.fruitId, button.dataset.petUid);
+      };
+    });
+    fruitListEl.appendChild(card);
+  });
+  if(title) title.textContent = `Owoce: ${game.fruits.length}`;
+}
+
 renderInventoryPanel = function(){
-  const tab = game.inventoryTab === "skins" ? "skins" : game.inventoryTab === "potions" ? "potions" : game.inventoryTab === "bags" ? "bags" : game.inventoryTab === "eggs" ? "eggs" : game.inventoryTab === "enchants" ? "enchants" : "pets";
+  const tab = game.inventoryTab === "skins" ? "skins" : game.inventoryTab === "potions" ? "potions" : game.inventoryTab === "bags" ? "bags" : game.inventoryTab === "eggs" ? "eggs" : game.inventoryTab === "fruits" ? "fruits" : game.inventoryTab === "enchants" ? "enchants" : "pets";
   const potionListEl = document.getElementById("potionList");
   const potionTabBtn = document.getElementById("potionTabBtn");
   const bagListEl = document.getElementById("bagList");
   const bagTabBtn = document.getElementById("bagTabBtn");
   const inventoryEggList = document.getElementById("inventoryEggList");
   const inventoryEggTabBtn = document.getElementById("inventoryEggTabBtn");
+  const fruitListEl = document.getElementById("fruitList");
+  const fruitTabBtn = document.getElementById("fruitTabBtn");
   const enchantListEl = document.getElementById("enchantList");
   const enchantTabBtn = document.getElementById("enchantTabBtn");
   petList.style.display = tab === "pets" ? "block" : "none";
@@ -5899,6 +6246,7 @@ renderInventoryPanel = function(){
   if(potionListEl) potionListEl.style.display = tab === "potions" ? "block" : "none";
   if(bagListEl) bagListEl.style.display = tab === "bags" ? "block" : "none";
   if(inventoryEggList) inventoryEggList.style.display = tab === "eggs" ? "block" : "none";
+  if(fruitListEl) fruitListEl.style.display = tab === "fruits" ? "block" : "none";
   if(enchantListEl) enchantListEl.style.display = tab === "enchants" ? "block" : "none";
   petActions.style.display = tab === "pets" ? "flex" : "none";
   petTabBtn.classList.toggle("active", tab === "pets");
@@ -5906,12 +6254,14 @@ renderInventoryPanel = function(){
   potionTabBtn?.classList.toggle("active", tab === "potions");
   bagTabBtn?.classList.toggle("active", tab === "bags");
   inventoryEggTabBtn?.classList.toggle("active", tab === "eggs");
+  fruitTabBtn?.classList.toggle("active", tab === "fruits");
   enchantTabBtn?.classList.toggle("active", tab === "enchants");
 
   if(tab === "skins") renderSkinPanel();
   else if(tab === "potions") renderPotionPanel();
   else if(tab === "bags") renderBagPanel();
   else if(tab === "eggs") renderInventoryEggPanel();
+  else if(tab === "fruits") renderFruitPanel();
   else if(tab === "enchants") renderEnchantPanel();
   else renderPetPanel();
   renderPotionBuffHud();
@@ -5921,13 +6271,14 @@ let inventoryPanelRenderSignature = "";
 function getInventoryPanelSignature(){
   return [
     game.inventoryTab || "pets",
-    (Array.isArray(game.pets) ? game.pets : []).map(pet=>`${pet.uid}:${pet.templateId}:${pet.variant}:${pet.shiny ? 1 : 0}`).join(","),
+    (Array.isArray(game.pets) ? game.pets : []).map(pet=>`${pet.uid}:${pet.templateId}:${pet.variant}:${pet.shiny ? 1 : 0}:${pet.level || 1}:${Math.floor(pet.xp || 0)}`).join(","),
     (Array.isArray(game.activePetIds) ? game.activePetIds : []).join(","),
     (Array.isArray(game.skins) ? game.skins : []).map(skin=>`${skin.uid}:${skin.templateId}`).join(","),
     game.activeSkinId || "",
     (Array.isArray(game.potions) ? game.potions : []).map(potion=>`${potion.uid}:${potion.type}:${potion.tier}`).join(","),
     (Array.isArray(game.bags) ? game.bags : []).map(bag=>`${bag.uid}:${bag.id}`).join(","),
     (Array.isArray(game.inventoryEggs) ? game.inventoryEggs : []).map(egg=>`${egg.uid}:${egg.eggId}`).join(","),
+    (Array.isArray(game.fruits) ? game.fruits : []).map(fruit=>`${fruit.uid}:${fruit.id}`).join(","),
     (Array.isArray(game.enchants) ? game.enchants : []).map(enchant=>`${enchant.uid}:${enchant.type}:${enchant.tier}`).join(","),
     (Array.isArray(game.activeEnchantIds) ? game.activeEnchantIds : []).join(",")
   ].join("|");
@@ -7019,7 +7370,7 @@ function getDiamondUpgradeCategory(def){
   if(["eggBatch","autoEgg","hatchSpeed"].includes(def.id)){
     return "jajka";
   }
-  if(["petSlots","ultraKeepPets","enchantSlots"].includes(def.id)){
+  if(["petSlots","ultraKeepPets","enchantSlots","autoPetXp"].includes(def.id)){
     return "pety";
   }
   if(["goldPetChance","diamondPetChance","shinyPetChance"].includes(def.id)){
@@ -7086,6 +7437,7 @@ function makeDiamondUpgradeCard(def){
   else if(def.id === "goldPetChance") extra = `Szansa: ${(getGoldPetDropChance() * 100).toFixed(2)}%`;
   else if(def.id === "diamondPetChance") extra = `Szansa: ${(getDiamondPetDropChance() * 100).toFixed(2)}%`;
   else if(def.id === "shinyPetChance") extra = `Szansa: ${(getShinyPetDropChance() * 100).toFixed(2)}%`;
+  else if(def.id === "autoPetXp") extra = level <= 0 ? "Autoclick XP: OFF" : `Autoclick XP: ${Math.round(getAutoPetXpRatio() * 100)}% normalnego kliku`;
 
   let status = "Gotowe";
   if(rebirthLocked) status = `Od rebirth ${def.unlockAtRebirth}`;
@@ -7096,10 +7448,11 @@ function makeDiamondUpgradeCard(def){
   const priceLabel = maxed ? "Gotowe" : formatDiamond(price);
   const top = document.createElement("div");
   top.className = "eggTop";
+  const displayName = def.id === "autoPetXp" && level > 0 ? "WIECEJ XP Z AUTOCLICKA" : def.name;
   top.innerHTML = `
     <div class="eggCircle" style="background:linear-gradient(135deg,#5ad9ff,#3466ff)"></div>
     <div class="eggMeta">
-      <b>${def.name}</b>
+      <b>${displayName}</b>
       <small>${def.desc}<br>${extra}</small>
     </div>
   `;
@@ -8000,6 +8353,7 @@ function update(save=true, renderShopNow=true){
   if(save && typeof shouldWriteGuestSave === "function" && shouldWriteGuestSave()){
     localStorage.setItem("guestSave", JSON.stringify(game));
   }
+  if(typeof applyPlText === "function") applyPlText();
 }
 
 function refreshPanelDockState(){

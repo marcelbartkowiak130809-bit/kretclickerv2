@@ -128,6 +128,11 @@
     panel(){ tone({key:"panel", freq:430, endFreq:560, type:"sine", duration:0.055, gain:0.018, cooldown:180}); },
     close(){ tone({key:"close", freq:360, endFreq:280, type:"sine", duration:0.05, gain:0.012, cooldown:140}); },
     reward(){ chord("reward", [520, 780, 1040], {type:"sine", duration:0.12, gain:0.034, cooldown:520, stagger:55}); },
+    marketOpen(){ chord("marketOpen", [420, 560, 760], {type:"sine", duration:0.08, gain:0.022, cooldown:240, stagger:32}); },
+    marketClose(){ tone({key:"marketClose", freq:420, endFreq:260, type:"sine", duration:0.06, gain:0.014, cooldown:180}); },
+    marketList(){ chord("marketList", [460, 690], {type:"triangle", duration:0.08, gain:0.026, cooldown:320, stagger:42}); },
+    marketBuy(){ chord("marketBuy", [540, 820, 1120], {type:"sine", duration:0.1, gain:0.032, cooldown:420, stagger:42}); noise({key:"marketBuyCoins", duration:0.055, gain:0.018, filter:4200, cooldown:420}); },
+    marketSold(){ chord("marketSold", [660, 920, 1320, 1760], {type:"sine", duration:0.15, gain:0.038, cooldown:650, stagger:46}); noise({key:"marketSoldCoins", duration:0.09, gain:0.024, filter:5200, cooldown:650}); },
     alert(){ tone({key:"alert", freq:620, endFreq:420, type:"triangle", duration:0.12, gain:0.032, cooldown:380}); },
     setVolume,
     setMuted,
@@ -156,7 +161,7 @@
       #audioControl input::-moz-range-track{height:8px;border:0;border-radius:999px;background:linear-gradient(90deg,rgba(117,231,255,.85),rgba(255,207,102,.75))}
       #audioControl input::-moz-range-thumb{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.86);background:#101829;box-shadow:0 4px 12px rgba(0,0,0,.42),0 0 10px rgba(117,231,255,.42)}
       #audioControl.muted{opacity:.72}
-      @media (max-width:640px){#audioControl{padding:7px;gap:6px}#audioControl input{width:70px}}
+      @media (max-width:640px){#audioControl{right:max(8px,env(safe-area-inset-right));bottom:calc(132px + env(safe-area-inset-bottom));padding:7px;gap:6px;z-index:890}#audioControl input{width:70px}}
     `;
     document.head.appendChild(style);
     const root = document.createElement("div");

@@ -3188,6 +3188,408 @@ h1{
   gap:14px;
 }
 
+.marketplaceView{
+  position:fixed;
+  inset:0;
+  z-index:2600;
+  display:none;
+  padding:18px;
+  color:#fff;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(95,215,255,.18), transparent 34%),
+    radial-gradient(circle at 82% 20%, rgba(255,210,93,.14), transparent 32%),
+    linear-gradient(145deg,#0a1020,#12172a 55%,#070a12);
+  overflow:auto;
+}
+.marketplaceView.open{
+  display:block;
+  animation:marketViewIn .24s ease both;
+}
+.marketplaceView.closing{
+  display:block;
+  animation:marketViewOut .22s ease both;
+}
+.marketplaceShell{
+  width:min(1180px, 100%);
+  min-height:calc(100vh - 36px);
+  margin:0 auto;
+  display:grid;
+  grid-template-rows:auto auto auto 1fr;
+  gap:12px;
+}
+.marketplaceView.open .marketplaceShell{
+  animation:marketShellIn .28s cubic-bezier(.18,.88,.28,1.08) both;
+}
+.marketplaceView.closing .marketplaceShell{
+  animation:marketShellOut .2s ease both;
+}
+.marketplaceTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+  padding:14px 16px;
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.16);
+  background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.045));
+  box-shadow:0 18px 44px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.16);
+}
+.marketplaceTop span{
+  display:block;
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:.14em;
+  color:#8eeaff;
+}
+.marketplaceTop h2{
+  margin:3px 0 0;
+  font-size:30px;
+  line-height:1;
+}
+.marketplaceTopActions,
+.marketBuyActions{
+  display:flex;
+  gap:8px;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.marketDiamondPill{
+  min-width:118px;
+  padding:8px 12px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.16);
+  background:linear-gradient(135deg,rgba(113,230,255,.18),rgba(255,215,91,.12));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 10px 22px rgba(0,0,0,.18);
+}
+.marketDiamondPill small{
+  display:block;
+  font-size:9px;
+  font-weight:1000;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:#8eeaff;
+}
+.marketDiamondPill b{
+  display:block;
+  margin-top:2px;
+  font-size:16px;
+  line-height:1;
+}
+.marketplaceTopActions button,
+.marketBuyActions button,
+.marketTabs button,
+.marketActionBtn,
+.marketSlotBtn{
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:14px;
+  padding:10px 12px;
+  color:#fff;
+  font-weight:1000;
+  background:rgba(255,255,255,.08);
+  cursor:pointer;
+}
+#marketBackBtn,
+#marketBuyConfirm,
+.marketActionBtn.buy{
+  background:linear-gradient(135deg,#48d6ff,#5d75ff);
+}
+.marketActionBtn.sell,
+.marketSlotBtn{
+  background:linear-gradient(135deg,#ffcf68,#ff7f4f);
+}
+.marketTabs{
+  display:flex;
+  gap:8px;
+}
+.marketTabs button.active{
+  background:linear-gradient(135deg,#fff,#9fe8ff);
+  color:#07101e;
+}
+.marketStatus{
+  min-height:20px;
+  font-size:12px;
+  font-weight:900;
+  opacity:.86;
+}
+.marketPanel{
+  display:grid;
+  gap:12px;
+}
+.marketGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:10px;
+}
+.marketCard,
+.marketCreateBox,
+.marketSlotCard{
+  position:relative;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:18px;
+  padding:12px;
+  background:linear-gradient(145deg,rgba(255,255,255,.11),rgba(255,255,255,.045));
+  box-shadow:0 16px 40px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.12);
+  animation:marketCardIn .18s ease both;
+}
+.marketItemTop{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.marketIcon{
+  width:54px;
+  height:54px;
+  flex:0 0 54px;
+  display:grid;
+  place-items:center;
+  border-radius:16px;
+  font-size:26px;
+  font-weight:1000;
+  color:#08101f;
+  background:linear-gradient(135deg,#fff,#9fe8ff);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.36), 0 12px 22px rgba(0,0,0,.2);
+}
+.marketItemMeta b{
+  display:block;
+  font-size:15px;
+  line-height:1.15;
+}
+.marketItemMeta small,
+.marketCard p{
+  display:block;
+  margin:4px 0 0;
+  font-size:11px;
+  line-height:1.35;
+  opacity:.78;
+}
+.marketPrice{
+  margin-top:10px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  font-size:12px;
+  font-weight:1000;
+}
+.marketCreateBox{
+  display:grid;
+  gap:10px;
+}
+.marketFormRow{
+  display:grid;
+  gap:5px;
+}
+.marketFormRow label{
+  font-size:10px;
+  font-weight:1000;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  opacity:.76;
+}
+.marketFormRow select,
+.marketFormRow input{
+  width:100%;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:12px;
+  padding:10px;
+  color:#fff;
+  background:rgba(8,12,24,.82);
+  font-weight:900;
+}
+.marketMineTop{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:8px;
+}
+.marketSlotCard.locked{
+  opacity:.72;
+}
+.marketBuyModal{
+  position:fixed;
+  inset:0;
+  z-index:2700;
+  display:none;
+  place-items:center;
+  padding:16px;
+  background:rgba(2,5,12,.72);
+  backdrop-filter:blur(8px);
+}
+.marketBuyModal.open{
+  display:grid;
+}
+.marketBuyModal.open .marketBuyCard{
+  animation:marketModalIn .18s cubic-bezier(.18,.88,.28,1.08) both;
+}
+.marketBuyCard{
+  width:min(420px, 100%);
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:24px;
+  padding:16px;
+  color:#fff;
+  background:linear-gradient(145deg,#141b31,#070b16);
+  box-shadow:0 28px 90px rgba(0,0,0,.55);
+}
+.marketBuyTop{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+}
+.marketBuyTop span{
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:.12em;
+  color:#8eeaff;
+}
+.marketBuyTop h3{
+  margin:3px 0 0;
+}
+#marketBuyClose{
+  border:0;
+  border-radius:12px;
+  width:34px;
+  height:34px;
+  color:#fff;
+  background:rgba(255,255,255,.1);
+}
+.marketRangeLabel{
+  display:grid;
+  gap:8px;
+  margin:14px 0;
+  font-weight:1000;
+}
+.marketRangeLabel input{
+  width:100%;
+}
+.marketBuyTotal{
+  margin:8px 0 14px;
+  padding:10px 12px;
+  border-radius:14px;
+  background:rgba(255,255,255,.08);
+  font-weight:1000;
+}
+
+.marketSaleModal{
+  position:fixed;
+  inset:0;
+  z-index:2750;
+  display:none;
+  place-items:center;
+  padding:16px;
+  background:rgba(2,5,12,.72);
+  backdrop-filter:blur(8px);
+}
+.marketSaleModal.open{
+  display:grid;
+}
+.marketSaleModal.open .marketSaleCard{
+  animation:marketModalIn .22s cubic-bezier(.18,.88,.28,1.08) both;
+}
+.marketSaleCard{
+  width:min(380px, 100%);
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:24px;
+  padding:18px;
+  text-align:center;
+  color:#fff;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,226,109,.28), transparent 44%),
+    linear-gradient(145deg,#151d35,#070b16);
+  box-shadow:0 30px 92px rgba(0,0,0,.58), inset 0 1px 0 rgba(255,255,255,.14);
+}
+.marketSaleIcon{
+  width:64px;
+  height:64px;
+  margin:0 auto 10px;
+  display:grid;
+  place-items:center;
+  border-radius:20px;
+  font-size:34px;
+  background:linear-gradient(135deg,#fff,#96ecff 46%,#ffd86b);
+  box-shadow:0 14px 34px rgba(90,210,255,.24);
+  animation:marketCoinPop .8s ease both;
+}
+.marketSaleCard h3{
+  margin:0 0 8px;
+  font-size:24px;
+}
+.marketSaleCard p{
+  margin:0 0 16px;
+  font-size:13px;
+  font-weight:800;
+  opacity:.88;
+}
+.marketSaleCard button{
+  min-width:120px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:16px;
+  padding:11px 18px;
+  color:#07101e;
+  font-weight:1000;
+  background:linear-gradient(135deg,#fff,#9fe8ff);
+  cursor:pointer;
+}
+
+@keyframes marketViewIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+@keyframes marketViewOut{
+  from{opacity:1;}
+  to{opacity:0;}
+}
+@keyframes marketShellIn{
+  from{opacity:0; transform:translateY(14px) scale(.985);}
+  to{opacity:1; transform:translateY(0) scale(1);}
+}
+@keyframes marketShellOut{
+  from{opacity:1; transform:translateY(0) scale(1);}
+  to{opacity:0; transform:translateY(10px) scale(.99);}
+}
+@keyframes marketCardIn{
+  from{opacity:0; transform:translateY(8px);}
+  to{opacity:1; transform:translateY(0);}
+}
+@keyframes marketModalIn{
+  from{opacity:0; transform:translateY(12px) scale(.96);}
+  to{opacity:1; transform:translateY(0) scale(1);}
+}
+@keyframes marketCoinPop{
+  0%{transform:scale(.78) rotate(-8deg); filter:brightness(1);}
+  45%{transform:scale(1.08) rotate(4deg); filter:brightness(1.25);}
+  100%{transform:scale(1) rotate(0); filter:brightness(1);}
+}
+
+@media (max-width:700px){
+  .marketplaceView{
+    padding:calc(10px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom));
+  }
+  .marketplaceShell{
+    min-height:calc(100dvh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+  .marketplaceTop{
+    align-items:flex-start;
+    border-radius:18px;
+    flex-direction:column;
+  }
+  .marketplaceTop h2{
+    font-size:24px;
+  }
+  .marketplaceTopActions{
+    width:100%;
+    justify-content:stretch;
+  }
+  .marketDiamondPill{
+    flex:1 1 100%;
+  }
+  .marketplaceTopActions button{
+    flex:1 1 auto;
+  }
+  .marketGrid{
+    grid-template-columns:1fr;
+  }
+}
+
 .globalBossEventTop{
   display:flex;
   justify-content:space-between;
@@ -5377,6 +5779,52 @@ body.weather-diamonds #weatherFx{filter:saturate(1.12) brightness(1.04);}
   50%{transform:translateX(-50%) rotate(2deg) translateY(5px);}
 }
 
+.weatherFish{
+  position:fixed;
+  left:-110px;
+  z-index:38;
+  border:0;
+  background:rgba(9,23,46,.54);
+  color:#fff;
+  border-radius:999px;
+  padding:8px 12px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  transform:scale(var(--fish-scale, 1));
+  box-shadow:0 10px 28px rgba(35,190,255,.25), inset 0 0 0 1px rgba(160,240,255,.42);
+  backdrop-filter:blur(6px);
+  animation:weatherFishSwim var(--fish-speed, 12s) linear both;
+  cursor:pointer;
+}
+.weatherFish.fromRight{
+  left:auto;
+  right:-120px;
+  animation-name:weatherFishSwimReverse;
+}
+.weatherFish span{
+  font-size:28px;
+  filter:drop-shadow(0 0 12px rgba(150,235,255,.7));
+}
+.weatherFish small{
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.weatherFish-fish_ancient{
+  background:rgba(60,41,12,.68);
+  box-shadow:0 0 30px rgba(255,238,150,.5), inset 0 0 0 1px rgba(255,244,180,.8);
+}
+@keyframes weatherFishSwim{
+  from{transform:translateX(0) scale(var(--fish-scale, 1));}
+  to{transform:translateX(calc(100vw + 230px)) scale(var(--fish-scale, 1));}
+}
+@keyframes weatherFishSwimReverse{
+  from{transform:translateX(0) scale(var(--fish-scale, 1)) scaleX(-1);}
+  to{transform:translateX(calc(-100vw - 240px)) scale(var(--fish-scale, 1)) scaleX(-1);}
+}
+
 .petStyleAvatar{
   box-shadow:0 0 0 3px rgba(255,255,255,.35), 0 0 24px rgba(114,236,255,.65), 0 0 42px rgba(255,180,80,.35) !important;
 }
@@ -5494,6 +5942,7 @@ body.weather-storm #weatherFx i{
     linear-gradient(106deg, transparent 0 27px, rgba(220,245,255,.22) 28px 30px, transparent 31px 70px);
   background-size:72px 118px, 137px 191px;
   animation:weatherRainIrregular .62s linear infinite;
+  will-change:background-position;
 }
 
 body.weather-rain #weatherFx b,
@@ -5504,6 +5953,7 @@ body.weather-storm #weatherFx b{
     linear-gradient(99deg, transparent 0 54px, rgba(255,255,255,.18) 55px 57px, transparent 58px 120px);
   background-size:115px 163px, 190px 250px;
   animation:weatherRainIrregular 1.05s linear infinite reverse;
+  will-change:background-position;
 }
 
 body.weather-storm #weatherFx em{
@@ -5634,6 +6084,22 @@ body.weather-mega #weatherFx{opacity:.78;}
 body.weather-mega #weatherFx i{filter:brightness(1.25); animation-duration:.38s;}
 
 @keyframes weatherRainIrregular{from{background-position:0 -180px, 40px -260px;}to{background-position:-90px 180px, -130px 260px;}}
+
+@media (max-width:700px){
+  body.weather-rain #weatherFx{
+    background:linear-gradient(180deg, rgba(120,170,220,.035), transparent 58%);
+  }
+  body.weather-rain #weatherFx i{
+    opacity:.46;
+    background:
+      linear-gradient(112deg, transparent 0 18px, rgba(170,225,255,.34) 19px 21px, transparent 22px 72px);
+    background-size:112px 178px;
+    animation-duration:1.18s;
+  }
+  body.weather-rain #weatherFx b{
+    display:none;
+  }
+}
 @keyframes weatherGemFall{from{background-position:0 -220px, 80px -280px, -40px -160px;}to{background-position:-70px 220px, 30px 280px, -95px 160px;}}
 @keyframes weatherWindLines{from{background-position:0 0, 120px 40px, 260px 90px;}to{background-position:-620px 0, -500px 40px, -360px 90px;}}
 @keyframes weatherWindGusts{
@@ -6641,6 +7107,53 @@ button.activePetSlot:hover{
   text-align:center;
 }
 
+.petLevelBlock{
+  margin-top:8px;
+  display:grid;
+  gap:4px;
+  width:100%;
+}
+.petLevelBlock span{
+  font-size:10px;
+  line-height:1.15;
+  font-weight:1000;
+  color:#f4fbff;
+  text-transform:uppercase;
+  text-align:left;
+}
+.activePetSlot .petLevelBlock span{
+  text-align:center;
+  font-size:9px;
+}
+.petLevelBar{
+  position:relative;
+  height:16px;
+  overflow:hidden;
+  border-radius:999px;
+  background:rgba(6, 10, 22, .48);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);
+}
+.petLevelBar i{
+  position:absolute;
+  inset:0 auto 0 0;
+  width:0;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#ffffff,#9fe8ff,#78ffbd);
+  box-shadow:0 0 14px rgba(140,235,255,.42);
+}
+.petLevelBar em{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  font-size:9px;
+  line-height:1;
+  font-style:normal;
+  font-weight:1000;
+  color:#07101e;
+  text-shadow:0 1px 0 rgba(255,255,255,.38);
+}
+
 .inventoryBonusCard{
   cursor:default;
   background:
@@ -6695,6 +7208,49 @@ button.activePetSlot:hover{
 .petCard:hover{
   transform:translateY(-2px);
   background:var(--panel-card-hover, rgba(255,255,255,0.08));
+}
+
+.fruitCard{
+  cursor:default;
+  border-color:rgba(255,255,255,.16);
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255,255,255,.18), transparent 42%),
+    var(--panel-card-bg, rgba(255,255,255,.05));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);
+}
+.fruitIcon{
+  width:54px;
+  height:54px;
+  flex:0 0 54px;
+  border-radius:16px;
+  display:grid;
+  place-items:center;
+  font-size:27px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.38), 0 12px 24px rgba(0,0,0,.2);
+}
+.fruitTargets{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:10px;
+}
+.fruitTargetBtn{
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:10px;
+  padding:7px 9px;
+  color:#fff;
+  background:rgba(255,255,255,.08);
+  font-size:10px;
+  font-weight:900;
+  cursor:pointer;
+}
+.fruitTargetBtn span{
+  opacity:.72;
+  margin-left:4px;
+}
+.fruitNoTarget{
+  color:rgba(255,255,255,.65);
+  font-size:11px;
 }
 
 .eggCard.eggDenied{
@@ -10238,6 +10794,133 @@ button.activePetSlot:hover{
 .cloudSaveStatus.error::before{
   background:#ff4d5f;
   box-shadow:0 0 14px rgba(255,77,95,.78);
+}
+
+.tutorialAskOverlay,
+.tutorialOverlay{
+  position:fixed;
+  inset:0;
+  z-index:4100;
+  display:none;
+}
+.tutorialAskOverlay.open,
+.tutorialOverlay.open{
+  display:block;
+}
+.tutorialAskOverlay{
+  place-items:center;
+  padding:18px;
+  background:rgba(3,6,14,.72);
+  backdrop-filter:blur(8px);
+}
+.tutorialAskOverlay.open{
+  display:grid;
+}
+.tutorialAskCard{
+  width:min(420px, 100%);
+  padding:22px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:24px;
+  text-align:center;
+  color:#fff;
+  background:linear-gradient(145deg,#151d34,#080c18);
+  box-shadow:0 28px 80px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.16);
+}
+.tutorialAskCard b{
+  display:block;
+  font-size:22px;
+  line-height:1.18;
+}
+.tutorialAskActions{
+  display:flex;
+  gap:10px;
+  margin-top:18px;
+}
+.tutorialAskActions button,
+.tutorialActions button{
+  flex:1;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:14px;
+  padding:11px 12px;
+  color:#fff;
+  background:rgba(255,255,255,.1);
+  font-weight:1000;
+  cursor:pointer;
+}
+#tutorialStartBtn,
+#tutorialNextBtn{
+  background:linear-gradient(135deg,#48d6ff,#5d75ff);
+}
+.tutorialOverlay{
+  pointer-events:auto;
+  background:rgba(2,5,12,.68);
+  overflow:hidden;
+  touch-action:none;
+}
+.tutorialTarget{
+  position:relative;
+  z-index:4115 !important;
+  filter:brightness(1.12) saturate(1.08);
+}
+.tutorialHighlight{
+  position:fixed;
+  z-index:4112;
+  border:3px solid rgba(142,234,255,.95);
+  border-radius:22px;
+  box-shadow:0 0 0 9999px rgba(2,5,12,.62), 0 0 26px rgba(95,215,255,.85), inset 0 0 18px rgba(255,255,255,.16);
+  pointer-events:none;
+  transition:all .18s ease;
+}
+.tutorialArrow{
+  position:fixed;
+  z-index:4114;
+  width:0;
+  height:0;
+  transform:translateX(-50%);
+  filter:drop-shadow(0 0 12px rgba(95,215,255,.75));
+  transition:all .18s ease;
+}
+.tutorialArrow.up{
+  border-left:13px solid transparent;
+  border-right:13px solid transparent;
+  border-bottom:22px solid #8eeaff;
+}
+.tutorialArrow.down{
+  border-left:13px solid transparent;
+  border-right:13px solid transparent;
+  border-top:22px solid #8eeaff;
+}
+.tutorialBubble{
+  position:fixed;
+  z-index:4116;
+  padding:14px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:18px;
+  color:#fff;
+  background:linear-gradient(145deg,#17213b,#080c18);
+  box-shadow:0 22px 60px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.16);
+  transition:all .18s ease;
+}
+.tutorialBubble p{
+  margin:0;
+  font-size:14px;
+  line-height:1.42;
+  font-weight:850;
+}
+.tutorialActions{
+  display:flex;
+  gap:8px;
+  margin-top:12px;
+}
+
+@media (max-width:700px){
+  .tutorialBubble{
+    max-width:calc(100vw - 24px);
+  }
+  .tutorialAskActions,
+  .tutorialActions{
+    gap:8px;
+  }
 }
 
 @keyframes cloudSavePulse{
