@@ -4941,7 +4941,7 @@ body.globalBossMode{
   box-shadow:0 12px 24px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.58);
 }
 
-.weatherRollStrip span.winner{
+.weatherRollOverlay.done .weatherRollStrip span.winner{
   background:
     radial-gradient(circle at 30% 20%, #fff, transparent 34%),
     linear-gradient(135deg,#fff8ad,#9ff3ff,#ff82d7);
@@ -5545,17 +5545,35 @@ body.weather-diamonds #weatherFx b{
 }
 
 body.weather-wind #weatherFx{
-  background:linear-gradient(180deg, rgba(255,255,255,.04), transparent);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.04), transparent),
+    radial-gradient(circle at 78% 18%, rgba(210,240,255,.08), transparent 34%);
 }
 
 body.weather-wind #weatherFx i,
 body.weather-wind #weatherFx b{
-  opacity:.65;
+  opacity:.58;
   background:
-    radial-gradient(ellipse at 12% 20%, transparent 0 34px, rgba(255,255,255,.18) 35px 37px, transparent 38px 80px),
-    radial-gradient(ellipse at 64% 58%, transparent 0 44px, rgba(220,240,255,.14) 45px 48px, transparent 49px 96px);
-  background-size:280px 120px, 360px 170px;
+    linear-gradient(105deg, transparent 0 12px, rgba(235,250,255,.28) 13px 16px, transparent 17px 82px),
+    linear-gradient(101deg, transparent 0 44px, rgba(190,225,255,.18) 45px 48px, transparent 49px 118px),
+    linear-gradient(108deg, transparent 0 74px, rgba(255,255,255,.16) 75px 77px, transparent 78px 150px);
+  background-size:250px 92px, 380px 132px, 520px 170px;
   animation:weatherWindLines 5.4s linear infinite;
+}
+
+body.weather-wind #weatherFx b{
+  opacity:.34;
+  animation-duration:7.2s;
+  animation-direction:reverse;
+}
+
+body.weather-wind #weatherFx em{
+  opacity:.38;
+  background:
+    linear-gradient(116deg, transparent 0 36px, rgba(255,255,255,.24) 37px 39px, transparent 40px 126px),
+    linear-gradient(96deg, transparent 0 18px, rgba(180,220,255,.18) 19px 21px, transparent 22px 90px);
+  background-size:320px 84px, 210px 58px;
+  animation:weatherWindGusts 3.8s ease-in-out infinite;
 }
 
 body.weather-golden #weatherFx,
@@ -5617,7 +5635,12 @@ body.weather-mega #weatherFx i{filter:brightness(1.25); animation-duration:.38s;
 
 @keyframes weatherRainIrregular{from{background-position:0 -180px, 40px -260px;}to{background-position:-90px 180px, -130px 260px;}}
 @keyframes weatherGemFall{from{background-position:0 -220px, 80px -280px, -40px -160px;}to{background-position:-70px 220px, 30px 280px, -95px 160px;}}
-@keyframes weatherWindLines{from{background-position:0 0, 120px 40px;}to{background-position:-520px 0, -390px 40px;}}
+@keyframes weatherWindLines{from{background-position:0 0, 120px 40px, 260px 90px;}to{background-position:-620px 0, -500px 40px, -360px 90px;}}
+@keyframes weatherWindGusts{
+  0%,100%{transform:translateX(0) skewX(-7deg); opacity:.2;}
+  45%{transform:translateX(-64px) skewX(-13deg); opacity:.46;}
+  70%{transform:translateX(-118px) skewX(-9deg); opacity:.28;}
+}
 @keyframes weatherLightning{0%,86%,91%,100%{opacity:0;}87%,89%{opacity:.92;}90%{opacity:.25;}}
 @keyframes weatherWavesIrregular{
   0%,100%{transform:translateX(0) translateY(0) skewX(0deg);}

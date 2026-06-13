@@ -419,8 +419,8 @@ function renderWeatherRoll(weather){
       <div class="weatherRollPointer"></div>
       <div class="weatherRollStrip">${reel.map((w, index)=>`<span class="${index === winningIndex ? "winner" : ""}">${w.icon}</span>`).join("")}</div>
       <div class="weatherRollResult">
-        <span>${def.icon}</span>
-        <b>${weather.mega ? "MEGA " : ""}${def.name}</b>
+        <span>?</span>
+        <b>Losowanie pogody...</b>
       </div>
       <div class="weatherRollImpact"></div>
     </div>
@@ -435,7 +435,10 @@ function renderWeatherRoll(weather){
   window.kretAudio?.reward?.();
   setTimeout(()=>{
     overlay.classList.add("done");
-    overlay.querySelector(".weatherRollBox b").textContent = `${weather.mega ? "MEGA " : ""}${def.name}`;
+    const resultIcon = overlay.querySelector(".weatherRollResult span");
+    const resultText = overlay.querySelector(".weatherRollBox b");
+    if(resultIcon) resultIcon.innerHTML = def.icon;
+    if(resultText) resultText.textContent = `${weather.mega ? "MEGA " : ""}${def.name}`;
     window.kretAudio?.rare?.();
   }, 1400);
   setTimeout(()=>{
