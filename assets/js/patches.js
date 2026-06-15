@@ -837,8 +837,8 @@ function maybeSpawnFloodFish(weather){
   node.style.top = `${63 + Math.random() * 22}%`;
   node.style.setProperty("--fish-scale", fish.scale);
   node.style.setProperty("--fish-speed", `${weatherRand(fish.speed - 2, fish.speed + 3).toFixed(1)}s`);
-  node.innerHTML = `<span>${def.icon}</span><small>${def.name}</small>`;
-  node.title = def.levelUp ? "+1 level dla peta" : `${def.name} do plecaka`;
+  node.innerHTML = `<span>${def.icon}</span>`;
+  node.title = "";
   node.onclick = () => {
     addPetFruit(def.id, 1);
     spawnPopup(`${def.name} zlapana!`, false, false, true);
@@ -7499,9 +7499,9 @@ function renderDiamondPanel(){
   diamondDockBtn.classList.toggle("active", diamondPanel.classList.contains("open"));
 }
 
-const LIMITED_EVENT_END_AT = new Date("2026-06-17T20:00:00+02:00").getTime();
+const LIMITED_EVENT_END_AT = new Date("2026-06-27T20:00:00+02:00").getTime();
 const CRYSTAL_EVENT_END_AT = LIMITED_EVENT_END_AT;
-const CRYSTAL_EVENT_SHOP_CLOSE_AT = new Date("2026-06-19T20:00:00+02:00").getTime();
+const CRYSTAL_EVENT_SHOP_CLOSE_AT = new Date("2026-06-28T20:00:00+02:00").getTime();
 const NEXT_LIMITED_EVENT_AT = new Date("2026-06-22T20:00:00+02:00").getTime();
 
 function getCrystalEventPhase(now=Date.now()){
