@@ -375,6 +375,8 @@ async function runAccountPostLoadTasks(){
     ["startUserAdminNoticesLive", () => startUserAdminNoticesLive()],
     ["claimGlobalAdminRewards", async () => claimGlobalAdminRewards(await firebaseGet("globalAdminInbox") || {})],
     ["claimPendingOnlineRewards", () => claimPendingOnlineRewards()],
+    ["startGlobalBossLive", () => startGlobalBossLive()],
+    ["checkWeeklyLeaderboardRewards", () => checkWeeklyLeaderboardRewards()],
     ["startMarketplaceStreams", () => startMarketplaceStreams()]
   ];
   for(const [name, task] of tasks){
@@ -1044,7 +1046,7 @@ async function claimGlobalAdminRewards(globalInbox){
 }
 
 async function startGlobalAdminInboxLive(){
-  if(globalAdminInboxUnsub || !await initFirebase()) return;
+  if(!currentAccount?.uid || globalAdminInboxUnsub || !await initFirebase()) return;
   globalAdminInboxUnsub = firebaseModules.onValue(firebaseModules.ref(firebaseDb, "globalAdminInbox"), (snapshot) => {
     claimGlobalAdminRewards(snapshot.exists() ? snapshot.val() : {}).catch((err) => {
       console.warn("Global admin inbox claim error:", err);
@@ -1705,6 +1707,7 @@ async function loadAccountSave(createIfMissing=false){
   if(remoteReadFailed && isMeaningfulSave(localAccountSave)){
     applySave(localAccountSave, {mode:"account"});
     renderCloudSaveStatus("error", "Lokalny backup");
+    await runAccountPostLoadTasks();
     return;
   }
   if(createIfMissing){
@@ -4734,7 +4737,7 @@ async function loadGlobalBossLeaderboard(renderPanel=true){
 }
 
 async function startGlobalBossLive(){
-  if(!await initFirebase()) return;
+  if(!currentAccount?.uid || !await initFirebase()) return;
   await ensureGlobalBossReady();
   if(!globalBossStream){
     globalBossStream = firebaseModules.onValue(firebaseModules.ref(firebaseDb, "globalMoleBoss"), async (snapshot) => {
@@ -5410,7 +5413,7 @@ async function contributeCommunityBossUpgrade(){
 }
 
 async function checkWeeklyLeaderboardRewards(){
-  if(!await initFirebase()) return;
+  if(!currentAccount?.uid || !await initFirebase()) return;
   const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
   const now = Date.now();
   try{

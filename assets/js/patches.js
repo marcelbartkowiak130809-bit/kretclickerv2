@@ -7499,10 +7499,10 @@ function renderDiamondPanel(){
   diamondDockBtn.classList.toggle("active", diamondPanel.classList.contains("open"));
 }
 
-const LIMITED_EVENT_END_AT = new Date("2026-06-27T20:00:00+02:00").getTime();
+const LIMITED_EVENT_END_AT = new Date("2026-09-27T20:00:00+02:00").getTime();
 const CRYSTAL_EVENT_END_AT = LIMITED_EVENT_END_AT;
-const CRYSTAL_EVENT_SHOP_CLOSE_AT = new Date("2026-06-28T20:00:00+02:00").getTime();
-const NEXT_LIMITED_EVENT_AT = new Date("2026-06-22T20:00:00+02:00").getTime();
+const CRYSTAL_EVENT_SHOP_CLOSE_AT = new Date("2026-09-28T20:00:00+02:00").getTime();
+const NEXT_LIMITED_EVENT_AT = new Date("2026-09-29T20:00:00+02:00").getTime();
 
 function getCrystalEventPhase(now=Date.now()){
   if(now < CRYSTAL_EVENT_END_AT) return "active";
