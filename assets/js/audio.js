@@ -106,6 +106,31 @@
     source.stop(audio.currentTime + duration + 0.02);
   }
 
+  function revealCharge(key, tier=0, crate=false){
+    const level = Math.max(0, Math.min(5, Number(tier) || 0));
+    const root = crate ? 250 : 340;
+    const notes = Array.from({length:2 + Math.min(level, 3)}, (_, index)=>root + index * (80 + level * 12));
+    chord(`${key}Charge`, notes, {type:level >= 3 ? "sine" : "triangle", duration:0.08 + level * 0.018, gain:0.018 + level * 0.004, cooldown:380, stagger:58});
+    if(level >= 3) noise({key:`${key}ChargeNoise`, duration:0.1 + level * 0.025, gain:0.011 + level * 0.003, filter:1100 + level * 430, cooldown:420});
+  }
+
+  function revealCrack(tier=0){
+    const level = Math.max(0, Math.min(5, Number(tier) || 0));
+    noise({key:"hatchCrack", duration:0.055 + level * 0.022, gain:0.016 + level * 0.004, filter:1500 + level * 700, cooldown:130});
+    tone({key:"hatchCrackTone", freq:350 + level * 80, endFreq:510 + level * 130, type:"triangle", duration:0.06 + level * 0.02, gain:0.014 + level * 0.003, cooldown:0});
+  }
+
+  function revealImpact(key, tier=0, crate=false){
+    const level = Math.max(0, Math.min(5, Number(tier) || 0));
+    const root = crate ? 300 : 460;
+    const notes = Array.from({length:3 + Math.min(level, 3)}, (_, index)=>root * Math.pow(1.24, index));
+    chord(`${key}Impact`, notes, {type:level >= 3 ? "sine" : "triangle", duration:0.11 + level * 0.035, gain:0.026 + level * 0.006, cooldown:520, stagger:42});
+    noise({key:`${key}ImpactBurst`, duration:0.045 + level * 0.025, gain:0.012 + level * 0.004, filter:2600 + level * 620, cooldown:520});
+    if(level >= 4){
+      setTimeout(()=>chord(`${key}ImpactTail`, [root * 1.5, root * 2, root * 2.5], {type:"sine", duration:0.18 + level * 0.025, gain:0.024 + level * 0.004, cooldown:0, stagger:74}), 170);
+    }
+  }
+
   const api = {
     unlock:ensureAudio,
     click(){ tone({key:"click", freq:360, endFreq:520, type:"triangle", duration:0.045, gain:0.026, cooldown:42}); },
@@ -118,6 +143,22 @@
     superRebirth(){ chord("superRebirth", [220, 440, 660, 880, 1320], {type:"sine", duration:0.24, gain:0.052, cooldown:1400, stagger:85}); noise({key:"superNoise", duration:0.22, gain:0.035, filter:1300, cooldown:1400}); },
     hatch(){ chord("hatch", [420, 560, 740], {type:"triangle", duration:0.11, gain:0.028, cooldown:650, stagger:95}); },
     crate(){ noise({key:"crate", duration:0.12, gain:0.03, filter:650, cooldown:650}); tone({key:"crateTone", freq:310, endFreq:430, type:"triangle", duration:0.08, gain:0.026, cooldown:0}); },
+    hatchCharge(tier){ revealCharge("hatch", tier, false); },
+    crateCharge(tier){ revealCharge("crate", tier, true); },
+    hatchCrack(tier){ revealCrack(tier); },
+    hatchImpact(tier){ revealImpact("hatch", tier, false); },
+    crateImpact(tier){ revealImpact("crate", tier, true); },
+    jackpotReveal(tier){
+      const level = Math.max(3, Math.min(5, Number(tier) || 3));
+      const root = 440 + level * 42;
+      chord("jackpotReveal", [root, root * 1.25, root * 1.5, root * 2, root * 2.5], {type:"sine", duration:.22 + level * .025, gain:.034 + level * .004, cooldown:1000, stagger:72});
+      noise({key:"jackpotRevealBurst", duration:.12 + level * .02, gain:.018 + level * .003, filter:4200 + level * 360, cooldown:1000});
+    },
+    critHit(){ chord("critHit", [620, 880], {type:"triangle", duration:0.07, gain:0.026, cooldown:130, stagger:28}); },
+    goldHit(){ chord("goldHit", [520, 780, 1040], {type:"sine", duration:0.09, gain:0.03, cooldown:180, stagger:32}); },
+    frenzyHit(){ chord("frenzyHit", [260, 390, 520, 780], {type:"sawtooth", duration:0.11, gain:0.022, cooldown:720, stagger:38}); noise({key:"frenzyHitNoise", duration:0.08, gain:0.014, filter:2800, cooldown:720}); },
+    diamondHit(){ chord("diamondHit", [880, 1240, 1660], {type:"sine", duration:0.13, gain:0.03, cooldown:380, stagger:34}); },
+    rewardHit(){ chord("rewardHit", [480, 720, 980], {type:"triangle", duration:0.1, gain:0.028, cooldown:350, stagger:42}); },
     rare(){ chord("rare", [760, 980, 1320], {type:"sine", duration:0.18, gain:0.044, cooldown:900, stagger:75}); },
     potion(){ chord("potion", [580, 760], {type:"sine", duration:0.11, gain:0.035, cooldown:250, stagger:45}); },
     bag(){ chord("bag", [300, 520, 780], {type:"triangle", duration:0.12, gain:0.038, cooldown:450, stagger:55}); },

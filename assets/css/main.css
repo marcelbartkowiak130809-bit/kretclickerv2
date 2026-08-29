@@ -2587,7 +2587,8 @@ h1{
 
 #weatherPanel{
   top:314px;
-  max-height:calc(100dvh - 314px - 16px);
+  bottom:78px;
+  max-height:calc(100dvh - 314px - 88px);
 }
 
 #leaderboardPanel{
@@ -5187,12 +5188,21 @@ body.globalBossMode{
 .weatherNowCard,
 .weatherForecastBox,
 .weatherIndexCard{
-  margin-bottom:12px;
   padding:13px;
   border:1px solid rgba(255,255,255,.13);
-  border-radius:20px;
+  border-radius:16px;
   background:linear-gradient(145deg, rgba(255,255,255,.1), rgba(255,255,255,.04));
   color:#fff;
+}
+
+.weatherPanelLayout{
+  display:grid;
+  gap:10px;
+  padding-bottom:2px;
+}
+
+.weatherPanelSection{
+  margin:0;
 }
 
 .weatherNowCard,
@@ -5218,28 +5228,157 @@ body.globalBossMode{
   font-weight:900;
 }
 
+.weatherNowCard{
+  grid-template-columns:46px minmax(0, 1fr) auto;
+  min-height:70px;
+  background:
+    radial-gradient(circle at 82% 10%, rgba(126,236,255,.22), transparent 34%),
+    linear-gradient(145deg, rgba(255,255,255,.13), rgba(255,255,255,.045));
+}
+
+.weatherNowMeta,
+.weatherForecastItem > div,
+.weatherIndexCard > div{
+  min-width:0;
+}
+
+.weatherNowState,
+.weatherForecastItem > em,
+.weatherIndexCard > em,
+.weatherSectionHeading > span{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:24px;
+  padding:3px 7px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:999px;
+  color:#dff9ff;
+  background:rgba(94,204,255,.14);
+  font-size:10px;
+  font-style:normal;
+  font-weight:1000;
+  letter-spacing:.04em;
+  white-space:nowrap;
+}
+
+.weatherNowState{
+  color:#07101a;
+  background:linear-gradient(135deg,#eaffff,#89e8ff);
+}
+
+.weatherNowCard.active .weatherNowState{
+  background:linear-gradient(135deg,#fff4ad,#8eefff,#c899ff);
+}
+
 .weatherNowCard.active{
   border-color:rgba(124,222,255,.45);
   box-shadow:0 0 28px rgba(124,222,255,.18);
 }
 
-.weatherForecastBox button{
+.weatherSectionHeading{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:9px;
+}
+
+.weatherSectionHeading > b{
+  font-size:13px;
+  letter-spacing:.03em;
+}
+
+.weatherSectionHint{
+  display:block;
+  margin:0 0 10px;
+  color:rgba(255,255,255,.7);
+  font-size:12px;
+  line-height:1.35;
+}
+
+.weatherForecastActions,
+.weatherShellActions{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+}
+
+.weatherActionBtn{
+  min-height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
   width:100%;
-  margin-top:9px;
-  padding:9px 10px;
-  border:0;
-  border-radius:14px;
+  padding:9px 11px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:13px;
   color:#07101a;
+  text-align:left;
   font-weight:1000;
-  background:linear-gradient(135deg,#fff,#a8f1ff);
+  background:linear-gradient(135deg,#f6feff,#8feaff);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.68), 0 8px 18px rgba(0,0,0,.14);
   cursor:pointer;
+  transition:transform .16s ease, filter .16s ease, box-shadow .16s ease;
+}
+
+.weatherActionBtn:hover{
+  filter:brightness(1.05);
+  transform:translateY(-1px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75), 0 11px 22px rgba(0,0,0,.2);
+}
+
+.weatherActionBtn:active{
+  transform:translateY(0);
+}
+
+.weatherActionBtn span{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.weatherActionBtn b{
+  flex:0 0 auto;
+  padding:4px 6px;
+  border-radius:8px;
+  color:#fff;
+  background:rgba(7,25,40,.24);
+  font-size:11px;
+}
+
+.weatherActionBtn.premium{
+  color:#281500;
+  background:linear-gradient(135deg,#fff6c5,#ffce68);
+}
+
+.weatherActionBtn.premium b{
+  background:rgba(96,57,7,.24);
 }
 
 .weatherForecastItem{
+  grid-template-columns:42px minmax(0, 1fr) auto;
   margin-top:9px;
   padding:9px;
-  border-radius:15px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:13px;
   background:rgba(0,0,0,.18);
+}
+
+.weatherForecastItem > span{
+  width:38px;
+  height:38px;
+  border-radius:12px;
+  font-size:20px;
+}
+
+.weatherForecastItem > em,
+.weatherIndexCard > em{
+  min-width:30px;
+  color:rgba(232,252,255,.88);
+  background:rgba(255,255,255,.08);
 }
 
 .weatherIndexCard.locked{
@@ -5463,12 +5602,56 @@ body.weather-diamonds #weatherFx{filter:saturate(1.12) brightness(1.04);}
 }
 
 .weatherWaterOdds span{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:5px;
+  min-height:34px;
   padding:6px 8px;
-  border-radius:12px;
+  border:1px solid rgba(137,224,255,.14);
+  border-radius:10px;
   color:#dffbff;
   background:rgba(80,190,255,.14);
   font-size:11px;
   font-weight:900;
+}
+
+.weatherWaterOdds span b{
+  color:#fff5ad;
+  font-size:10px;
+}
+
+.weatherIndexList{
+  display:grid;
+  gap:8px;
+}
+
+.weatherIndexCard{
+  grid-template-columns:42px minmax(0, 1fr) auto;
+  margin:0;
+  padding:10px;
+  border-radius:13px;
+}
+
+.weatherIndexCard > span{
+  width:38px;
+  height:38px;
+  border-radius:12px;
+  font-size:20px;
+}
+
+@media (max-width: 440px){
+  .weatherShellActions{
+    grid-template-columns:1fr;
+  }
+
+  .weatherNowCard{
+    padding:11px;
+  }
+
+  .weatherNowState{
+    font-size:9px;
+  }
 }
 
 .weatherClickable{
@@ -6992,15 +7175,15 @@ body.weather-mega #weatherFx i{filter:brightness(1.25); animation-duration:.38s;
 
 .activePetSlots{
   display:grid;
-  grid-template-columns:repeat(3, minmax(0, 1fr));
+  grid-template-columns:repeat(2, minmax(0, 1fr));
   gap:8px;
 }
 
 .activePetSlot{
   position:relative;
   min-width:0;
-  min-height:132px;
-  padding:10px 7px 9px;
+  min-height:170px;
+  padding:33px 9px 10px;
   border:1px solid rgba(255,255,255,0.12);
   border-radius:18px;
   color:#fff;
@@ -7026,9 +7209,8 @@ button.activePetSlot:hover{
 .activePetSlot.filled::after{
   content:"ZAŁOŻONY";
   position:absolute;
-  left:50%;
+  right:8px;
   top:8px;
-  transform:translateX(-50%);
   padding:3px 7px;
   border-radius:999px;
   background:linear-gradient(135deg,#79eaff,#7b61ff);
@@ -7064,9 +7246,9 @@ button.activePetSlot:hover{
 
 .activePetSlot .petCircle{
   display:block;
-  width:50px;
-  height:50px;
-  margin:20px auto 8px;
+  width:48px;
+  height:48px;
+  margin:0 auto 7px;
 }
 
 .emptySlotIcon{
@@ -7083,17 +7265,18 @@ button.activePetSlot:hover{
 
 .activePetSlotName{
   display:block;
-  min-height:30px;
+  min-height:28px;
   font-size:11px;
   font-weight:1000;
   line-height:1.2;
   text-align:center;
   overflow:hidden;
+  overflow-wrap:anywhere;
 }
 
 .activePetSlot small{
   display:block;
-  margin-top:5px;
+  margin-top:4px;
   font-size:10px;
   line-height:1.2;
   opacity:.76;
@@ -7117,6 +7300,9 @@ button.activePetSlot:hover{
 .activePetSlot .petLevelBlock span{
   text-align:center;
   font-size:9px;
+}
+.activePetSlot .petLevelBlock{
+  margin-top:6px;
 }
 .petLevelBar{
   position:relative;
@@ -8358,6 +8544,110 @@ button.activePetSlot:hover{
   78%,100%{transform:translateX(120%);}
 }
 
+#gameFeelLayer{
+  position:fixed;
+  inset:0;
+  z-index:210;
+  pointer-events:none;
+  overflow:hidden;
+}
+
+.gameFeelBurst{
+  --feel-color:#eaf7ff;
+  position:absolute;
+  left:var(--burst-x);
+  top:var(--burst-y);
+  width:1px;
+  height:1px;
+  color:var(--feel-color);
+}
+
+.gameFeelBurst::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:20px;
+  height:20px;
+  border:2px solid currentColor;
+  border-radius:50%;
+  transform:translate(-50%,-50%) scale(.3);
+  opacity:.72;
+  box-shadow:0 0 16px currentColor;
+  animation:gameFeelRipple .58s cubic-bezier(.1,.7,.2,1) both;
+}
+
+.gameFeelBurst i{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:var(--particle-size);
+  height:var(--particle-size);
+  border-radius:2px;
+  background:currentColor;
+  box-shadow:0 0 9px currentColor;
+  transform:translate(-50%,-50%);
+  animation:gameFeelParticle .66s cubic-bezier(.1,.78,.2,1) var(--particle-delay) both;
+}
+
+.gameFeelBurst.coin{--feel-color:#eaf7ff;}
+.gameFeelBurst.crit{--feel-color:#ffd45e;}
+.gameFeelBurst.gold{--feel-color:#ffe27a;}
+.gameFeelBurst.frenzy{--feel-color:#71f7ff;}
+.gameFeelBurst.diamond{--feel-color:#75e9ff;}
+.gameFeelBurst.potion{--feel-color:#94ffb0;}
+.gameFeelBurst.bag{--feel-color:#ffca76;}
+.gameFeelBurst.reward{--feel-color:#f4b3ff;}
+.gameFeelBurst.purchase{--feel-color:#c8e6ff;}
+
+@keyframes gameFeelRipple{
+  0%{opacity:.78;transform:translate(-50%,-50%) scale(.25);}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(var(--burst-final-scale, 4.5));}
+}
+
+@keyframes gameFeelParticle{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(.6) rotate(0deg);}
+  100%{opacity:0;transform:translate(calc(-50% + var(--particle-x)),calc(-50% + var(--particle-y))) scale(.1) rotate(190deg);}
+}
+
+.gameFeelPress{animation:gameFeelPress .24s ease-out both !important;}
+.gameFeelPanelOpen{animation:gameFeelPanelOpen .42s cubic-bezier(.16,.85,.24,1.16) both;}
+.gameFeelPotion,
+.gameFeelBag,
+.gameFeelReward,
+.gameFeelPurchase{animation:gameFeelRewardPulse .48s cubic-bezier(.14,.84,.22,1.15) both;}
+
+@keyframes gameFeelPress{
+  0%{filter:brightness(1);}
+  35%{filter:brightness(1.32);transform:translateY(1px) scale(.975);}
+  100%{filter:brightness(1);}
+}
+
+@keyframes gameFeelPanelOpen{
+  0%{filter:brightness(1);}
+  44%{filter:brightness(1.3) saturate(1.18);}
+  100%{filter:brightness(1);}
+}
+
+@keyframes gameFeelRewardPulse{
+  0%{filter:brightness(1);}
+  42%{filter:brightness(1.35) saturate(1.2);}
+  100%{filter:brightness(1);}
+}
+
+#kret.gameFeelCoin{filter:brightness(1.08) saturate(1.08);}
+#kret.gameFeelCrit{filter:brightness(1.18) saturate(1.25);}
+#kret.gameFeelGold{filter:brightness(1.2) saturate(1.36);}
+#kret.gameFeelFrenzy{filter:brightness(1.24) saturate(1.36);}
+#ui.gameFeelDiamond,
+#ui.gameFeelReward{animation:gameFeelHudPulse .5s cubic-bezier(.14,.84,.22,1.15) both;}
+
+@keyframes gameFeelHudPulse{
+  0%{filter:brightness(1);transform:scale(1);}
+  42%{filter:brightness(1.42);transform:scale(1.045);}
+  100%{filter:brightness(1);transform:scale(1);}
+}
+
 /* CLICK ANIMATION */
 #kret.clickAnim{
   animation:clickBounce 0.25s ease;
@@ -8463,6 +8753,14 @@ button.activePetSlot:hover{
   box-shadow:0 28px 96px rgba(0,0,0,0.52),0 0 64px rgba(126,104,255,0.26),0 0 36px rgba(94,236,255,0.16);
 }
 
+#hatchOverlay.dropTier2 #hatchCard,
+#hatchOverlay.dropTier3 #hatchCard,
+#hatchOverlay.dropTier4 #hatchCard,
+#hatchOverlay.dropTier5 #hatchCard{
+  border-color:color-mix(in srgb, var(--reveal-color, #fff) 48%, rgba(255,255,255,.2));
+  box-shadow:0 28px 96px rgba(0,0,0,.55),0 0 74px color-mix(in srgb, var(--reveal-color, #fff) 25%, transparent),0 0 26px color-mix(in srgb, var(--reveal-color, #fff) 18%, transparent);
+}
+
 #hatchCard{
   position:relative;
   width:min(680px, calc(100vw - 36px));
@@ -8507,6 +8805,136 @@ button.activePetSlot:hover{
 #hatchCard > *{
   position:relative;
   z-index:1;
+}
+
+#hatchFx{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+}
+
+#hatchCard > #hatchFx{z-index:0;}
+
+.hatchFxHalo,
+.hatchFxRays,
+.hatchFxShockwave{
+  position:absolute;
+  left:50%;
+  top:47%;
+  display:block;
+  pointer-events:none;
+}
+
+.hatchFxHalo{
+  width:180px;
+  height:180px;
+  transform:translate(-50%,-50%) scale(.35);
+  border:1px solid color-mix(in srgb, var(--reveal-color, #fff) 64%, transparent);
+  border-radius:50%;
+  opacity:0;
+  box-shadow:0 0 36px color-mix(in srgb, var(--reveal-color, #fff) 28%, transparent), inset 0 0 28px color-mix(in srgb, var(--reveal-color, #fff) 15%, transparent);
+}
+
+.hatchFxRays{
+  width:440px;
+  height:440px;
+  transform:translate(-50%,-50%) scale(.65);
+  opacity:0;
+  background:repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--reveal-color, #fff) 25%, transparent) 0 5deg, transparent 6deg 22deg);
+  mask-image:radial-gradient(circle, transparent 0 21%, #000 50%, transparent 71%);
+}
+
+.hatchFxShockwave{
+  width:66px;
+  height:66px;
+  transform:translate(-50%,-50%) scale(.2);
+  border:3px solid color-mix(in srgb, var(--reveal-color, #fff) 76%, transparent);
+  border-radius:50%;
+  opacity:0;
+  box-shadow:0 0 22px color-mix(in srgb, var(--reveal-color, #fff) 48%, transparent);
+}
+
+#hatchSparkLayer{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+
+.hatchSpark{
+  position:absolute;
+  left:50%;
+  top:47%;
+  width:var(--spark-size);
+  height:var(--spark-size);
+  border-radius:2px;
+  background:var(--reveal-color, #fff);
+  opacity:0;
+  box-shadow:0 0 10px var(--reveal-color, #fff),0 0 18px color-mix(in srgb, var(--reveal-color, #fff) 42%, transparent);
+}
+
+.hatchSpark.charge{animation:hatchSparkCharge 1.05s ease-out var(--spark-delay) both;}
+.hatchSpark.impact{animation:hatchSparkImpact .86s cubic-bezier(.08,.8,.18,1) var(--spark-delay) both;}
+
+#hatchOverlay.revealCharge .hatchFxHalo{animation:hatchChargeHalo 1.15s ease-in-out infinite;}
+#hatchOverlay.revealCharge .hatchFxRays{animation:hatchRaysSpin 3.6s linear infinite;}
+#hatchOverlay.revealImpact .hatchFxHalo{animation:hatchImpactHalo .74s cubic-bezier(.1,.72,.2,1) both;}
+#hatchOverlay.revealImpact .hatchFxRays{animation:hatchImpactRays .78s ease-out both;}
+#hatchOverlay.revealImpact .hatchFxShockwave{animation:hatchShockwave .8s cubic-bezier(.12,.7,.18,1) both;}
+#hatchOverlay.revealImpact #hatchCard{animation:hatchCardImpact .46s cubic-bezier(.15,.82,.22,1.18) both;}
+
+#hatchOverlay.dropTier3.revealCharge #hatchCard,
+#hatchOverlay.dropTier4.revealCharge #hatchCard,
+#hatchOverlay.dropTier5.revealCharge #hatchCard{animation:hatchCardTension .68s ease-in-out infinite;}
+
+@keyframes hatchChargeHalo{
+  0%,100%{opacity:.14;transform:translate(-50%,-50%) scale(.42);}
+  50%{opacity:.56;transform:translate(-50%,-50%) scale(1.08);}
+}
+
+@keyframes hatchRaysSpin{
+  0%{opacity:.18;transform:translate(-50%,-50%) scale(.55) rotate(0deg);}
+  50%{opacity:.62;}
+  100%{opacity:.18;transform:translate(-50%,-50%) scale(1.12) rotate(180deg);}
+}
+
+@keyframes hatchImpactHalo{
+  0%{opacity:.92;transform:translate(-50%,-50%) scale(.32);}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(2.2);}
+}
+
+@keyframes hatchImpactRays{
+  0%{opacity:.92;transform:translate(-50%,-50%) scale(.58) rotate(0deg);}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.5) rotate(128deg);}
+}
+
+@keyframes hatchShockwave{
+  0%{opacity:.95;transform:translate(-50%,-50%) scale(.24);}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(5.8);}
+}
+
+@keyframes hatchSparkCharge{
+  0%{opacity:0;transform:translate(var(--spark-x),var(--spark-y)) scale(.3) rotate(0deg);}
+  35%{opacity:.8;}
+  100%{opacity:0;transform:translate(0,0) scale(.1) rotate(150deg);}
+}
+
+@keyframes hatchSparkImpact{
+  0%{opacity:1;transform:translate(0,0) scale(.5) rotate(0deg);}
+  20%{opacity:1;}
+  100%{opacity:0;transform:translate(var(--spark-x),var(--spark-y)) scale(.12) rotate(240deg);}
+}
+
+@keyframes hatchCardImpact{
+  0%{transform:translateY(0) scale(1);}
+  35%{transform:translateY(-3px) scale(1.025);}
+  100%{transform:translateY(0) scale(1);}
+}
+
+@keyframes hatchCardTension{
+  0%,100%{transform:translateY(0) scale(1);}
+  45%{transform:translateY(-2px) scale(1.008);}
 }
 
 #hatchPhaseLabel{
@@ -8601,6 +9029,56 @@ button.activePetSlot:hover{
   box-shadow:0 0 14px rgba(255,215,105,.22);
 }
 
+.hatchEggVisual.dropTier1,
+.hatchCrateVisual.dropTier1{
+  box-shadow:0 20px 44px rgba(0,0,0,.4),0 0 26px color-mix(in srgb, var(--reveal-color, #68dfff) 42%, transparent), inset 0 0 0 3px rgba(255,255,255,.2);
+}
+
+.hatchEggVisual.dropTier2,
+.hatchCrateVisual.dropTier2,
+.hatchEggVisual.dropTier3,
+.hatchCrateVisual.dropTier3,
+.hatchEggVisual.dropTier4,
+.hatchCrateVisual.dropTier4,
+.hatchEggVisual.dropTier5,
+.hatchCrateVisual.dropTier5{
+  box-shadow:0 22px 52px rgba(0,0,0,.46),0 0 42px color-mix(in srgb, var(--reveal-color, #c78bff) 62%, transparent),0 0 12px color-mix(in srgb, var(--reveal-color, #c78bff) 72%, transparent),inset 0 0 0 3px rgba(255,255,255,.28);
+}
+
+#hatchOverlay.dropTier2 .hatchEggVisual.shaking,
+#hatchOverlay.dropTier2 .hatchCrateVisual.shaking{
+  animation-duration:.36s;
+  filter:brightness(1.2) saturate(1.16);
+}
+
+#hatchOverlay.dropTier3 .hatchEggVisual.shaking,
+#hatchOverlay.dropTier3 .hatchCrateVisual.shaking{
+  animation-duration:.32s;
+  filter:brightness(1.32) saturate(1.28);
+}
+
+#hatchOverlay.dropTier4 .hatchEggVisual.shaking,
+#hatchOverlay.dropTier4 .hatchCrateVisual.shaking{
+  animation-duration:.29s;
+  filter:brightness(1.44) saturate(1.4);
+}
+
+#hatchOverlay.dropTier5 .hatchEggVisual.shaking,
+#hatchOverlay.dropTier5 .hatchCrateVisual.shaking{
+  animation-duration:.26s;
+  filter:brightness(1.58) saturate(1.54);
+}
+
+#hatchOverlay.dropTier4 .hatchEggVisual,
+#hatchOverlay.dropTier4 .hatchCrateVisual,
+#hatchOverlay.dropTier5 .hatchEggVisual,
+#hatchOverlay.dropTier5 .hatchCrateVisual{animation-name:hatchLegendaryPulse;}
+
+@keyframes hatchLegendaryPulse{
+  0%,100%{transform:translateY(0) scale(1);filter:brightness(1.15) saturate(1.2);}
+  50%{transform:translateY(-6px) scale(1.09);filter:brightness(1.55) saturate(1.5);}
+}
+
 .hatchEggVisual.shaking{
   animation:hatchShake 0.4s ease-in-out infinite;
 }
@@ -8689,6 +9167,22 @@ button.activePetSlot:hover{
   animation:hatchCardPop .42s cubic-bezier(.18,.9,.22,1.18) both;
 }
 
+#hatchResult.show .hatchPetCard{
+  animation:revealDropCard .52s cubic-bezier(.15,.86,.22,1.16) calc(var(--reveal-index, 0) * 75ms) both;
+}
+
+#hatchResult.show .hatchPetCard.dropTier3,
+#hatchResult.show .hatchPetCard.dropTier4,
+#hatchResult.show .hatchPetCard.dropTier5{
+  animation-duration:.72s;
+}
+
+@keyframes revealDropCard{
+  0%{opacity:0;transform:translateY(24px) scale(.72);filter:brightness(2.2);}
+  56%{opacity:1;transform:translateY(-5px) scale(1.06);filter:brightness(1.28);}
+  100%{opacity:1;transform:translateY(0) scale(1);filter:brightness(1);}
+}
+
 .hatchPetCard::before{
   content:"";
   position:absolute;
@@ -8709,6 +9203,10 @@ button.activePetSlot:hover{
 
 .hatchPetCard.secretDrop{
   animation:hatchCardPop .42s cubic-bezier(.18,.9,.22,1.18) both, secretDropPulse 1.8s ease-in-out infinite;
+}
+
+#hatchResult.show .hatchPetCard.secretDrop{
+  animation:revealDropCard .72s cubic-bezier(.15,.86,.22,1.16) calc(var(--reveal-index, 0) * 75ms) both, secretDropPulse 1.8s ease-in-out .72s infinite;
 }
 
 .hatchPetCard.autoDeletedDrop{
@@ -11911,7 +12409,7 @@ button.activePetSlot:hover{
   }
 
   .activePetSlot{
-    min-height:122px;
+    min-height:164px;
   }
 
   .slidePanel.rightSide{
@@ -13006,5 +13504,856 @@ button.activePetSlot:hover{
   .freeRewardGift,
   #codesCard{
     transition:none !important;
+  }
+
+  #hatchFx,
+  .hatchSpark,
+  .hatchEggVisual,
+  .hatchCrateVisual,
+  #hatchResult.show .hatchPetCard,
+  .gameFeelBurst,
+  .gameFeelBurst i,
+  .gameFeelPress,
+  .gameFeelPanelOpen,
+  .gameFeelPotion,
+  .gameFeelBag,
+  .gameFeelReward,
+  .gameFeelPurchase{
+    animation:none !important;
+  }
+}
+
+@media (max-width:640px){
+  .hatchFxRays{width:360px;height:360px;}
+  #hatchSparkLayer .hatchSpark:nth-child(n + 27){display:none;}
+  .gameFeelBurst i:nth-child(n + 13){display:none;}
+  #hatchOverlay.dropTier4 #hatchCard,
+  #hatchOverlay.dropTier5 #hatchCard{box-shadow:0 22px 60px rgba(0,0,0,.54),0 0 42px color-mix(in srgb, var(--reveal-color, #fff) 24%, transparent);}
+}
+
+/* APP-STYLE DARK GLASS THEME */
+:root{
+  --app-surface:rgba(36,36,38,.72);
+  --app-surface-strong:rgba(28,28,30,.9);
+  --app-surface-soft:rgba(255,255,255,.075);
+  --app-stroke:rgba(255,255,255,.15);
+  --app-stroke-soft:rgba(255,255,255,.09);
+  --app-text-muted:rgba(235,235,245,.68);
+  --app-accent:#ff625d;
+  --app-accent-strong:#ff453a;
+  --app-blue:#64d2ff;
+}
+
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Arial,sans-serif;
+  background:
+    radial-gradient(circle at 50% -22%, rgba(255,105,94,.15), transparent 34%),
+    radial-gradient(circle at 84% 16%, rgba(100,210,255,.10), transparent 28%),
+    linear-gradient(180deg,#171719 0%,#0a0a0b 74%);
+  color:#f5f5f7;
+}
+
+body::before{opacity:.54;mix-blend-mode:screen;}
+body::after{opacity:.14;}
+
+h1,
+.slideHeader b,
+.globalBossEventTop h2,
+.crystalEventTop h2{
+  letter-spacing:0;
+}
+
+#topHud{
+  border-color:var(--app-stroke);
+  border-radius:22px;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.025)),
+    var(--app-surface-strong);
+  box-shadow:0 18px 48px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.16);
+  backdrop-filter:blur(26px) saturate(1.12);
+}
+
+h1{font-weight:800;text-shadow:none;}
+#rebirthLabel,
+#stats{color:var(--app-text-muted);opacity:1;}
+
+.accountStatus{
+  color:#f5f5f7;
+  border-color:var(--app-stroke);
+  border-radius:18px;
+  background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.035)),var(--app-surface-strong);
+  box-shadow:0 14px 32px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.15);
+  backdrop-filter:blur(24px) saturate(1.1);
+}
+
+.cloudSaveStatus{
+  color:#f5f5f7;
+  border-color:var(--app-stroke-soft);
+  background:rgba(255,255,255,.09);
+}
+
+#leftDock,
+#rightDock{
+  gap:7px;
+  padding:7px;
+  border:1px solid var(--app-stroke-soft);
+  border-radius:27px;
+  background:linear-gradient(145deg,rgba(255,255,255,.105),rgba(255,255,255,.025)),rgba(25,25,27,.58);
+  box-shadow:0 18px 42px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.12);
+  backdrop-filter:blur(24px) saturate(1.1);
+}
+
+.dockBtn{
+  width:52px;
+  height:52px;
+  border:1px solid transparent;
+  border-radius:17px;
+  background:rgba(255,255,255,.055);
+  box-shadow:none;
+  font-size:27px;
+}
+
+.dockBtn:hover{
+  background:rgba(255,255,255,.13);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+}
+
+.dockBtn.active{
+  border-color:rgba(255,255,255,.14);
+  background:linear-gradient(145deg,rgba(255,255,255,.23),rgba(255,255,255,.08));
+  box-shadow:0 7px 18px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.2);
+}
+
+.autoOpenToggle,
+.gameInfoBtn,
+.appInstallBtn,
+.freeRewardsBtn,
+#codesBtn{
+  border-color:var(--app-stroke);
+  background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.035)),var(--app-surface-strong);
+  box-shadow:0 12px 28px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.14);
+  backdrop-filter:blur(22px) saturate(1.1);
+}
+
+.autoOpenToggle.on{
+  color:#fff;
+  border-color:rgba(255,128,117,.54);
+  background:linear-gradient(135deg,#ff6961,#ff453a);
+  box-shadow:0 12px 28px rgba(255,69,58,.24),inset 0 1px 0 rgba(255,255,255,.28);
+}
+
+.slidePanel{
+  border-color:var(--app-stroke);
+  border-radius:22px;
+  background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.025)),var(--app-surface-strong);
+  box-shadow:0 24px 64px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.17),inset 0 -1px 0 rgba(255,255,255,.045);
+  backdrop-filter:blur(30px) saturate(1.08);
+}
+
+.slidePanel::before{opacity:.42;}
+
+.slideHeader{
+  border-bottom-color:var(--app-stroke-soft);
+  background:linear-gradient(180deg,rgba(255,255,255,.045),transparent);
+}
+
+.panelCloseBtn,
+.adminPanelCloseBtn{
+  border-color:var(--app-stroke-soft);
+  background:rgba(235,235,245,.12);
+  box-shadow:none;
+}
+
+.panelTabs{
+  padding:0 12px 11px;
+}
+
+.panelTab{
+  border:1px solid transparent;
+  border-radius:14px;
+  background:rgba(235,235,245,.075);
+  box-shadow:none;
+  color:var(--app-text-muted);
+}
+
+.panelTab:hover{background:rgba(255,255,255,.13);}
+
+.panelTab.active{
+  border-color:rgba(255,255,255,.16);
+  color:#fff;
+  background:linear-gradient(145deg,rgba(255,255,255,.22),rgba(255,255,255,.10));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 7px 16px rgba(0,0,0,.15);
+}
+
+.panelTab::after{display:none;}
+
+.panelAction,
+#tutorialStartBtn,
+#tutorialNextBtn{
+  border:1px solid rgba(255,146,133,.48);
+  border-radius:14px;
+  background:linear-gradient(135deg,#ff6b61,#ff453a);
+  box-shadow:0 10px 22px rgba(255,69,58,.2),inset 0 1px 0 rgba(255,255,255,.24);
+}
+
+.panelAction.secondary,
+#tutorialDeclineBtn,
+#tutorialSkipBtn{
+  border-color:rgba(100,210,255,.42);
+  background:linear-gradient(135deg,#5ac8fa,#0a84ff);
+  box-shadow:0 10px 22px rgba(10,132,255,.18),inset 0 1px 0 rgba(255,255,255,.24);
+}
+
+.eggCard,
+.petCard,
+.bagCard,
+.potionCard,
+.enchantCard,
+.upgradeHubCard,
+.inventoryBonusCard,
+.weatherNowCard,
+.weatherForecastBox,
+.weatherIndexCard,
+.weatherHudCard,
+.card{
+  border-color:var(--app-stroke-soft);
+  background:linear-gradient(145deg,rgba(255,255,255,.105),rgba(255,255,255,.025)),rgba(37,37,39,.72);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 10px 22px rgba(0,0,0,.16);
+}
+
+.eggCard:hover,
+.petCard:hover,
+.bagCard:hover,
+.potionCard:hover,
+.enchantCard:hover,
+.upgradeHubCard:hover,
+.card:hover{
+  border-color:rgba(255,255,255,.18);
+  background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.05)),rgba(48,48,51,.78);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 15px 28px rgba(0,0,0,.22);
+}
+
+.inventorySectionHeader{
+  border-color:var(--app-stroke-soft);
+  border-radius:14px;
+  background:rgba(255,255,255,.055);
+}
+
+.petStack,
+.potionStack,
+.inventorySectionHeader span,
+.weatherNowState,
+.weatherForecastItem > em,
+.weatherIndexCard > em{
+  border-color:var(--app-stroke-soft);
+  background:rgba(0,0,0,.22);
+  color:#f5f5f7;
+}
+
+#rebirthBtn{
+  border-color:rgba(255,183,79,.48);
+  background:
+    radial-gradient(circle at 18% 4%, rgba(255,255,255,.28), transparent 25%),
+    linear-gradient(135deg,#ff6b61 0%,#ff9f0a 54%,#ffd60a 100%);
+  box-shadow:0 16px 34px rgba(0,0,0,.28),0 0 26px rgba(255,159,10,.18),inset 0 1px 0 rgba(255,255,255,.35);
+}
+
+.globalBossEventBannerBtn{
+  border-radius:18px;
+  border-color:rgba(255,255,255,.18);
+  background:linear-gradient(135deg,#ff5f57,#ff453a 45%,#b52e3b);
+  box-shadow:0 14px 32px rgba(0,0,0,.28),0 0 28px rgba(255,69,58,.16),inset 0 1px 0 rgba(255,255,255,.28);
+}
+
+.tutorialAskCard,
+#appInstallCard,
+#freeRewardsCard,
+#accountMenuCard,
+#codesCard{
+  border-color:var(--app-stroke);
+  background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.035)),rgba(29,29,31,.94);
+  box-shadow:0 28px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.16);
+  backdrop-filter:blur(30px) saturate(1.06);
+}
+
+#authCard{
+  color:#f5f5f7;
+  border-color:var(--app-stroke);
+  background:linear-gradient(145deg,rgba(255,255,255,.14),rgba(255,255,255,.035)),rgba(29,29,31,.92);
+  box-shadow:0 28px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.18);
+  backdrop-filter:blur(32px) saturate(1.06);
+}
+
+.authBrand{
+  color:#ffd5cf;
+  border-color:rgba(255,128,117,.24);
+  background:rgba(255,94,87,.13);
+}
+
+#authSubtitle{color:var(--app-text-muted);}
+
+.authMenu button,
+.authActions button{
+  color:#fff;
+  border:1px solid rgba(255,146,133,.48);
+  background:linear-gradient(135deg,#ff6b61,#ff453a);
+  box-shadow:0 10px 22px rgba(255,69,58,.2),inset 0 1px 0 rgba(255,255,255,.24);
+}
+
+.authMenu button.secondary,
+.authActions button.secondary{
+  color:#f5f5f7;
+  border-color:var(--app-stroke);
+  background:rgba(255,255,255,.10);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14);
+}
+
+.authForm label{color:var(--app-text-muted);}
+
+.authForm input{
+  color:#f5f5f7;
+  border-color:var(--app-stroke-soft);
+  background:rgba(0,0,0,.22);
+}
+
+.authForm input:focus{
+  border-color:rgba(100,210,255,.78);
+  box-shadow:0 0 0 4px rgba(10,132,255,.17);
+}
+
+@media (max-width:700px){
+  #leftDock,
+  #rightDock{
+    gap:5px;
+    padding:5px;
+    border-radius:23px;
+  }
+
+  .dockBtn{
+    border-radius:14px;
+  }
+
+  #topHud,
+  .slidePanel{
+    border-radius:20px;
+  }
+}
+
+/* BATCH JACKPOT REVEAL */
+#hatchOverlay.batchSpotlight{
+  background:
+    radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--reveal-color, #fff) 28%, transparent), transparent 32%),
+    radial-gradient(circle at 16% 16%, rgba(255,255,255,.13), transparent 24%),
+    rgba(2,2,8,.88);
+}
+
+#hatchResult.spotlightActive #hatchPetsGrid{
+  grid-template-columns:1fr;
+  max-width:460px;
+}
+
+#hatchResult.spotlightActive .hatchPetCard.batchBackdrop{
+  display:none;
+}
+
+.hatchPetCard.batchSpotlight{
+  width:min(100%, 440px);
+  min-height:332px;
+  margin:auto;
+  border-color:color-mix(in srgb, var(--spotlight-color, #fff) 66%, rgba(255,255,255,.3));
+  background:
+    radial-gradient(circle at 50% 12%, color-mix(in srgb, var(--spotlight-color, #fff) 38%, transparent), transparent 42%),
+    linear-gradient(160deg,rgba(255,255,255,.18),rgba(255,255,255,.045));
+  box-shadow:0 0 52px color-mix(in srgb, var(--spotlight-color, #fff) 38%, transparent),0 26px 64px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.28);
+}
+
+#hatchResult.spotlightActive .hatchPetCard.batchSpotlight{
+  animation:batchSpotlightRise .74s cubic-bezier(.12,.88,.2,1.18) both,batchSpotlightPulse 1.35s .74s ease-in-out infinite;
+}
+
+.hatchPetCard.batchSpotlight .hatchPetVisual{
+  width:148px;
+  height:148px;
+  margin:38px auto 14px;
+  box-shadow:0 0 42px color-mix(in srgb, var(--spotlight-color, #fff) 52%, transparent),0 22px 48px rgba(0,0,0,.38),inset 0 0 0 3px rgba(255,255,255,.25);
+}
+
+.hatchPetCard.batchSpotlight .hatchPetName{
+  font-size:25px;
+  text-shadow:0 0 22px color-mix(in srgb, var(--spotlight-color, #fff) 42%, transparent);
+}
+
+.hatchPetCard.batchSpotlight .hatchPetStats{
+  font-size:13px;
+}
+
+.hatchSpotlightLabel{
+  position:absolute;
+  top:14px;
+  left:50%;
+  z-index:3;
+  padding:7px 13px;
+  border:1px solid rgba(255,255,255,.36);
+  border-radius:999px;
+  color:#17110b;
+  background:linear-gradient(135deg,#fff7cc,var(--spotlight-color, #ffd15d));
+  box-shadow:0 0 26px color-mix(in srgb, var(--spotlight-color, #fff) 48%, transparent),inset 0 1px 0 rgba(255,255,255,.64);
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:.08em;
+  transform:translateX(-50%);
+}
+
+#hatchResult.spotlightComplete .hatchPetCard.batchBackdrop{
+  animation:batchBackdropReveal .48s cubic-bezier(.16,.84,.22,1.1) calc(var(--reveal-index, 0) * 55ms) both;
+}
+
+@keyframes batchSpotlightRise{
+  0%{opacity:0;transform:translateY(52px) scale(.48);filter:brightness(3.1) saturate(1.5);}
+  58%{opacity:1;transform:translateY(-10px) scale(1.08);filter:brightness(1.35) saturate(1.2);}
+  100%{opacity:1;transform:translateY(0) scale(1);filter:brightness(1) saturate(1);}
+}
+
+@keyframes batchSpotlightPulse{
+  0%,100%{filter:brightness(1) saturate(1);}
+  50%{filter:brightness(1.18) saturate(1.16);}
+}
+
+@keyframes batchBackdropReveal{
+  0%{opacity:0;transform:translateY(18px) scale(.82);filter:brightness(1.8);}
+  100%{opacity:1;transform:translateY(0) scale(1);filter:brightness(1);}
+}
+
+@media (max-width:700px){
+  .hatchPetCard.batchSpotlight{
+    display:grid;
+    grid-template-columns:1fr;
+    min-height:0;
+    padding:16px 14px 18px;
+    text-align:center;
+  }
+
+  .hatchPetCard.batchSpotlight .hatchPetVisual{
+    grid-row:auto;
+    width:126px;
+    height:126px;
+    margin:36px auto 10px;
+  }
+
+  .hatchPetCard.batchSpotlight .hatchRarityBadge{
+    justify-self:center;
+    margin:auto auto 7px;
+  }
+
+  .hatchPetCard.batchSpotlight .hatchPetName{
+    font-size:21px;
+  }
+}
+
+/* MOBILE-FIRST GAMEPLAY LAYER */
+@media (max-width:700px){
+  :root{
+    --mobile-gutter:max(10px, env(safe-area-inset-left));
+    --mobile-tap-size:44px;
+  }
+
+  html,
+  body{
+    min-width:0;
+    overscroll-behavior-x:none;
+  }
+
+  button,
+  select,
+  input{
+    font:inherit;
+  }
+
+  #leftDock,
+  #rightDock{
+    scroll-snap-type:x proximity;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-x;
+  }
+
+  .dockBtn{
+    scroll-snap-align:center;
+    touch-action:manipulation;
+  }
+
+  .panelAction,
+  .panelTab,
+  .marketplaceTopActions button,
+  .marketBuyActions button,
+  .marketTabs button,
+  .marketActionBtn,
+  .marketSlotBtn,
+  .globalBossBackBtn,
+  #rebirthContinueBtn,
+  #eggChoiceActions button{
+    min-height:var(--mobile-tap-size);
+  }
+
+  .panelCloseBtn,
+  .adminPanelCloseBtn,
+  #marketBuyClose{
+    min-width:var(--mobile-tap-size);
+    min-height:var(--mobile-tap-size);
+  }
+
+  .slidePanel,
+  .slidePanel.rightSide{
+    overscroll-behavior:contain;
+    box-shadow:0 22px 60px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.16);
+  }
+
+  .slidePanel .panelScroll{
+    padding-bottom:18px;
+    overscroll-behavior:contain;
+    touch-action:pan-y;
+  }
+
+  .panelActions{
+    position:sticky;
+    bottom:0;
+    z-index:4;
+    padding:10px 12px 12px;
+    background:linear-gradient(180deg,rgba(29,29,31,0),rgba(29,29,31,.94) 34%);
+    backdrop-filter:blur(10px);
+  }
+
+  .panelTabs{
+    gap:7px;
+  }
+
+  .panelTab{
+    min-height:40px;
+    padding:8px 7px;
+  }
+
+  #petPanel .panelTabs{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+  }
+
+  .activePetSlot{
+    min-height:158px;
+  }
+
+  .activePetSlotName{
+    font-size:12px;
+  }
+
+  #rebirthBtn{
+    min-height:96px;
+    touch-action:manipulation;
+  }
+
+  .weatherClickable{
+    min-width:54px;
+    min-height:54px;
+    touch-action:manipulation;
+  }
+
+  .inventoryEggCard:focus .chanceTooltip,
+  .bagCard:focus .chanceTooltip{
+    max-height:280px;
+    padding:10px;
+    border-width:1px;
+    opacity:1;
+  }
+
+  .marketplaceView{
+    padding:
+      max(10px, env(safe-area-inset-top))
+      max(10px, env(safe-area-inset-right))
+      max(14px, env(safe-area-inset-bottom))
+      max(10px, env(safe-area-inset-left));
+    overscroll-behavior:contain;
+  }
+
+  .marketplaceShell{
+    gap:10px;
+  }
+
+  .marketplaceTop{
+    position:sticky;
+    top:0;
+    z-index:5;
+    gap:10px;
+    padding:12px;
+    backdrop-filter:blur(22px) saturate(1.08);
+  }
+
+  .marketplaceTopActions{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:8px;
+  }
+
+  .marketDiamondPill{
+    grid-column:1 / -1;
+    min-width:0;
+  }
+
+  .marketplaceTopActions button,
+  .marketBuyActions button{
+    width:100%;
+  }
+
+  .marketTabs{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+  }
+
+  .marketCard,
+  .marketCreateBox,
+  .marketSlotCard{
+    padding:12px;
+    border-radius:16px;
+  }
+
+  .marketBuyModal,
+  .marketSaleModal{
+    align-items:end;
+    padding:
+      12px
+      max(10px, env(safe-area-inset-right))
+      max(10px, env(safe-area-inset-bottom))
+      max(10px, env(safe-area-inset-left));
+  }
+
+  .marketBuyCard,
+  .marketSaleCard{
+    box-sizing:border-box;
+    width:100%;
+    max-width:520px;
+    max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    overflow-y:auto;
+    border-radius:24px;
+    overscroll-behavior:contain;
+  }
+
+  .marketBuyActions{
+    position:sticky;
+    bottom:0;
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    padding-top:12px;
+    background:linear-gradient(180deg,rgba(15,17,28,0),rgba(15,17,28,.98) 34%);
+  }
+
+  .globalBossEventView,
+  .crystalEventView{
+    overscroll-behavior:contain;
+  }
+
+  .globalBossEventTop,
+  .crystalEventTop{
+    box-sizing:border-box;
+    width:100%;
+  }
+
+  .globalBossArena,
+  .crystalMineCard{
+    min-height:min(520px, calc(100dvh - 230px));
+  }
+
+  .globalBossBackBtn{
+    width:100%;
+  }
+
+  #hatchOverlay{
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  #hatchCard{
+    padding:18px 12px;
+    scroll-padding-bottom:14px;
+  }
+
+  #hatchEggsRow{
+    grid-template-columns:repeat(auto-fit, minmax(54px, 1fr));
+    gap:8px;
+  }
+
+  .hatchEggVisual{
+    width:54px;
+    height:68px;
+  }
+
+  .hatchPetCard{
+    min-width:0;
+  }
+
+  #stopAutoEggBtn{
+    min-height:var(--mobile-tap-size);
+  }
+
+  #authCard,
+  .accountMenuCard,
+  #upgradeInfoCard,
+  #eggChoiceCard,
+  #rebirthCard,
+  #adminBoostCard{
+    scroll-padding-bottom:14px;
+  }
+
+  .freeRewardGift,
+  .eggCard,
+  .petCard,
+  .bagCard,
+  .potionCard,
+  .enchantCard{
+    touch-action:manipulation;
+  }
+}
+
+@media (max-width:420px) and (orientation:portrait){
+  :root{
+    --mobile-bottom-ui:112px;
+    --mobile-top-ui:88px;
+  }
+
+  #topHud{
+    padding:8px 9px;
+  }
+
+  #leftDock,
+  #rightDock{
+    gap:5px;
+    padding:5px;
+  }
+
+  .dockBtn{
+    flex-basis:40px;
+    width:40px;
+    height:40px;
+    min-width:40px;
+    border-radius:14px;
+    font-size:20px;
+  }
+
+  .gameInfoBtn{left:max(8px, env(safe-area-inset-left));}
+  .streakHud{left:calc(max(8px, env(safe-area-inset-left)) + 44px);}
+  .appInstallBtn{left:calc(max(8px, env(safe-area-inset-left)) + 130px);}
+  .freeRewardsBtn{left:calc(max(8px, env(safe-area-inset-left)) + 174px);}
+
+  .activePetSlot{
+    min-height:150px;
+    padding-left:7px;
+    padding-right:7px;
+  }
+
+  .marketplaceTop h2{
+    font-size:23px;
+  }
+
+  .marketItemTop{
+    align-items:flex-start;
+  }
+}
+
+@media (max-width:700px) and (orientation:landscape){
+  :root{
+    --mobile-bottom-ui:12px;
+  }
+
+  body{
+    padding:8px 72px 12px;
+  }
+
+  #topHud{
+    width:100%;
+    margin:0 auto 6px;
+  }
+
+  .accountStatus{
+    position:fixed;
+    top:8px;
+    right:76px;
+    margin:0;
+    z-index:240;
+  }
+
+  #autoOpenToggle,
+  #autoCrateToggle{
+    position:fixed;
+    left:8px;
+    width:56px;
+    min-width:56px;
+    min-height:40px;
+    padding:4px;
+    overflow:hidden;
+    font-size:0;
+  }
+
+  #autoOpenToggle{top:8px;}
+  #autoCrateToggle{top:54px;}
+  #autoOpenToggle::before{content:"🥚";font-size:19px;}
+  #autoCrateToggle::before{content:"📦";font-size:19px;}
+
+  #leftDock,
+  #rightDock{
+    top:104px;
+    bottom:10px;
+    width:54px;
+    max-width:54px;
+    max-height:calc(100dvh - 114px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    flex-direction:column;
+    align-items:center;
+    gap:5px;
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding:5px;
+    border-radius:20px;
+    scroll-snap-type:y proximity;
+    touch-action:pan-y;
+  }
+
+  #leftDock{left:8px;right:auto;}
+  #rightDock{right:8px;left:auto;}
+
+  .dockBtn{
+    flex:0 0 40px;
+    width:40px;
+    height:40px;
+    min-width:40px;
+    font-size:20px;
+  }
+
+  #mainPlay,
+  #shop,
+  #shop.voidPreviewLayout{
+    width:100%;
+  }
+
+  #kretWrap{
+    width:min(46vw, 250px);
+    height:min(46vw, 250px);
+  }
+
+  #kret{
+    width:min(36vw, 190px);
+    height:min(36vw, 190px);
+  }
+
+  #rebirthBtn{
+    margin-bottom:14px;
+  }
+
+  .slidePanel,
+  .slidePanel.rightSide{
+    bottom:10px !important;
+    max-height:calc(100dvh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+
+  .gameInfoBtn,
+  .appInstallBtn,
+  .freeRewardsBtn,
+  .streakHud,
+  .codesBtn{
+    bottom:12px;
   }
 }

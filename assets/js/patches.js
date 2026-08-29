@@ -4,6 +4,13 @@ const critChanceUpgrade = upgrades.find(u=>u.id==="critC");
 if(critChanceUpgrade) critChanceUpgrade.name = "CRIT SZANSA";
 const critDamageUpgrade = upgrades.find(u=>u.id==="critM");
 if(critDamageUpgrade) critDamageUpgrade.name = "CRIT DMG";
+const frenzyUpgrade = upgrades.find(u=>u.id==="frenzy");
+if(frenzyUpgrade){
+  frenzyUpgrade.name = "FRENZY SZANSA +0.2%";
+  frenzyUpgrade.effect = g=>{
+    g.frenzyChance = Math.min(0.04, (Number(g.upgrades?.frenzy) || 0) * 0.002);
+  };
+}
 
 const rebirthOverlay = document.getElementById("rebirthOverlay");
 const rebirthHeroTitle = document.getElementById("rebirthHeroTitle");
@@ -43,10 +50,19 @@ const codesClose = document.getElementById("codesClose");
 const codesInput = document.getElementById("codesInput");
 const codesClaim = document.getElementById("codesClaim");
 const codesStatus = document.getElementById("codesStatus");
+const hatchFx = document.getElementById("hatchFx");
+const hatchSparkLayer = document.getElementById("hatchSparkLayer");
 
 const HIDDEN_MANUAL_CLICK_COOLDOWN_MS = 55;
+const FRENZY_MAX_CHANCE = 0.04;
+const FRENZY_DURATION_SECONDS = 4;
+const FRENZY_TRIGGER_COOLDOWN_MS = 6000;
+const MAX_ENCHANT_VARIANT_BONUS = 0.12;
+const MAX_ENCHANT_DIAMOND_DROP_MULTIPLIER = 2;
+const MAX_DIAMOND_CLICK_CHANCE = 0.30;
 const APP_INSTALL_BONUS_MULT = 1.05;
 let lastManualClickAt = 0;
+let frenzyTriggerCooldownUntil = 0;
 let rebirthOverlayTimers = [];
 let rebirthOverlayOpen = false;
 let lastAutoEggId = null;
@@ -80,6 +96,7 @@ game.bagSeq = game.bagSeq || 1;
 game.enchants = Array.isArray(game.enchants) ? game.enchants : [];
 game.activeEnchantIds = Array.isArray(game.activeEnchantIds) ? game.activeEnchantIds : [];
 game.enchantSeq = game.enchantSeq || 1;
+game.frenzyChance = Math.min(FRENZY_MAX_CHANCE, (Number(game.upgrades?.frenzy) || 0) * 0.002);
 game.inventoryEggs = Array.isArray(game.inventoryEggs) ? game.inventoryEggs : [];
 game.inventoryEggSeq = game.inventoryEggSeq || 1;
 game.fruits = Array.isArray(game.fruits) ? game.fruits : [];
@@ -319,34 +336,41 @@ function renderWeatherPanel(){
   const currentDef = current ? getWeatherDef(current.id) : null;
   const forecast = getWeatherForecastItems();
   weatherContent.innerHTML = `
-    <div class="weatherNowCard ${current ? "active" : ""}">
-      <span>${currentDef?.icon || "&#9729;"}</span>
-      <div><b>${current ? `${current.mega ? "MEGA " : ""}${currentDef.name}` : "Brak pogody"}</b><small>${current ? `Koniec za ${formatWeatherTime(current.endsAt - Date.now())}` : "Nastepne losowanie o pelnej polowie godziny."}</small></div>
-    </div>
-    <div class="weatherForecastBox">
-      <b>Prognoza pogody</b>
-      ${level < 1 ? `<button type="button" onclick="buyWeatherForecast(1)">Odblokuj I: 3 pogody + ${formatDiamond(500)}</button>` : ""}
-      ${level < 2 ? `<button type="button" onclick="buyWeatherForecast(2)">Odblokuj II: 7 pogod + ${formatDiamond(1000)}</button>` : ""}
+    <div class="weatherPanelLayout">
+      <div class="weatherNowCard ${current ? "active" : ""}">
+        <span class="weatherNowIcon">${currentDef?.icon || "&#9729;"}</span>
+        <div class="weatherNowMeta"><b>${current ? `${current.mega ? "MEGA " : ""}${currentDef.name}` : "Brak pogody"}</b><small>${current ? `Koniec za ${formatWeatherTime(current.endsAt - Date.now())}` : "Nastepne losowanie o pelnej polowie godziny."}</small></div>
+        <em class="weatherNowState">${current?.mega ? "MEGA" : current ? "AKTYWNA" : "SPOKOJ"}</em>
+      </div>
+      <div class="weatherForecastBox weatherPanelSection">
+        <div class="weatherSectionHeading"><b>Prognoza pogody</b><span>${level ? `${level}/2` : `${discovered}/10`}</span></div>
+        <div class="weatherForecastActions">
+          ${level < 1 ? `<button type="button" class="weatherActionBtn" onclick="buyWeatherForecast(1)"><span>Odblokuj prognoze I</span><b>3 pogody · ${formatDiamond(500)}</b></button>` : ""}
+          ${level < 2 ? `<button type="button" class="weatherActionBtn" onclick="buyWeatherForecast(2)"><span>Odblokuj prognoze II</span><b>7 pogod · ${formatDiamond(1000)}</b></button>` : ""}
+        </div>
       ${level ? forecast.slice(0, level).map((item, i)=>{
         const def = item ? getWeatherDef(item.id) : null;
-        return `<div class="weatherForecastItem"><span>${def?.icon || "&#10060;"}</span><div><b>${item ? `${level >= 2 && item.mega ? "MEGA " : ""}${def.name}` : "Brak pogody"}</b><small>Za ${formatWeatherTime((getWeatherSlotStart(Date.now()) + (i+1)*WEATHER_SLOT_MS) - Date.now())}</small></div></div>`;
-      }).join("") : `<small>Odkryte pogody: ${discovered}/10</small>`}
-    </div>
-    <div class="weatherForecastBox weatherShellShop">
-      <b>Powodz: muszelki</b>
-      <small>Masz: ${format(game.weather.shells || 0)} muszelek. Wydasz je po odkryciu/aktywacji powodzi.</small>
-      <div class="weatherWaterOdds">
-        <span>Kret Kropla 50%</span><span>Kret Fala 30%</span><span>Kret Przyplywu 15%</span><span>Zalany Kret 5%</span>
+        return `<div class="weatherForecastItem"><span>${def?.icon || "&#10060;"}</span><div><b>${item ? `${level >= 2 && item.mega ? "MEGA " : ""}${def.name}` : "Brak pogody"}</b><small>Za ${formatWeatherTime((getWeatherSlotStart(Date.now()) + (i+1)*WEATHER_SLOT_MS) - Date.now())}</small></div><em>${i + 1}</em></div>`;
+      }).join("") : `<small class="weatherSectionHint">Odkryte pogody: ${discovered}/10</small>`}
       </div>
-      <button type="button" onclick="buyWeatherShellReward('bag')">Wodna sakiewka - 100 muszelek</button>
-      <button type="button" onclick="buyWeatherShellReward('egg')">Wodne Jajko - 1000 muszelek</button>
-    </div>
-    <div class="weatherIndexList">
-      <b>Index pogody</b>
+      <div class="weatherForecastBox weatherShellShop weatherPanelSection">
+        <div class="weatherSectionHeading"><b>Powodz: muszelki</b><span>${format(game.weather.shells || 0)} &#128026;</span></div>
+        <small class="weatherSectionHint">Muszelki zdobywasz podczas powodzi i wymieniasz je na wodne nagrody.</small>
+        <div class="weatherWaterOdds">
+          <span>Kret Kropla <b>50%</b></span><span>Kret Fala <b>30%</b></span><span>Kret Przyplywu <b>15%</b></span><span>Zalany Kret <b>5%</b></span>
+        </div>
+        <div class="weatherShellActions">
+          <button type="button" class="weatherActionBtn" onclick="buyWeatherShellReward('bag')"><span>Wodna sakiewka</span><b>100 &#128026;</b></button>
+          <button type="button" class="weatherActionBtn premium" onclick="buyWeatherShellReward('egg')"><span>Wodne jajko</span><b>1000 &#128026;</b></button>
+        </div>
+      </div>
+      <div class="weatherIndexList weatherPanelSection">
+        <div class="weatherSectionHeading"><b>Index pogody</b><span>${discovered}/${WEATHER_CATALOG.length}</span></div>
       ${WEATHER_CATALOG.map(def=>{
         const seen = !!game.weather.discovered[def.id];
-        return `<div class="weatherIndexCard ${seen ? "" : "locked"}"><span>${seen ? def.icon : "?"}</span><div><b>${seen ? def.name : "Nieodkryta pogoda"}</b><small>${seen ? getWeatherDescription(def) : "Badz online podczas pogody, zeby ja odkryc."}</small></div></div>`;
+        return `<div class="weatherIndexCard ${seen ? "" : "locked"}"><span>${seen ? def.icon : "?"}</span><div><b>${seen ? def.name : "Nieodkryta pogoda"}</b><small>${seen ? getWeatherDescription(def) : "Badz online podczas pogody, zeby ja odkryc."}</small></div><em>${seen ? `${def.chance}%` : "?"}</em></div>`;
       }).join("")}
+      </div>
     </div>
   `;
 }
@@ -490,7 +514,7 @@ function grantWeatherMiniDiamonds(amount, label="Diamentowy pyl"){
 function grantWeatherLooseReward(pool){
   const reward = weatherPickWeighted(pool);
   if(reward.type === "coins"){
-    const base = typeof getClickPower === "function" ? getClickPower() : 1;
+    const base = typeof getNormalClickPower === "function" ? getNormalClickPower() : 1;
     const amount = Math.max(1, Math.floor(base * reward.mult));
     game.score += amount;
     spawnPopup(`+${formatPoint(amount)}`, false, false, true);
@@ -1365,6 +1389,93 @@ function triggerScreenEffect(type="void", label=""){
   setTimeout(()=>burst.remove(), 1400);
 }
 
+let gameFeelLayer = null;
+let lastNormalGameFeelAt = 0;
+
+function ensureGameFeelLayer(){
+  if(gameFeelLayer?.isConnected) return gameFeelLayer;
+  gameFeelLayer = document.createElement("div");
+  gameFeelLayer.id = "gameFeelLayer";
+  gameFeelLayer.setAttribute("aria-hidden", "true");
+  document.body.appendChild(gameFeelLayer);
+  return gameFeelLayer;
+}
+
+function pulseGameFeel(element, className="gameFeelPulse"){
+  if(!element) return;
+  element.classList.remove(className);
+  void element.offsetWidth;
+  element.classList.add(className);
+  setTimeout(()=>element.classList.remove(className), 620);
+}
+
+function spawnGameFeelBurst(anchor, {kind="coin", count=6, scale=1}={}){
+  const layer = ensureGameFeelLayer();
+  const rect = anchor?.getBoundingClientRect?.();
+  const x = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+  const y = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
+  const safeCount = Math.max(1, Math.min(18, count));
+  const burst = document.createElement("div");
+  burst.className = `gameFeelBurst ${kind}`;
+  burst.style.setProperty("--burst-x", `${x}px`);
+  burst.style.setProperty("--burst-y", `${y}px`);
+  burst.style.setProperty("--burst-final-scale", String(4.5 * scale));
+
+  for(let index = 0; index < safeCount; index++){
+    const particle = document.createElement("i");
+    const angle = (Math.PI * 2 * index / safeCount) + (Math.random() - 0.5) * 0.4;
+    const distance = (28 + Math.random() * 68) * scale;
+    particle.style.setProperty("--particle-x", `${Math.cos(angle) * distance}px`);
+    particle.style.setProperty("--particle-y", `${Math.sin(angle) * distance}px`);
+    particle.style.setProperty("--particle-size", `${3 + Math.random() * 5 * scale}px`);
+    particle.style.setProperty("--particle-delay", `${Math.random() * 55}ms`);
+    burst.appendChild(particle);
+  }
+  layer.appendChild(burst);
+  setTimeout(()=>burst.remove(), 820);
+}
+
+function playMoleGameFeel({isCrit=false, isGold=false, frenzyStarted=false}={}){
+  const now = performance.now();
+  const type = frenzyStarted ? "frenzy" : isGold ? "gold" : isCrit ? "crit" : "coin";
+  const special = frenzyStarted || isGold || isCrit;
+  if(!special && now - lastNormalGameFeelAt < 125) return;
+  lastNormalGameFeelAt = now;
+  const count = frenzyStarted ? 16 : isGold ? 12 : isCrit ? 9 : 2;
+  const scale = frenzyStarted ? 1.35 : isGold ? 1.15 : isCrit ? 1 : .72;
+  pulseGameFeel(kret, `gameFeel${type[0].toUpperCase()}${type.slice(1)}`);
+  spawnGameFeelBurst(kret, {kind:type, count, scale});
+  if(frenzyStarted) window.kretAudio?.frenzyHit?.();
+  else if(isGold) window.kretAudio?.goldHit?.();
+  else if(isCrit) window.kretAudio?.critHit?.();
+}
+
+function playRewardGameFeel(kind="reward", anchor=null){
+  const target = anchor || document.getElementById("ui") || kret;
+  const config = {
+    diamond:{count:12, scale:1.08},
+    potion:{count:9, scale:.95},
+    bag:{count:11, scale:1.04},
+    reward:{count:12, scale:1.08},
+    purchase:{count:5, scale:.7}
+  }[kind] || {count:7, scale:.8};
+  pulseGameFeel(target, `gameFeel${kind[0].toUpperCase()}${kind.slice(1)}`);
+  spawnGameFeelBurst(target, {kind, ...config});
+  if(kind === "diamond") window.kretAudio?.diamondHit?.();
+  else if(kind === "reward") window.kretAudio?.rewardHit?.();
+}
+
+function playPanelGameFeel(panel){
+  if(!panel?.classList.contains("open")) return;
+  pulseGameFeel(panel, "gameFeelPanelOpen");
+}
+
+document.addEventListener("pointerdown", event=>{
+  const target = event.target instanceof Element ? event.target.closest("button,.card,.eggCard,.petCard,.bagCard,.potionCard,.freeRewardGift,.panelAction,.panelTab") : null;
+  if(!target || target.matches(".disabled,.locked,[disabled]")) return;
+  pulseGameFeel(target, "gameFeelPress");
+}, {passive:true});
+
 function clearRebirthOverlayTimers(){
   rebirthOverlayTimers.forEach(id=>clearTimeout(id));
   rebirthOverlayTimers = [];
@@ -1565,7 +1676,7 @@ function normalizeGameText(){
     holdDuration:"Wydluza czas trwania chwytu.",
     holdPower:"Zwiksza tempo klikania podczas chwytu.",
     multi:"Podnosi mnoznik punktow ze wszystkich klikow.",
-    frenzy:"Zwiksza szanse na wejscie w frenzy.",
+    frenzy:"Zwiksza szanse na wejscie w frenzy. Maksymalnie 4%, z krotka przerwa po aktywacji.",
     critC:"Zwiksza szanse na krytyczny klik.",
     critM:"Zwiksza obrazenia krytycznego kliku.",
     eggBatch:"Pozwala kupic i otworzyc wiecej jajek naraz.",
@@ -1587,7 +1698,7 @@ function normalizeGameText(){
     holdDuration:"CHWYT: CZAS TRWANIA",
     holdPower:"CHWYT: MOC",
     multi:"MULTI x0.35",
-    frenzy:"FRENZY SZANSA +0.5%",
+    frenzy:"FRENZY SZANSA +0.2%",
     critC:"CRIT SZANSA",
     critM:"CRIT DMG"
   };
@@ -1857,7 +1968,8 @@ function getDiamondChance(source="click"){
   const progress = Math.min(game.rebirths, REBIRTH_LIMIT) / REBIRTH_LIMIT;
   const clickChance = 0.0001 + (0.01 - 0.0001) * progress;
   const sourceChance = source === "auto" ? clickChance * 0.35 : clickChance;
-  return sourceChance * getDiamondChanceUpgradeMultiplier() * getEndlessDiamondChanceMultiplier() * getGlobalEventMultiplier("diamonds") * getActivePotionMultiplier("diamonds") * getEnchantDiamondDropMultiplier() * getWeatherMultiplier("diamonds");
+  const chance = sourceChance * getDiamondChanceUpgradeMultiplier() * getEndlessDiamondChanceMultiplier() * getGlobalEventMultiplier("diamonds") * getActivePotionMultiplier("diamonds") * getEnchantDiamondDropMultiplier() * getWeatherMultiplier("diamonds");
+  return Math.min(MAX_DIAMOND_CLICK_CHANCE, chance);
 }
 
 const POTION_TYPES = {
@@ -1886,8 +1998,8 @@ const ENCHANT_CATALOG = {
   coins:{id:"coins", name:"Ksiega Monet", icon:"¤", color:"#ffd15f", effect:"coins", base:0.035, desc:"Wiekszy zarobek coinsow."},
   variants:{id:"variants", name:"Ksiega Wariantow", icon:"✦", color:"#ff8df3", effect:"variants", base:0.017, desc:"Wieksze szanse na shiny/gold/diamond."},
   eggPlus:{id:"eggPlus", name:"Exclusive: +1 Jajko", icon:"+1", color:"#d8fbff", effect:"eggBatch", base:1, exclusive:true, desc:"Stale +1 jajko do otwierania."},
-  variantPlus:{id:"variantPlus", name:"Exclusive: +10% Wariantow", icon:"✦", color:"#ffb1f6", effect:"variants", base:0.10, exclusive:true, desc:"+10% do szans wariantow petow."},
-  diamondDrop:{id:"diamondDrop", name:"Exclusive: Diamentowy Drop x2", icon:"◇", color:"#72ecff", effect:"diamondDrop", base:2, exclusive:true, desc:"x2 drop diamentow."},
+  variantPlus:{id:"variantPlus", name:"Exclusive: +10% Wariantow", icon:"✦", color:"#ffb1f6", effect:"variants", base:0.10, exclusive:true, desc:"+10% do szans wariantow petow. Nie laczy sie z drugim takim samym."},
+  diamondDrop:{id:"diamondDrop", name:"Exclusive: Diamentowy Drop x2", icon:"◇", color:"#72ecff", effect:"diamondDrop", base:2, exclusive:true, desc:"x2 drop diamentow. Nie laczy sie z drugim takim samym."},
   itemDrop:{id:"itemDrop", name:"Exclusive: Item Drop x2", icon:"🎁", color:"#ffd36d", effect:"itemDrop", base:2, exclusive:true, desc:"x2 drop itemow."}
 };
 
@@ -2446,6 +2558,7 @@ function claimFreeReward(index){
   state.claimedRewards = state.claimedRewards && typeof state.claimedRewards === "object" ? state.claimedRewards : {};
   state.claimedRewards[index] = result.label || result.type || "Nagroda";
   applyFreeReward(result);
+  playRewardGameFeel("reward", freeRewardsBtn);
   game.uiDirty = true;
   renderFreeRewards();
   update(true, true);
@@ -2944,8 +3057,27 @@ function getEnchantEffectValue(enchant){
 }
 
 function getActiveEnchantItems(){
-  const ids = new Set(Array.isArray(game.activeEnchantIds) ? game.activeEnchantIds : []);
-  return (Array.isArray(game.enchants) ? game.enchants : []).filter(enchant=>ids.has(enchant.uid));
+  const requestedIds = Array.isArray(game.activeEnchantIds) ? game.activeEnchantIds : [];
+  const ownedById = new Map((Array.isArray(game.enchants) ? game.enchants : []).map(enchant=>[enchant.uid, enchant]));
+  const seenIds = new Set();
+  const activeExclusiveTypes = new Set();
+  const validIds = [];
+
+  requestedIds.forEach(uid=>{
+    const enchant = ownedById.get(uid);
+    if(!enchant || seenIds.has(uid)) return;
+    const def = getEnchantDef(enchant.type);
+    if(def.exclusive && activeExclusiveTypes.has(def.id)) return;
+    seenIds.add(uid);
+    if(def.exclusive) activeExclusiveTypes.add(def.id);
+    validIds.push(uid);
+  });
+
+  if(validIds.length !== requestedIds.length){
+    game.activeEnchantIds = validIds;
+    game.uiDirty = true;
+  }
+  return validIds.map(uid=>ownedById.get(uid));
 }
 
 function getEnchantEffectTotal(effect, multiplicative=false){
@@ -2973,11 +3105,11 @@ function getEnchantCoinMultiplier(){
 }
 
 function getEnchantVariantBonus(){
-  return getEnchantEffectTotal("variants");
+  return Math.min(MAX_ENCHANT_VARIANT_BONUS, getEnchantEffectTotal("variants"));
 }
 
 function getEnchantDiamondDropMultiplier(){
-  return getEnchantEffectTotal("diamondDrop", true);
+  return Math.min(MAX_ENCHANT_DIAMOND_DROP_MULTIPLIER, getEnchantEffectTotal("diamondDrop", true));
 }
 
 function rollEnchantTier(){
@@ -3568,6 +3700,7 @@ function buyEndlessUpgrade(id){
   game.score -= price;
   game.endlessUpgrades[id] = level + 1;
   game.uiDirty = true;
+  playRewardGameFeel("purchase", upgradeHubPanel);
   if((level + 1) % 25 === 0 || level === 0){
     triggerScreenEffect("void", "VOID +");
   }
@@ -3772,6 +3905,7 @@ function buyDiamondUpgrade(id){
     game.autoEggMode = true;
   }
   game.uiDirty = true;
+  playRewardGameFeel("purchase", diamondPanel);
   update(true, true);
 }
 
@@ -4054,29 +4188,111 @@ function showEggChoice(eggId){
   eggChoiceOverlay.classList.add("open");
 }
 
+const HATCH_REVEAL_TIERS = [
+  {id:"common", label:"NOWY DROP", level:0, color:"#a9d7ff", charge:1100, crack:360, result:1150, sparks:10},
+  {id:"rare", label:"RZADKI DROP", level:1, color:"#68dfff", charge:1450, crack:480, result:1500, sparks:16},
+  {id:"epic", label:"EPICKI DROP", level:2, color:"#c78bff", charge:1900, crack:620, result:1950, sparks:24},
+  {id:"mythic", label:"MITYCZNY DROP", level:3, color:"#ff79c6", charge:2350, crack:720, result:2400, sparks:32},
+  {id:"legendary", label:"LEGENDARNY DROP", level:4, color:"#ffd15d", charge:2800, crack:820, result:2900, sparks:40},
+  {id:"secret", label:"SEKRETNY DROP", level:5, color:"#8df6ff", charge:3400, crack:960, result:3600, sparks:50}
+];
+const BATCH_SPOTLIGHT_MIN_TIER = 3;
+
+function getHatchRevealTier(rewards, isCrate=false){
+  const list = Array.isArray(rewards) ? rewards : [rewards];
+  let level = 0;
+  list.forEach(reward=>{
+    const rarity = String(reward?.rarity || "");
+    if(reward?.secret || rarity === "Sekretny" || reward?.skinClass?.includes("void")) level = Math.max(level, 5);
+    else if(["Legendarny", "Legenda"].includes(rarity)) level = Math.max(level, 4);
+    else if(rarity === "Mityczny") level = Math.max(level, 3);
+    else if(rarity === "Epicki") level = Math.max(level, 2);
+    else if(rarity === "Rzadki") level = Math.max(level, 1);
+    if(!isCrate && (reward?.variant === "diamond" || reward?.shiny)) level = Math.max(level, 3);
+    else if(!isCrate && reward?.variant === "gold") level = Math.max(level, 2);
+  });
+  return HATCH_REVEAL_TIERS[level];
+}
+
+function getBatchSpotlightPet(pets){
+  if(!Array.isArray(pets) || pets.length < 2) return null;
+  const ranked = pets.map((pet, index)=>({pet, index, tier:getHatchRevealTier(pet)}))
+    .sort((a,b)=>b.tier.level - a.tier.level || getPetPowerRank(b.pet) - getPetPowerRank(a.pet));
+  return ranked[0]?.tier.level >= BATCH_SPOTLIGHT_MIN_TIER ? ranked[0] : null;
+}
+
+function getHatchRevealTiming(tier, speedFactor, autoMode){
+  const autoFactor = autoMode ? 0.44 : 1;
+  return {
+    chargeMs:Math.max(220, Math.round(tier.charge * speedFactor * autoFactor)),
+    crackMs:Math.max(140, Math.round(tier.crack * speedFactor * autoFactor)),
+    resultMs:Math.max(520, Math.round(tier.result * speedFactor * autoFactor))
+  };
+}
+
+function setHatchRevealStage(stage){
+  hatchOverlay.classList.remove("revealCharge", "revealCrack", "revealImpact");
+  hatchOverlay.classList.add(`reveal${stage}`);
+}
+
+function spawnHatchSparks(tier, phase="impact"){
+  if(!hatchSparkLayer) return;
+  hatchSparkLayer.innerHTML = "";
+  const count = Math.min(phase === "charge" ? Math.ceil(tier.sparks * 0.45) : tier.sparks, 50);
+  for(let index = 0; index < count; index++){
+    const spark = document.createElement("i");
+    const angle = (Math.PI * 2 * index / count) + (Math.random() - 0.5) * 0.24;
+    const distance = 78 + Math.random() * (tier.level >= 3 ? 225 : 165);
+    spark.className = `hatchSpark ${phase}`;
+    spark.style.setProperty("--spark-x", `${Math.cos(angle) * distance}px`);
+    spark.style.setProperty("--spark-y", `${Math.sin(angle) * distance}px`);
+    spark.style.setProperty("--spark-size", `${3 + Math.random() * (tier.level >= 4 ? 8 : 5)}px`);
+    spark.style.setProperty("--spark-delay", `${Math.random() * (phase === "charge" ? 220 : 110)}ms`);
+    hatchSparkLayer.appendChild(spark);
+  }
+}
+
+function prepareHatchReveal(tier, {crate=false, voidDrop=false, autoMode=false}={}){
+  hatchOverlay.classList.remove("crateMode", "voidOpening", "rareDrop", "revealCharge", "revealCrack", "revealImpact", ...HATCH_REVEAL_TIERS.map(item=>`dropTier${item.level}`));
+  hatchOverlay.classList.toggle("crateMode", crate);
+  hatchOverlay.classList.toggle("voidOpening", voidDrop);
+  hatchOverlay.classList.toggle("rareDrop", tier.level >= 2);
+  hatchOverlay.classList.toggle("autoMode", autoMode);
+  hatchOverlay.classList.add(`dropTier${tier.level}`, "revealCharge");
+  hatchOverlay.style.setProperty("--reveal-color", tier.color);
+  hatchOverlay.style.setProperty("--reveal-level", String(tier.level));
+  spawnHatchSparks(tier, "charge");
+}
+
+function clearHatchReveal(){
+  hatchOverlay.classList.remove("autoMode", "crateMode", "voidOpening", "rareDrop", "batchSpotlight", "revealCharge", "revealCrack", "revealImpact", ...HATCH_REVEAL_TIERS.map(item=>`dropTier${item.level}`));
+  hatchOverlay.style.removeProperty("--reveal-color");
+  hatchOverlay.style.removeProperty("--reveal-level");
+  if(hatchSparkLayer) hatchSparkLayer.innerHTML = "";
+}
+
 function runEggReveal(egg, pets){
   const list = Array.isArray(pets) ? pets : [pets];
   const autoWillContinue = hasAutoEggUnlock() && game.autoEggMode;
-  const speedFactor = getHatchSpeedFactor();
-  const shakeMs = Math.round(2800 * speedFactor);
-  const crackMs = Math.round(500 * speedFactor);
-  const resultMs = Math.round((1700 - getMetaLevel("hatchSpeed") * 250) * speedFactor);
+  const tier = getHatchRevealTier(list);
+  const timing = getHatchRevealTiming(tier, getHatchSpeedFactor(), autoWillContinue);
+  const spotlight = autoWillContinue ? null : getBatchSpotlightPet(list);
+  const spotlightHoldMs = spotlight ? Math.min(1700, Math.max(1150, Math.round(timing.resultMs * 0.58))) : 0;
 
   hatchBusy = true;
   hatchOverlay.classList.add("open");
-  hatchOverlay.classList.remove("crateMode");
-  hatchOverlay.classList.toggle("autoMode", autoWillContinue);
-  hatchOverlay.classList.toggle("voidOpening", !!egg.voidEgg);
-  hatchOverlay.classList.toggle("rareDrop", list.some(pet=>pet.secret || ["Epicki","Mityczny","Legendarny","Sekretny"].includes(pet.rarity) || pet.shiny || pet.variant === "gold" || pet.variant === "diamond"));
+  prepareHatchReveal(tier, {voidDrop:!!egg.voidEgg, autoMode:autoWillContinue});
+  window.kretAudio?.hatchCharge?.(tier.level);
   if(stopAutoEggBtn) stopAutoEggBtn.textContent = "WYLACZ AUTOOTWIERANIE";
-  hatchPhaseLabel.textContent = `${egg.name.toUpperCase()} SIE OTWIERA`;
+  hatchPhaseLabel.textContent = autoWillContinue ? `${egg.name.toUpperCase()} - AUTO` : "ENERGIA ROSNIE...";
   hatchEggsRow.innerHTML = "";
-  hatchResult.classList.remove("show");
+  hatchResult.classList.remove("show", "spotlightActive", "spotlightComplete");
   hatchPetsGrid.innerHTML = "";
 
-  list.forEach((pet, index)=>{
+  const revealOrder = spotlight ? [spotlight.pet, ...list.filter((_, index)=>index !== spotlight.index)] : list;
+  revealOrder.forEach((pet, index)=>{
     const eggVisual = document.createElement("div");
-    eggVisual.className = "hatchEggVisual shaking";
+    eggVisual.className = `hatchEggVisual shaking dropTier${tier.level}`;
     eggVisual.style.background = egg.tint;
     eggVisual.style.animationDelay = `${index * 0.08}s`;
     hatchEggsRow.appendChild(eggVisual);
@@ -4084,8 +4300,13 @@ function runEggReveal(egg, pets){
     const petCard = document.createElement("div");
     const rarityClass = pet.secret ? "raritySecret" : getRarityClass(pet.rarity);
     const variantClass = getPetVariantClass(pet);
-    petCard.className = `hatchPetCard ${rarityClass} ${variantClass} ${pet.secret ? "secretDrop" : ""} ${pet.autoDeleted ? "autoDeletedDrop" : ""}`;
+    const petTier = getHatchRevealTier(pet);
+    const isSpotlight = spotlight?.pet === pet;
+    petCard.className = `hatchPetCard ${rarityClass} ${variantClass} dropTier${petTier.level} ${isSpotlight ? "batchSpotlight" : "batchBackdrop"} ${pet.secret ? "secretDrop" : ""} ${pet.autoDeleted ? "autoDeletedDrop" : ""}`;
+    petCard.style.setProperty("--reveal-index", String(index));
+    petCard.style.setProperty("--spotlight-color", petTier.color);
     petCard.innerHTML = `
+      ${isSpotlight ? `<div class="hatchSpotlightLabel">JACKPOT DROP</div>` : ""}
       <div class="hatchPetVisual ${getPetVisualClasses(pet)}" style="background:${petVisualClass(pet)}">
         <div class="petTinyFace"></div>
         <div class="petTinyMouth"></div>
@@ -4100,27 +4321,45 @@ function runEggReveal(egg, pets){
   });
 
   setTimeout(()=>{
+    setHatchRevealStage("Crack");
+    hatchPhaseLabel.textContent = tier.level >= 2 ? "COS WIELKIEGO NADCHODZI..." : "JAJKO PEKA...";
+    window.kretAudio?.hatchCrack?.(tier.level);
     hatchEggsRow.querySelectorAll(".hatchEggVisual").forEach(node=>{
       node.classList.remove("shaking");
       node.classList.add("opening");
     });
-  }, shakeMs);
+  }, timing.chargeMs);
 
   setTimeout(()=>{
     hatchEggsRow.querySelectorAll(".hatchEggVisual").forEach(node=>node.classList.remove("opening"));
-    hatchPhaseLabel.textContent = list.length > 1 ? "WYLOSOWANE PETY" : "WYLOSOWANY PET";
+    setHatchRevealStage("Impact");
+    spawnHatchSparks(tier);
+    hatchPhaseLabel.textContent = spotlight ? `${spotlight.tier.label} - JACKPOT!` : (tier.level ? `${tier.label}!` : (list.length > 1 ? "WYLOSOWANE PETY" : "WYLOSOWANY PET"));
     hatchResult.classList.add("show");
-    if(hatchOverlay.classList.contains("rareDrop")){
-      triggerScreenEffect(egg.voidEgg ? "void" : "rare", egg.voidEgg ? "VOID DROP" : "RARE DROP");
+    window.kretAudio?.hatchImpact?.(tier.level);
+    if(spotlight){
+      hatchOverlay.classList.add("batchSpotlight");
+      hatchResult.classList.add("spotlightActive");
+      window.kretAudio?.jackpotReveal?.(spotlight.tier.level);
     }
-  }, shakeMs + crackMs);
+    if(tier.level >= 2){
+      triggerScreenEffect(egg.voidEgg ? "void" : "rare", egg.voidEgg ? "VOID DROP" : tier.label);
+    }
+  }, timing.chargeMs + timing.crackMs);
+
+  if(spotlight){
+    setTimeout(()=>{
+      if(!hatchOverlay.classList.contains("open")) return;
+      hatchResult.classList.remove("spotlightActive");
+      hatchResult.classList.add("spotlightComplete");
+      hatchPhaseLabel.textContent = "POZOSTALE PETY";
+    }, timing.chargeMs + timing.crackMs + spotlightHoldMs);
+  }
 
   setTimeout(()=>{
     hatchOverlay.classList.remove("open");
-    hatchOverlay.classList.remove("autoMode");
-    hatchOverlay.classList.remove("crateMode");
-    hatchOverlay.classList.remove("voidOpening", "rareDrop");
-    hatchResult.classList.remove("show");
+    clearHatchReveal();
+    hatchResult.classList.remove("show", "spotlightActive", "spotlightComplete");
     hatchBusy = false;
     update(true, true);
     if(game.autoEggMode && String(lastAutoEggId || "").startsWith("inventory:")){
@@ -4135,34 +4374,31 @@ function runEggReveal(egg, pets){
     if(game.autoEggMode && lastAutoEggId === egg.id && isEggUnlocked(egg) && game.score >= egg.cost){
       setTimeout(()=>hatchEggBatch(egg.id, Math.min(getEggBatchSize(), getAffordableEggCount(egg))), 160);
     }
-  }, shakeMs + crackMs + resultMs);
+  }, timing.chargeMs + timing.crackMs + timing.resultMs);
 }
 
 function runCrateReveal(crate, skin){
   const autoWillContinue = hasAutoEggUnlock() && game.autoCrateMode;
-  const speedFactor = getHatchSpeedFactor();
-  const shakeMs = Math.round(2200 * speedFactor);
-  const crackMs = Math.round(520 * speedFactor);
-  const resultMs = Math.round((1600 - getMetaLevel("hatchSpeed") * 220) * speedFactor);
+  const tier = getHatchRevealTier(skin, true);
+  const timing = getHatchRevealTiming(tier, getHatchSpeedFactor(), autoWillContinue);
 
   hatchBusy = true;
   hatchOverlay.classList.add("open", "crateMode");
-  hatchOverlay.classList.toggle("autoMode", autoWillContinue);
-  hatchOverlay.classList.toggle("voidOpening", !!crate.voidCrate);
-  hatchOverlay.classList.toggle("rareDrop", skin.rarity === "Sekretny" || skin.rarity === "Mityczny" || skin.skinClass?.includes("void"));
+  prepareHatchReveal(tier, {crate:true, voidDrop:!!crate.voidCrate, autoMode:autoWillContinue});
+  window.kretAudio?.crateCharge?.(tier.level);
   if(stopAutoEggBtn) stopAutoEggBtn.textContent = "WYLACZ AUTO SKRZYNKI";
-  hatchPhaseLabel.textContent = `${crate.name.toUpperCase()} SIE OTWIERA`;
+  hatchPhaseLabel.textContent = autoWillContinue ? `${crate.name.toUpperCase()} - AUTO` : "SKRZYNKA DRZY...";
   hatchEggsRow.innerHTML = "";
   hatchResult.classList.remove("show");
   hatchPetsGrid.innerHTML = "";
 
   const crateVisual = document.createElement("div");
-  crateVisual.className = "hatchCrateVisual shaking";
+  crateVisual.className = `hatchCrateVisual shaking dropTier${tier.level}`;
   crateVisual.style.background = crate.tint;
   hatchEggsRow.appendChild(crateVisual);
 
   const skinCard = document.createElement("div");
-  skinCard.className = `hatchPetCard skinDrop ${getRarityClass(skin.rarity)} ${skin.skinClass?.includes("boss") ? "secretDrop" : ""}`;
+  skinCard.className = `hatchPetCard skinDrop ${getRarityClass(skin.rarity)} dropTier${tier.level} ${skin.skinClass?.includes("boss") ? "secretDrop" : ""}`;
   skinCard.innerHTML = `
     <div class="hatchPetVisual skinPreview ${skin.skinClass}" style="background:linear-gradient(135deg,${skin.accent},#fff)">
       <div class="petTinyFace"></div>
@@ -4176,33 +4412,37 @@ function runCrateReveal(crate, skin){
   hatchPetsGrid.appendChild(skinCard);
 
   setTimeout(()=>{
+    setHatchRevealStage("Crack");
+    hatchPhaseLabel.textContent = tier.level >= 2 ? "COS WIELKIEGO NADCHODZI..." : "ZAMEK PUSZCZA...";
+    window.kretAudio?.hatchCrack?.(tier.level);
     hatchEggsRow.querySelectorAll(".hatchCrateVisual").forEach(node=>{
       node.classList.remove("shaking");
       node.classList.add("opening");
     });
-  }, shakeMs);
+  }, timing.chargeMs);
 
   setTimeout(()=>{
     hatchEggsRow.querySelectorAll(".hatchCrateVisual").forEach(node=>node.classList.remove("opening"));
-    hatchPhaseLabel.textContent = "WYLOSOWANY SKIN";
+    setHatchRevealStage("Impact");
+    spawnHatchSparks(tier);
+    hatchPhaseLabel.textContent = tier.level ? `${tier.label}!` : "WYLOSOWANY SKIN";
     hatchResult.classList.add("show");
-    if(hatchOverlay.classList.contains("rareDrop")){
-      triggerScreenEffect(crate.voidCrate ? "void" : "rare", crate.voidCrate ? "VOID SKIN" : "RARE SKIN");
+    window.kretAudio?.crateImpact?.(tier.level);
+    if(tier.level >= 2){
+      triggerScreenEffect(crate.voidCrate ? "void" : "rare", crate.voidCrate ? "VOID SKIN" : tier.label);
     }
-  }, shakeMs + crackMs);
+  }, timing.chargeMs + timing.crackMs);
 
   setTimeout(()=>{
     hatchOverlay.classList.remove("open");
-    hatchOverlay.classList.remove("autoMode");
-    hatchOverlay.classList.remove("crateMode");
-    hatchOverlay.classList.remove("voidOpening", "rareDrop");
+    clearHatchReveal();
     hatchResult.classList.remove("show");
     hatchBusy = false;
     update(true, true);
     if(game.autoCrateMode && lastAutoCrateId === crate.id && isCrateUnlocked(crate) && game.diamonds >= crate.cost){
       setTimeout(()=>openCrate(crate.id), 180);
     }
-  }, shakeMs + crackMs + resultMs);
+  }, timing.chargeMs + timing.crackMs + timing.resultMs);
 }
 
 function openCrate(crateId){
@@ -4613,10 +4853,11 @@ function handleNormalClick(){
   const isGold = Math.random() < getGoldClickChance();
   if(isGold) val*=5;
 
-  const isFrenzyTrigger = Math.random()<game.frenzyChance;
-  if(isFrenzyTrigger && !game.frenzyActive){
+  const isFrenzyTrigger = !game.frenzyActive && now >= frenzyTriggerCooldownUntil && Math.random() < game.frenzyChance;
+  if(isFrenzyTrigger){
     game.frenzyActive=true;
-    game.frenzyTimer=5;
+    game.frenzyTimer=FRENZY_DURATION_SECONDS;
+    frenzyTriggerCooldownUntil=now + FRENZY_TRIGGER_COOLDOWN_MS;
     kret.classList.add("frenzy");
     spawnPopup("FRENZY!", false, true);
   }
@@ -4630,6 +4871,7 @@ function handleNormalClick(){
   maybeDropDiamond("click");
 
   animateKret(isCrit || isGold);
+  playMoleGameFeel({isCrit, isGold, frenzyStarted:isFrenzyTrigger});
   spawnPopup("+"+format(val), isCrit);
   if(isGold){
     spawnPopup("GOLD x5", false, false, true);
@@ -4670,6 +4912,7 @@ function makeNormalUpgradeCard(u){
       game.score-=liveCost;
       game.upgrades[u.id]=liveLvl+1;
       u.effect(game);
+      playRewardGameFeel("purchase", div);
       update();
     };
     div.oncontextmenu=(e)=>{
@@ -5106,17 +5349,17 @@ getRebirthUnlocks = function(level){
 
 function getGoldPetDropChance(){
   const base = [0, 0.001, 0.005, 0.0075][Math.min(getMetaLevel("goldPetChance"), 3)];
-  return Math.min(0.85, (base * getChanceBoostMultiplier("goldPetChance") + getEnchantVariantBonus()) * (1 + getWeatherChanceBoost("variants") + getWeatherChanceBoost("gold")));
+  return Math.min(0.15, (base * getChanceBoostMultiplier("goldPetChance") + getEnchantVariantBonus()) * (1 + getWeatherChanceBoost("variants") + getWeatherChanceBoost("gold")));
 }
 
 function getDiamondPetDropChance(){
   const base = [0, 0.0005, 0.001, 0.0025][Math.min(getMetaLevel("diamondPetChance"), 3)];
-  return Math.min(0.5, (base * getChanceBoostMultiplier("diamondPetChance") + getEnchantVariantBonus()) * (1 + getWeatherChanceBoost("variants") + getWeatherChanceBoost("diamondVariant")));
+  return Math.min(0.08, (base * getChanceBoostMultiplier("diamondPetChance") + getEnchantVariantBonus()) * (1 + getWeatherChanceBoost("variants") + getWeatherChanceBoost("diamondVariant")));
 }
 
 function getShinyPetDropChance(){
   const base = getMetaLevel("shinyPetChance") > 0 ? 0.002 : 0.0001;
-  return Math.min(0.5, (base * getChanceBoostMultiplier("shinyPetChance") + getEnchantVariantBonus()) * (1 + getWeatherChanceBoost("variants") + getWeatherChanceBoost("shiny")));
+  return Math.min(0.06, (base * getChanceBoostMultiplier("shinyPetChance") + getEnchantVariantBonus()) * (1 + getWeatherChanceBoost("variants") + getWeatherChanceBoost("shiny")));
 }
 
 function getRainbowPetDropChance(){
@@ -5333,10 +5576,10 @@ function groupPetsByTemplate(){
   const groups = new Map();
   getOwnedPets().forEach(pet=>{
     normalizePetLevelState(pet);
-    const key = `pet:${pet.uid}`;
+    const key = getPetVariantKey(pet);
     const group = groups.get(key) || {
       key,
-      baseKey:getPetVariantKey(pet),
+      baseKey:key,
       templateId: pet.templateId,
       variant: pet.variant || "normal",
       shiny: !!pet.shiny,
@@ -5352,7 +5595,10 @@ function groupPetsByTemplate(){
     groups.set(key, group);
   });
 
-  return Array.from(groups.values()).sort((a,b)=>{
+  return Array.from(groups.values()).map(group=>{
+    group.items.sort((a,b)=>(b.powerRank || getPetPowerRank(b)) - (a.powerRank || getPetPowerRank(a)));
+    return group;
+  }).sort((a,b)=>{
     const bestA = Math.max(...a.items.map(p=>p.powerRank || getPetPowerRank(p)));
     const bestB = Math.max(...b.items.map(p=>p.powerRank || getPetPowerRank(p)));
     return bestB - bestA;
@@ -5360,9 +5606,9 @@ function groupPetsByTemplate(){
 }
 
 function togglePetStack(groupKey){
-  const stack = getOwnedPets().filter(p=>{
-    return `pet:${p.uid}` === groupKey || getPetVariantKey(p) === groupKey || p.templateId === groupKey;
-  });
+  const stack = getOwnedPets()
+    .filter(p=>getPetVariantKey(p) === groupKey || p.templateId === groupKey)
+    .sort((a,b)=>(getPetPowerRank(b) || 0) - (getPetPowerRank(a) || 0));
   if(!stack.length) return;
 
   const next = stack.find(p=>!game.activePetIds.includes(p.uid));
@@ -5423,7 +5669,7 @@ function renderActivePetSlots(){
           <span class="activePetSlotIndex">${index + 1}</span>
           <span class="petCircle ${getPetVisualClasses(pet)}" style="background:${petVisualClass(pet)}"></span>
           <span class="activePetSlotName">${pet.displayName || pet.name}</span>
-          <small>${getPetVariantLabel(pet)} | ${pet.rarity}<br>${getPetLevelSummary(pet)}</small>
+          <small>${getPetVariantLabel(pet)} | ${pet.rarity}</small>
           ${getPetLevelProgressHtml(pet)}
         </button>
       ` : `
@@ -5480,8 +5726,8 @@ function renderPetPanel(){
     const visibleItems = group.items.filter(p=>!game.activePetIds.includes(p.uid));
     if(!visibleItems.length) return;
     const visibleGroup = {...group, items:visibleItems};
-    const count = visibleItems.length;
-    const selectedCount = 0;
+    const count = group.items.length;
+    const selectedCount = count - visibleItems.length;
     const pet = visibleItems[0];
     const protectedItem = visibleItems.some(isProtectedPet);
     const stack = document.createElement("div");
@@ -5499,11 +5745,11 @@ function renderPetPanel(){
         <div class="petCircle ${getPetVisualClasses(pet)}" style="background:${petVisualClass(pet)}"></div>
         <div class="petMeta">
           <b>${group.name}</b>
-          <small>${group.rarity}<br>${getPetPowerSummary(pet)}<br>${getPetLevelSummary(pet)}</small>
+          <small>${group.rarity} | ${getPetVariantLabel(pet)}<br>${getPetPowerSummary(pet)}<br>Najlepszy: ${getPetLevelSummary(pet)}</small>
         </div>
       </div>
       ${getPetLevelProgressHtml(pet)}
-      <div class="petBadge">Kliknij, aby zalozyc</div>
+      <div class="petBadge">${selectedCount ? `Zaloz kolejnego (${visibleItems.length} wolnych)` : "Kliknij, aby zalozyc"}</div>
     `;
     if(protectedItem) stack.querySelector("[data-delete-pet]")?.remove();
     stack.querySelector("[data-delete-pet]")?.addEventListener("click", (event)=>{
@@ -5548,6 +5794,7 @@ function usePotionGroup(groupKey){
   addActivePotionBuff(type.id, tier.tier, tier.durationMs);
   game.uiDirty = true;
   spawnPopup(`${type.icon} ${type.label} ${getPotionEffectLabel(type.id, tier.tier)}`, false, false, true);
+  playRewardGameFeel("potion", document.querySelector(`.potionCard[data-potion-group="${groupKey}"]`) || petPanel);
   update(true, true);
 }
 
@@ -5579,6 +5826,7 @@ function renderPotionPanel(){
     const card = document.createElement("button");
     card.type = "button";
     card.className = `potionCard potionTier${tier.tier} potionType-${type.id}`;
+    card.dataset.potionGroup = group.key;
     card.style.setProperty("--potion-color", type.color);
     card.title = getExistLabel("items", `potion_${type.id}_t${tier.tier}`);
     card.onclick = ()=>usePotionGroup(group.key);
@@ -5753,6 +6001,7 @@ function useBagGroup(bagId){
   }
   game.uiDirty = true;
   showBagMultiRewardAnimation(bag, rewards);
+  playRewardGameFeel("bag", document.querySelector(`.bagCard[data-bag-group="${bagId}"]`) || petPanel);
   spawnPopup(`${bag.icon} ${bag.name}: ${rewards.length} itemow`, false, false, true);
   update(true, true);
 }
@@ -5776,6 +6025,7 @@ function renderBagPanel(){
     const card = document.createElement("button");
     card.type = "button";
     card.className = `bagCard bag-${bag.id}`;
+    card.dataset.bagGroup = bag.id;
     card.style.setProperty("--bag-color", bag.color);
     card.onclick = ()=>useBagGroup(bag.id);
     card.innerHTML = `
@@ -5812,11 +6062,17 @@ function getEnchantGroups(){
 
 function toggleEnchant(uid){
   game.activeEnchantIds = Array.isArray(game.activeEnchantIds) ? game.activeEnchantIds : [];
-  const exists = game.enchants.some(item=>item.uid === uid);
-  if(!exists) return;
+  const enchant = game.enchants.find(item=>item.uid === uid);
+  if(!enchant) return;
   if(game.activeEnchantIds.includes(uid)){
     game.activeEnchantIds = game.activeEnchantIds.filter(id=>id !== uid);
   }else{
+    const def = getEnchantDef(enchant.type);
+    const hasSameExclusive = def.exclusive && getActiveEnchantItems().some(item=>item.uid !== uid && item.type === def.id);
+    if(hasSameExclusive){
+      spawnPopup("Mozesz miec aktywny tylko jeden taki exclusive enchant", false, false, true);
+      return;
+    }
     if(game.activeEnchantIds.length >= getMaxActiveEnchants()){
       spawnPopup(`Maksymalnie ${getMaxActiveEnchants()} enchantow`, false, false, true);
       return;
@@ -8127,6 +8383,7 @@ document.addEventListener("click", event=>{
     const keepPanel = dockPanelMap[dockButton.id] || null;
     closeGameplaySidePanels(keepPanel);
     refreshPanelDockState?.();
+    playPanelGameFeel(keepPanel);
   }, 0);
 });
 

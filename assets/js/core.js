@@ -1135,6 +1135,7 @@ function maybeDropDiamond(source="click"){
   if(Math.random() < chance){
     const gained = addDiamonds(getDiamondMultiplier());
     game.uiDirty = true;
+    if(typeof playRewardGameFeel === "function") playRewardGameFeel("diamond", document.getElementById("ui"));
     spawnPopup(`${formatDiamond(Math.max(1, gained || 1))} diament`, false, false, true);
   }
 }
@@ -2002,7 +2003,7 @@ setInterval(()=>{
 },1000);
 
 const REBIRTH_COSTS = [
-  500000,
+  200000,
   3000000,
   9000000,
   30000000,
