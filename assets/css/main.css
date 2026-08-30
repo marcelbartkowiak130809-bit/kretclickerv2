@@ -14375,12 +14375,13 @@ h1{font-weight:800;text-shadow:none;}
 @media (max-width:700px){
   :root{
     --mobile-auto-toggle-width:min(41vw, 152px);
-    --mobile-top-control-gap:8px;
+    --mobile-top-control-gap:10px;
   }
 
   #autoOpenToggle,
   #autoCrateToggle{
     position:fixed;
+    box-sizing:border-box;
     left:max(8px, env(safe-area-inset-left));
     width:var(--mobile-auto-toggle-width);
     min-width:0;
@@ -14389,6 +14390,10 @@ h1{font-weight:800;text-shadow:none;}
     height:38px;
     margin:0;
     padding:0 9px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    line-height:1;
     font-size:9px;
     overflow:hidden;
     text-overflow:ellipsis;
@@ -14412,6 +14417,7 @@ h1{font-weight:800;text-shadow:none;}
   #codesBtn,
   .codesBtn{
     position:fixed;
+    box-sizing:border-box;
     top:calc(max(8px, env(safe-area-inset-top)) + 46px);
     right:auto;
     bottom:auto;
@@ -14421,6 +14427,10 @@ h1{font-weight:800;text-shadow:none;}
     height:38px;
     margin:0;
     padding:0 11px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    line-height:1;
     z-index:246;
   }
 

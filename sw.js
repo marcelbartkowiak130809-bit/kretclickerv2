@@ -1,4 +1,4 @@
-const CACHE_NAME = "kret-clicker-app-v132";
+const CACHE_NAME = "kret-clicker-app-v133";
 const APP_SHELL = [
   "./",
   "./index.html",
