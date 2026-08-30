@@ -2609,7 +2609,7 @@ function renderFreeRewardsV2(){
         ${claimed ? `<div class="freeRewardCheck">✓</div>` : ""}
         <div class="freeRewardIcon">${reward.icon}</div>
         <b>${reward.title}</b>
-        <small>${claimed ? (state.claimedRewards?.[index] || "Odebrano") : available ? "Odbierz RNG!" : formatFreeRewardTime(left)}</small>
+        <small>${claimed ? (state.claimedRewards?.[index] || "Odebrano") : available ? "Odbierz" : formatFreeRewardTime(left)}</small>
         <em>Luck x${reward.luck}</em>
       </div>
     `;
@@ -2660,7 +2660,7 @@ function renderFreeRewardsStable(){
         ${claimed ? `<div class="freeRewardCheck">✓</div>` : ""}
         <div class="freeRewardIcon">${reward.icon}</div>
         <b>${reward.title}</b>
-        <small>${claimed ? (state.claimedRewards?.[index] || "Odebrano") : available ? "Odbierz RNG!" : formatFreeRewardTime(left)}</small>
+        <small>${claimed ? (state.claimedRewards?.[index] || "Odebrano") : available ? "Odbierz" : formatFreeRewardTime(left)}</small>
         <em>Luck x${reward.luck}</em>
       </div>
     `;
@@ -2684,7 +2684,7 @@ function renderFreeRewardsStable(){
       if(claimed && !check) card.insertAdjacentHTML("afterbegin", `<div class="freeRewardCheck">✓</div>`);
       if(!claimed && check) check.remove();
       const small = card.querySelector("small");
-      if(small) small.textContent = claimed ? (state.claimedRewards?.[index] || "Odebrano") : available ? "Odbierz RNG!" : formatFreeRewardTime(left);
+      if(small) small.textContent = claimed ? (state.claimedRewards?.[index] || "Odebrano") : available ? "Odbierz" : formatFreeRewardTime(left);
     });
     return;
   }
