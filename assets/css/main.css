@@ -2306,7 +2306,7 @@ h1{
   border-radius:24px;
   box-shadow:0 20px 54px rgba(0,0,0,0.44), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(255,255,255,0.05);
   transform:translateX(calc(-100% - 46px)) scale(.98);
-  transition:transform 0.28s ease, opacity 0.2s ease, visibility 0.2s ease;
+  transition:transform 0.28s ease, opacity 0.2s ease, clip-path 0.28s ease, visibility 0s linear 0.28s;
   z-index:25;
   overflow:hidden;
   pointer-events:none;
@@ -2330,6 +2330,7 @@ h1{
   opacity:1;
   visibility:visible;
   clip-path:inset(0 0 0 0 round 24px);
+  transition-delay:0s;
 }
 
 .slidePanel.rightSide{
@@ -2348,6 +2349,7 @@ h1{
   visibility:visible;
   pointer-events:auto;
   clip-path:inset(0 0 0 0 round 24px);
+  transition-delay:0s;
 }
 
 .slideHeader{
