@@ -9143,11 +9143,22 @@ button.activePetSlot:hover{
 
 #stopAutoEggBtn{
   display:none;
-  width:100%;
-  max-width:260px;
-  margin-top:2px;
+  position:fixed;
+  top:max(14px, env(safe-area-inset-top));
+  right:max(14px, env(safe-area-inset-right));
+  z-index:8;
+  min-width:128px;
+  min-height:44px;
+  margin:0;
+  padding:0 16px;
+  border:1px solid rgba(255,255,255,.34);
+  border-radius:999px;
+  color:#fff;
   background:linear-gradient(135deg,#ff5a5a,#c91c1c);
   box-shadow:0 14px 28px rgba(160,0,0,0.26);
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:.03em;
 }
 
 #hatchOverlay.autoMode #stopAutoEggBtn{
@@ -14356,4 +14367,286 @@ h1{font-weight:800;text-shadow:none;}
   .codesBtn{
     bottom:12px;
   }
+}
+
+/* Keep the mobile utility controls in two predictable rows. */
+@media (max-width:700px){
+  :root{
+    --mobile-auto-toggle-width:min(41vw, 152px);
+    --mobile-top-control-gap:8px;
+  }
+
+  #autoOpenToggle,
+  #autoCrateToggle{
+    position:fixed;
+    left:max(8px, env(safe-area-inset-left));
+    width:var(--mobile-auto-toggle-width);
+    min-width:0;
+    max-width:calc(50vw - 14px);
+    min-height:38px;
+    height:38px;
+    margin:0;
+    padding:0 9px;
+    font-size:9px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    z-index:246;
+  }
+
+  #autoOpenToggle::before,
+  #autoCrateToggle::before{
+    content:none;
+  }
+
+  #autoOpenToggle{
+    top:max(8px, env(safe-area-inset-top));
+  }
+
+  #autoCrateToggle{
+    top:calc(max(8px, env(safe-area-inset-top)) + 46px);
+  }
+
+  #codesBtn,
+  .codesBtn{
+    position:fixed;
+    top:calc(max(8px, env(safe-area-inset-top)) + 46px);
+    right:auto;
+    bottom:auto;
+    left:calc(max(8px, env(safe-area-inset-left)) + var(--mobile-auto-toggle-width) + var(--mobile-top-control-gap));
+    min-width:72px;
+    min-height:38px;
+    height:38px;
+    margin:0;
+    padding:0 11px;
+    z-index:246;
+  }
+
+  .accountStatus{
+    position:fixed;
+    top:max(8px, env(safe-area-inset-top));
+    right:max(8px, env(safe-area-inset-right));
+    margin:0;
+    max-width:calc(100vw - var(--mobile-auto-toggle-width) - 24px - env(safe-area-inset-left) - env(safe-area-inset-right));
+  }
+
+  #petPanel .activePetSlots{
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:6px;
+  }
+
+  #petPanel .activePetSlot{
+    min-height:136px;
+    padding:26px 5px 6px;
+    border-radius:16px;
+  }
+
+  #petPanel .activePetSlot.filled::after,
+  #petPanel .activePetSlot small{
+    display:none;
+  }
+
+  #petPanel .activePetSlotIndex{
+    top:6px;
+    left:6px;
+    width:18px;
+    height:18px;
+    border-radius:6px;
+    font-size:9px;
+  }
+
+  #petPanel .activePetSlot .petCircle{
+    width:38px;
+    height:38px;
+    margin-bottom:4px;
+  }
+
+  #petPanel .activePetSlotName{
+    height:28px;
+    min-height:28px;
+    font-size:10px;
+  }
+
+  #petPanel .activePetSlot .petLevelBlock{
+    gap:3px;
+    margin-top:4px;
+  }
+
+  #petPanel .activePetSlot .petLevelBlock span,
+  #petPanel .activePetSlot .petLevelBar em{
+    font-size:8px;
+  }
+
+  #petPanel .activePetSlot .petLevelBlock span{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  #petPanel .activePetSlot .petLevelBar{
+    height:13px;
+  }
+
+  body:has(.slidePanel.open) #weatherFx,
+  body:has(.slidePanel.open) #weatherHud{
+    visibility:hidden;
+    opacity:0;
+    pointer-events:none;
+  }
+}
+
+.chancePreviewBtn{
+  display:none;
+}
+
+.chanceOverlay{
+  position:fixed;
+  inset:0;
+  z-index:1300;
+  display:grid;
+  place-items:center;
+  padding:max(18px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  visibility:hidden;
+  opacity:0;
+  background:rgba(2,5,14,.54);
+  backdrop-filter:blur(8px);
+  transition:opacity .16s ease, visibility .16s ease;
+}
+
+.chanceOverlay.open{
+  visibility:visible;
+  opacity:1;
+}
+
+.chanceOverlayCard{
+  position:relative;
+  width:min(92vw, 360px);
+  max-height:min(72dvh, 500px);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:16px;
+  overflow:hidden;
+  border:1px solid rgba(178,241,255,.42);
+  border-radius:22px;
+  color:#effdff;
+  background:linear-gradient(145deg,rgba(46,58,112,.96),rgba(18,13,43,.98));
+  box-shadow:0 24px 60px rgba(0,0,0,.48),0 0 28px rgba(111,204,255,.2),inset 0 1px 0 rgba(255,255,255,.16);
+  transform:translateY(10px) scale(.97);
+  transition:transform .16s ease;
+}
+
+.chanceOverlay.open .chanceOverlayCard{
+  transform:translateY(0) scale(1);
+}
+
+.chanceOverlayCard > strong{
+  padding-right:38px;
+  color:#c7f7ff;
+  font-size:16px;
+}
+
+.chanceOverlayClose{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:34px;
+  height:34px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:50%;
+  color:#fff;
+  background:rgba(255,255,255,.12);
+  font-size:20px;
+  font-weight:800;
+  line-height:1;
+}
+
+.chanceOverlayRows{
+  display:grid;
+  gap:8px;
+  padding:2px 2px 4px;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+
+@media (max-width:700px){
+  .inventoryEggCard .chanceTooltip,
+  .bagCard .chanceTooltip{
+    display:none !important;
+  }
+
+  .chancePreviewBtn{
+    position:absolute;
+    right:9px;
+    bottom:8px;
+    z-index:2;
+    display:inline-flex;
+    min-height:26px;
+    align-items:center;
+    justify-content:center;
+    padding:0 9px;
+    border:1px solid rgba(178,241,255,.42);
+    border-radius:999px;
+    color:#dffaff;
+    background:rgba(6,12,30,.62);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+    font-size:9px;
+    font-weight:1000;
+    letter-spacing:.04em;
+  }
+
+  .bagCard{
+    min-height:106px;
+  }
+
+  .bagCard .bagUse{
+    margin-bottom:22px;
+  }
+}
+
+/* Keep the existing colors, but give frequently used controls a lighter glass finish. */
+.dockBtn,
+.panelTab,
+.panelCloseBtn,
+.adminPanelCloseBtn{
+  border-color:rgba(255,255,255,.14);
+  background:linear-gradient(145deg,rgba(255,255,255,.14),rgba(255,255,255,.035)),rgba(39,39,42,.5);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -1px 0 rgba(255,255,255,.035),0 8px 18px rgba(0,0,0,.14);
+  backdrop-filter:blur(18px) saturate(1.12);
+}
+
+.dockBtn.active,
+.panelTab.active{
+  border-color:rgba(255,255,255,.22);
+  background:linear-gradient(145deg,rgba(255,255,255,.26),rgba(255,255,255,.075)),rgba(255,255,255,.07);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(255,255,255,.06),0 10px 22px rgba(0,0,0,.2);
+}
+
+.panelAction,
+#tutorialStartBtn,
+#tutorialNextBtn{
+  border-color:rgba(255,191,184,.58);
+  background:linear-gradient(145deg,rgba(255,126,115,.88),rgba(255,69,58,.66));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -1px 0 rgba(80,0,0,.12),0 12px 26px rgba(255,69,58,.18);
+  backdrop-filter:blur(16px) saturate(1.12);
+}
+
+.panelAction.secondary,
+#tutorialDeclineBtn,
+#tutorialSkipBtn{
+  border-color:rgba(178,232,255,.58);
+  background:linear-gradient(145deg,rgba(100,210,255,.84),rgba(10,132,255,.62));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -1px 0 rgba(0,48,112,.14),0 12px 26px rgba(10,132,255,.16);
+}
+
+.autoOpenToggle.on{
+  border-color:rgba(255,188,181,.62);
+  background:linear-gradient(145deg,rgba(255,127,117,.8),rgba(255,69,58,.58)),rgba(54,24,28,.58);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.34),inset 0 -1px 0 rgba(93,0,0,.12),0 12px 28px rgba(255,69,58,.18);
+}
+
+#stopAutoEggBtn{
+  background:linear-gradient(145deg,rgba(255,107,103,.88),rgba(201,28,28,.62)),rgba(72,16,18,.64);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.32),inset 0 -1px 0 rgba(91,0,0,.14),0 14px 28px rgba(160,0,0,.22);
+  backdrop-filter:blur(18px) saturate(1.1);
 }

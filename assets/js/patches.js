@@ -65,6 +65,7 @@ let lastManualClickAt = 0;
 let frenzyTriggerCooldownUntil = 0;
 let rebirthOverlayTimers = [];
 let rebirthOverlayOpen = false;
+const AUTO_HATCH_REPEAT_DELAY_MS = 650;
 let lastAutoEggId = null;
 let lastAutoCrateId = null;
 let deferredAppInstallPrompt = null;
@@ -4222,11 +4223,11 @@ function getBatchSpotlightPet(pets){
 }
 
 function getHatchRevealTiming(tier, speedFactor, autoMode){
-  const autoFactor = autoMode ? 0.44 : 1;
+  const autoFactor = autoMode ? 0.9 : 1;
   return {
-    chargeMs:Math.max(220, Math.round(tier.charge * speedFactor * autoFactor)),
-    crackMs:Math.max(140, Math.round(tier.crack * speedFactor * autoFactor)),
-    resultMs:Math.max(520, Math.round(tier.result * speedFactor * autoFactor))
+    chargeMs:Math.max(autoMode ? 750 : 220, Math.round(tier.charge * speedFactor * autoFactor)),
+    crackMs:Math.max(autoMode ? 300 : 140, Math.round(tier.crack * speedFactor * autoFactor)),
+    resultMs:Math.max(autoMode ? 1200 : 520, Math.round(tier.result * speedFactor * autoFactor))
   };
 }
 
@@ -4283,7 +4284,7 @@ function runEggReveal(egg, pets){
   hatchOverlay.classList.add("open");
   prepareHatchReveal(tier, {voidDrop:!!egg.voidEgg, autoMode:autoWillContinue});
   window.kretAudio?.hatchCharge?.(tier.level);
-  if(stopAutoEggBtn) stopAutoEggBtn.textContent = "WYLACZ AUTOOTWIERANIE";
+  if(stopAutoEggBtn) stopAutoEggBtn.textContent = "WYLACZ AUTO";
   hatchPhaseLabel.textContent = autoWillContinue ? `${egg.name.toUpperCase()} - AUTO` : "ENERGIA ROSNIE...";
   hatchEggsRow.innerHTML = "";
   hatchResult.classList.remove("show", "spotlightActive", "spotlightComplete");
@@ -4366,13 +4367,13 @@ function runEggReveal(egg, pets){
       const inventoryEggId = String(lastAutoEggId).slice("inventory:".length);
       const owned = (Array.isArray(game.inventoryEggs) ? game.inventoryEggs : []).filter(item=>item.eggId === inventoryEggId).length;
       if(owned > 0){
-        setTimeout(()=>hatchInventoryEggBatch(inventoryEggId, Math.min(getEggBatchSize(), owned)), 160);
+        setTimeout(()=>hatchInventoryEggBatch(inventoryEggId, Math.min(getEggBatchSize(), owned)), AUTO_HATCH_REPEAT_DELAY_MS);
         return;
       }
       lastAutoEggId = null;
     }
     if(game.autoEggMode && lastAutoEggId === egg.id && isEggUnlocked(egg) && game.score >= egg.cost){
-      setTimeout(()=>hatchEggBatch(egg.id, Math.min(getEggBatchSize(), getAffordableEggCount(egg))), 160);
+      setTimeout(()=>hatchEggBatch(egg.id, Math.min(getEggBatchSize(), getAffordableEggCount(egg))), AUTO_HATCH_REPEAT_DELAY_MS);
     }
   }, timing.chargeMs + timing.crackMs + timing.resultMs);
 }
@@ -6033,11 +6034,13 @@ function renderBagPanel(){
       <div class="bagIcon">${bag.icon}</div>
       <div class="bagMeta">
         <b>${bag.name}</b>
-        <small>${bag.rarity}<br>Najedz, zeby zobaczyc dropy.</small>
+        <small>${bag.rarity}<br>Sprawdz szanse przed otwarciem.</small>
       </div>
       <div class="bagUse">Otworz</div>
+      <span class="chancePreviewBtn" role="button" tabindex="0">SZANSE</span>
       ${renderChanceTooltip(`${bag.name} | ${getExistLabel("items", `bag_${bag.id}`)}`, getBagChanceRows(bag), "bagChanceTooltip")}
     `;
+    addChancePreview(card, `${bag.name} | Szanse`, getBagChanceRows(bag));
     bagList.appendChild(card);
   });
   if(title) title.textContent = `Sakiewki: ${game.bags.length}`;
@@ -6304,6 +6307,52 @@ function renderChanceTooltip(title, rows, className=""){
   `;
 }
 
+function showChanceOverlay(title, rows){
+  document.getElementById("chanceOverlay")?.remove();
+  const overlay = document.createElement("div");
+  overlay.id = "chanceOverlay";
+  overlay.className = "chanceOverlay";
+  overlay.innerHTML = `
+    <div class="chanceOverlayCard" role="dialog" aria-modal="true" aria-label="Szanse dropu">
+      <button type="button" class="chanceOverlayClose" aria-label="Zamknij szanse">x</button>
+      <strong>${title}</strong>
+      <div class="chanceOverlayRows">
+        ${rows.map(row=>`
+          <span class="chanceTooltipRow">
+            <i style="${row.color ? `--chance-color:${row.color}` : ""}">${row.icon || "?"}</i>
+            <b>${row.name}</b>
+            <em>${row.chance}</em>
+          </span>
+        `).join("")}
+      </div>
+    </div>
+  `;
+  const close = ()=>{
+    overlay.classList.remove("open");
+    setTimeout(()=>overlay.remove(), 160);
+  };
+  overlay.addEventListener("click", event=>{
+    if(event.target === overlay || event.target.closest(".chanceOverlayClose")) close();
+  });
+  document.body.appendChild(overlay);
+  requestAnimationFrame(()=>overlay.classList.add("open"));
+}
+
+function addChancePreview(card, title, rows){
+  const preview = card.querySelector(".chancePreviewBtn");
+  if(!preview) return;
+  const open = event=>{
+    event.preventDefault();
+    event.stopPropagation();
+    showChanceOverlay(title, rows);
+  };
+  preview.addEventListener("pointerdown", event=>event.stopPropagation());
+  preview.addEventListener("click", open);
+  preview.addEventListener("keydown", event=>{
+    if(event.key === "Enter" || event.key === " ") open(event);
+  });
+}
+
 function hatchInventoryEggBatch(eggId, requestedCount){
   if(hatchBusy) return;
   const egg = INVENTORY_EGG_CATALOG[eggId];
@@ -6376,6 +6425,7 @@ function renderInventoryEggPanel(){
       <div class="inventoryEggStack">x${group.items.length}</div>
       <div class="inventoryEggVisual" style="background:${group.egg.tint}"></div>
       <b>${group.egg.name}</b>
+      <span class="chancePreviewBtn" role="button" tabindex="0">SZANSE</span>
       ${renderChanceTooltip(group.egg.name, rows.map(({pet, chance})=>({
         icon:pet.icon,
         name:pet.name,
@@ -6383,6 +6433,12 @@ function renderInventoryEggPanel(){
         color:pet.color
       })), "inventoryEggTooltip")}
     `;
+    addChancePreview(card, `${group.egg.name} | Szanse`, rows.map(({pet, chance})=>({
+      icon:pet.icon,
+      name:pet.name,
+      chance,
+      color:pet.color
+    })));
     eggList.appendChild(card);
   });
   if(title) title.textContent = `Jajka: ${game.inventoryEggs.length}`;
