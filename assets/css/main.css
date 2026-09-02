@@ -14713,3 +14713,200 @@ h1{font-weight:800;text-shadow:none;}
     z-index:246;
   }
 }
+
+/* Final phone safety layer: keep the game inside the viewport and panels above effects. */
+@media (any-pointer:coarse) and (max-width:700px), (any-pointer:coarse) and (max-height:500px) and (orientation:landscape){
+  html{
+    min-height:100%;
+    background:#080a12;
+    overscroll-behavior-y:none;
+  }
+
+  body{
+    min-height:100dvh;
+    background-color:#080a12;
+    background-attachment:fixed;
+    overscroll-behavior-y:none;
+    overflow-x:clip;
+  }
+
+  body::after{
+    animation:none;
+  }
+
+  /* Weather remains visible, but its extra animated layers cost too much on phones. */
+  #weatherFx{
+    will-change:auto;
+  }
+
+  #weatherFx b,
+  #weatherFx em{
+    display:none !important;
+  }
+
+  body.weather-rain #weatherFx i,
+  body.weather-storm #weatherFx i,
+  body.weather-toxic #weatherFx i{
+    animation-duration:1.45s !important;
+  }
+
+  body.weather-diamonds #weatherFx i,
+  body.weather-wind #weatherFx i,
+  body.weather-golden #weatherFx i,
+  body.weather-riches #weatherFx i,
+  body.weather-flood #weatherFx i{
+    animation-duration:4.8s !important;
+  }
+
+  .slidePanel,
+  .slidePanel.rightSide{
+    z-index:950;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    overscroll-behavior:contain;
+  }
+
+  .slidePanel .panelScroll{
+    flex:1 1 auto;
+    min-height:0;
+    max-height:none !important;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-y;
+  }
+
+  #weatherHud{
+    left:auto;
+    right:max(8px, env(safe-area-inset-right));
+  }
+
+  .accountStatus{
+    gap:4px;
+    padding:5px 6px;
+    font-size:10px;
+    white-space:nowrap;
+  }
+
+  #accountStatusText{
+    max-width:76px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .cloudSaveStatus{
+    padding:4px 5px;
+    font-size:9px;
+  }
+
+  .accountStatus button{
+    padding:6px 7px;
+    font-size:10px;
+  }
+}
+
+/* Wide phones in landscape need the mobile layout too, not desktop coordinates. */
+@media (any-pointer:coarse) and (max-height:500px) and (orientation:landscape){
+  body{
+    box-sizing:border-box;
+    padding:8px 68px 10px;
+  }
+
+  #topHud{
+    width:100%;
+    margin:0 auto 6px;
+    padding:8px 12px;
+  }
+
+  #topHud h1{
+    font-size:24px;
+  }
+
+  .accountStatus{
+    top:max(8px, env(safe-area-inset-top));
+    right:72px;
+    max-width:calc(100vw - 300px - env(safe-area-inset-left) - env(safe-area-inset-right));
+    z-index:960;
+  }
+
+  #autoOpenToggle,
+  #autoCrateToggle{
+    left:max(8px, env(safe-area-inset-left));
+    width:min(26vw, 172px);
+    height:38px;
+    min-height:38px;
+  }
+
+  #autoOpenToggle{top:max(8px, env(safe-area-inset-top));}
+  #autoCrateToggle{top:calc(max(8px, env(safe-area-inset-top)) + 46px);}
+
+  #codesBtn,
+  .codesBtn{
+    top:calc(max(8px, env(safe-area-inset-top)) + 46px);
+    left:calc(max(8px, env(safe-area-inset-left)) + min(26vw, 172px) + 10px);
+    right:auto;
+    bottom:auto;
+    height:38px;
+    min-height:38px;
+  }
+
+  #leftDock,
+  #rightDock{
+    top:104px;
+    bottom:10px;
+    width:54px;
+    max-width:54px;
+    max-height:calc(100dvh - 114px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    flex-direction:column;
+    align-items:center;
+    gap:5px;
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding:5px;
+    touch-action:pan-y;
+  }
+
+  #leftDock{left:8px; right:auto;}
+  #rightDock{right:8px; left:auto;}
+
+  .dockBtn{
+    flex:0 0 40px;
+    width:40px;
+    height:40px;
+    min-width:40px;
+    font-size:20px;
+  }
+
+  .gameInfoBtn,
+  .appInstallBtn,
+  .freeRewardsBtn,
+  .streakHud{
+    top:auto;
+    bottom:12px;
+    z-index:240;
+  }
+
+  .gameInfoBtn{left:72px;}
+  .streakHud{left:118px;}
+  .appInstallBtn{left:204px;}
+  .freeRewardsBtn{left:250px;}
+
+  #weatherHud{
+    right:72px;
+    bottom:10px;
+    max-width:190px;
+    z-index:240;
+  }
+
+  .slidePanel,
+  .slidePanel.rightSide{
+    top:8px !important;
+    right:70px !important;
+    bottom:8px !important;
+    left:70px !important;
+    width:auto !important;
+    max-width:none !important;
+    max-height:none !important;
+    height:calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+}
