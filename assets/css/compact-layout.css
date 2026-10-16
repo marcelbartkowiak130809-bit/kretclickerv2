@@ -310,19 +310,6 @@ body.compactPhone .panelAction { min-height:36px; font-size:11px; }
 body.compactPhone #petPanel .activePetSlot { min-height:120px; }
 body.compactPhone #mobileShopContent .card { padding:10px 12px; min-height:94px; }
 
-/* Translate one tiled rain layer instead of repainting full-screen backgrounds. */
-body.compactPhone #weatherFx { filter:none !important; }
-body.compactPhone.weather-rain #weatherFx i,
-body.compactPhone.weather-storm #weatherFx i,
-body.compactPhone.weather-toxic #weatherFx i {
-  inset:-180px -90px;
-  background-size:112px 178px;
-  background-position:0 0;
-  animation:phoneRain 1.5s linear infinite !important;
-  filter:none;
-  will-change:transform;
-}
-@keyframes phoneRain { from { transform:translateY(-178px); } to { transform:translateY(0); } }
 body.compactPhone .slidePanel { backdrop-filter:none; background:linear-gradient(145deg,#39393b,#222225); }
 
 body.compactPhone #mobileShopPanel {

@@ -394,6 +394,32 @@ function buyWeatherShellReward(kind){
   update(true, true);
 }
 
+function renderWeatherParticles(fx, weather){
+  const key = weather ? `${weather.id}:${weather.mega ? 1 : 0}` : "none";
+  if(fx.dataset.scene === key) return;
+  fx.dataset.scene = key;
+  fx.replaceChildren();
+  if(!weather) return;
+  const layer = document.createElement("i");
+  const count = weather.id === "flood" ? 12 : weather.id === "wind" || weather.id === "tornado" ? 24 : 32;
+  for(let index = 0; index < count; index++){
+    const particle = document.createElement("span");
+    const random = suffix => weatherHash(`${key}:${index}:${suffix}`);
+    particle.className = "weatherParticle";
+    particle.style.setProperty("--wx", `${random("x") * 100}%`);
+    particle.style.setProperty("--wy", `${5 + random("y") * 90}%`);
+    particle.style.setProperty("--ws", `${5 + random("size") * 8}px`);
+    particle.style.setProperty("--wl", `${50 + random("length") * 110}px`);
+    particle.style.setProperty("--wd", `${random("drift") * 80 - 40}px`);
+    particle.style.setProperty("--wt", `${.8 + random("speed") * .9}s`);
+    particle.style.setProperty("--wslow", `${4 + random("slow") * 5}s`);
+    particle.style.setProperty("--wdelay", `${-random("delay") * 12}s`);
+    layer.appendChild(particle);
+  }
+  fx.appendChild(layer);
+  fx.setAttribute("aria-hidden", "true");
+}
+
 function renderWeatherHud(){
   let hud = document.getElementById("weatherHud");
   if(!hud){
@@ -405,11 +431,10 @@ function renderWeatherHud(){
   if(!fx){
     fx = document.createElement("div");
     fx.id = "weatherFx";
-    fx.innerHTML = "<i></i><b></b><em></em>";
     document.body.appendChild(fx);
   }
-  if(!fx.children.length) fx.innerHTML = "<i></i><b></b><em></em>";
   const weather = getCurrentWeather();
+  renderWeatherParticles(fx, weather);
   if(!weather){
     hud.className = "";
     hud.innerHTML = "";
@@ -616,6 +641,13 @@ function setupWeatherClickableMotion(node, variant, index=0){
   node.style.setProperty("--weather-rotate-end", `${weatherRand(14, 42)}deg`);
   node.style.left = `${8 + Math.random() * 82}%`;
   node.style.top = `${-6 + Math.random() * 18 + index * 4}%`;
+  if(document.body.classList.contains("compactPhone")){
+    const area = document.getElementById("mainPlay")?.getBoundingClientRect();
+    if(area){
+      node.style.top = `${area.top + 30 + index * 4}px`;
+      node.style.setProperty("--weather-fall", `${Math.min(250, Math.max(40, area.height - 120))}px`);
+    }
+  }
 }
 
 function spawnWeatherItemClickable(weather, index=0){
@@ -693,9 +725,16 @@ function spawnWeatherTornadoClickable(weather){
   node.style.setProperty("--weather-speed", `${weatherRand(variant.speed[0], variant.speed[1]).toFixed(2)}s`);
   node.style.setProperty("--tornado-drift-x", `${weatherRand(-90, 90)}px`);
   node.style.setProperty("--tornado-drift-y", `${weatherRand(90, 220)}px`);
+  const playArea = document.body.classList.contains("compactPhone") ? document.getElementById("mainPlay")?.getBoundingClientRect() : null;
+  const flightTop = playArea ? weatherRand(playArea.top, Math.max(playArea.top, playArea.bottom - 230)) : null;
+  if(playArea){
+    node.style.setProperty("--tornado-scale", variant.scale * Math.min(1, Math.max(.55, playArea.height / 260)));
+    node.style.setProperty("--tornado-drift-y", `${weatherRand(35, 80)}px`);
+  }
   if(side === "left"){
     node.style.left = "-120px";
     node.style.top = `${18 + Math.random() * 54}%`;
+    node.style.setProperty("--tornado-drift-x", `${weatherRand(160, 320)}px`);
   }else if(side === "right"){
     node.style.left = "auto";
     node.style.right = "-120px";
@@ -708,6 +747,9 @@ function spawnWeatherTornadoClickable(weather){
   }else{
     node.style.left = `${10 + Math.random() * 74}%`;
     node.style.top = "-130px";
+  }
+  if(playArea){
+    node.style.top = `${side === "top" ? playArea.top - 130 : side === "bottom" ? playArea.bottom - 80 : flightTop}px`;
   }
   node.title = "Kliknij oko tornada";
   node.onclick = () => {

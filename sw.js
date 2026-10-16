@@ -1,10 +1,11 @@
-const CACHE_NAME = "kret-clicker-app-v136";
+const CACHE_NAME = "kret-clicker-app-v137";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./manifest.json",
   "./assets/css/main.css",
   "./assets/css/compact-layout.css",
+  "./assets/css/weather-visuals.css",
   "./assets/js/core.js",
   "./assets/js/patches.js",
   "./assets/js/firebase-auth.js",

@@ -1,0 +1,239 @@
+/* Weather scenes use small moving elements instead of repainting tiled screens. */
+#topHud, #rebirthBtn, #shop { z-index:8; }
+body #weatherFx[data-scene] {
+  filter:none !important;
+  opacity:.65;
+  overflow:hidden;
+  contain:strict;
+  animation:none;
+}
+body #weatherFx[data-scene] > i,
+body.compactPhone #weatherFx > i {
+  inset:0;
+  background:none;
+  opacity:1;
+  filter:none;
+  animation:none !important;
+  will-change:auto;
+}
+body #weatherFx .weatherParticle {
+  position:absolute;
+  display:block;
+  left:var(--wx);
+  top:-60px;
+  width:var(--ws);
+  height:var(--ws);
+  pointer-events:none;
+  animation:weatherParticleFall var(--wslow) var(--wdelay) linear infinite;
+}
+body.weather-mega #weatherFx { opacity:.85; }
+
+body.weather-rain #weatherFx,
+body.weather-storm #weatherFx {
+  background:linear-gradient(180deg,rgba(64,96,130,.11),transparent 65%);
+}
+body.weather-rain #weatherFx .weatherParticle,
+body.weather-storm #weatherFx .weatherParticle,
+body.weather-toxic #weatherFx .weatherParticle {
+  width:1px;
+  height:calc(var(--ws) * 2.7);
+  background:linear-gradient(transparent,rgba(186,218,240,.7));
+  opacity:.65;
+  animation:weatherRainFall var(--wt) var(--wdelay) linear infinite;
+}
+body.weather-storm #weatherFx .weatherParticle { width:2px; opacity:.55; }
+body.weather-storm #weatherFx::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(197,218,255,.2),transparent 70%);
+  animation:weatherSoftLightning 11s linear infinite;
+}
+body.weather-toxic #weatherFx {
+  background:linear-gradient(0deg,rgba(54,132,61,.11),transparent 48%);
+}
+body.weather-toxic #weatherFx .weatherParticle {
+  width:2px;
+  height:calc(var(--ws) * 1.8);
+  background:linear-gradient(transparent,rgba(141,225,106,.7));
+}
+
+body.weather-wind #weatherFx,
+body.weather-tornado #weatherFx {
+  opacity:.55;
+  background:linear-gradient(180deg,rgba(160,192,197,.045),transparent);
+}
+body.weather-wind #weatherFx .weatherParticle,
+body.weather-tornado #weatherFx .weatherParticle {
+  left:-180px;
+  top:var(--wy);
+  width:var(--wl);
+  height:1px;
+  border-radius:50%;
+  background:linear-gradient(90deg,transparent,rgba(214,235,236,.65),transparent);
+  animation:weatherHorizontalGust var(--wslow) var(--wdelay) linear infinite;
+}
+body.weather-wind #weatherFx .weatherParticle:nth-child(5n),
+body.weather-tornado #weatherFx .weatherParticle:nth-child(5n) {
+  width:11px;
+  height:5px;
+  background:#a9bb7c;
+  border-radius:85% 0 85% 0;
+}
+body.weather-tornado #weatherFx .weatherParticle { animation-duration:calc(var(--wslow) * .65); }
+
+body.weather-diamonds #weatherFx {
+  background:linear-gradient(180deg,rgba(83,192,225,.07),transparent 60%);
+}
+body.weather-diamonds #weatherFx .weatherParticle {
+  width:calc(var(--ws) * .7);
+  height:var(--ws);
+  clip-path:polygon(25% 0,75% 0,100% 35%,50% 100%,0 35%);
+  background:linear-gradient(135deg,#ecffff 0 22%,#68d9f4 23% 52%,#4084ca 53% 100%);
+  opacity:.7;
+}
+body.weather-golden #weatherFx {
+  background:linear-gradient(145deg,rgba(255,204,115,.12),transparent 55%);
+}
+body.weather-golden #weatherFx .weatherParticle {
+  top:100%;
+  width:3px;
+  height:3px;
+  border-radius:50%;
+  background:#ffe3a0;
+  box-shadow:0 0 5px #ffcd6266;
+  animation:weatherGoldenRise calc(var(--wslow) * 1.8) var(--wdelay) linear infinite;
+}
+body.weather-riches #weatherFx {
+  background:linear-gradient(180deg,rgba(255,192,72,.08),transparent 65%);
+}
+body.weather-riches #weatherFx .weatherParticle {
+  width:var(--ws);
+  height:var(--ws);
+  border:1px solid #ffe7ab99;
+  border-radius:50%;
+  background:linear-gradient(110deg,#c78a30,#ffdc83 48%,#bd7b24);
+  box-shadow:inset 2px 0 #fff2b93b;
+  opacity:.65;
+}
+body.weather-items #weatherFx { background:none; }
+body.weather-items #weatherFx .weatherParticle {
+  width:calc(var(--ws) * .6);
+  height:calc(var(--ws) * .4);
+  background:#aab9cd;
+  opacity:.35;
+}
+body.weather-items #weatherFx .weatherParticle:nth-child(3n) { background:#d1b28e; }
+
+/* Water starts at the ship surface; ripples move sideways below it. */
+body.weather-flood #weatherFx {
+  top:54%;
+  opacity:.85;
+  background:linear-gradient(180deg,rgba(105,202,224,.14),rgba(18,86,135,.3) 35%,rgba(10,49,94,.5));
+  border-top:1px solid rgba(172,239,245,.4);
+  box-shadow:0 -8px 24px rgba(107,208,230,.04);
+}
+body.weather-flood #weatherFx::before {
+  content:"";
+  position:absolute;
+  left:-10%;
+  right:-10%;
+  top:0;
+  height:14px;
+  background:repeating-linear-gradient(90deg,transparent 0 40px,rgba(189,248,250,.38) 48px 88px,transparent 110px 210px);
+  border-radius:50%;
+  animation:weatherWaterSurface 5s ease-in-out infinite alternate;
+}
+body.weather-flood #weatherFx .weatherParticle {
+  top:var(--wy);
+  width:var(--wl);
+  height:2px;
+  border-radius:50%;
+  background:linear-gradient(90deg,transparent,rgba(170,235,242,.24),transparent);
+  animation:weatherWaterRipple var(--wslow) var(--wdelay) ease-in-out infinite alternate;
+}
+
+/* Objects stay recognizable without looking like floating menu buttons. */
+.weatherClickable-items,
+.weatherClickable-diamonds {
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+.weatherClickable-items .weatherClickableIcon { font-size:calc(var(--weather-size) * .7); filter:drop-shadow(0 3px 4px #0005); }
+.weatherClickable-items.weatherClickable-epic .weatherClickableIcon { filter:drop-shadow(0 0 8px #ba92ed88); }
+.weatherClickable-items.weatherClickable-legendary .weatherClickableIcon { filter:drop-shadow(0 0 10px #ffdc8499); }
+.weatherClickable-diamonds { font-size:0; }
+.weatherClickable-diamonds::before {
+  content:"";
+  width:74%;
+  height:84%;
+  clip-path:polygon(24% 0,76% 0,100% 32%,50% 100%,0 32%);
+  background:conic-gradient(from 35deg at 50% 32%,#47bade,#c9ffff,#7dc9f7,#318bc5,#a8f8ff,#47bade);
+}
+.weatherDiamond-special::before { background:conic-gradient(from 35deg at 50% 32%,#ffdd91,#fff4d6,#7ef5fa,#9e8df8,#fff,#ffdd91); }
+.weatherDiamond-special::after {
+  content:"";
+  position:absolute;
+  inset:15%;
+  border:1px solid #e5ffff88;
+  transform:rotate(45deg);
+  box-shadow:0 0 14px #90f3ff88;
+}
+
+/* Horizontal rings contract inside a continuous tapered funnel. */
+.weatherClickable-tornado { filter:drop-shadow(0 6px 6px #0004); }
+.tornadoCore { overflow:visible; }
+.tornadoCore::before {
+  inset:8px 5px 6px;
+  width:auto;
+  height:auto;
+  border-radius:0;
+  clip-path:polygon(0 0,100% 0,77% 35%,60% 100%,43% 100%,27% 35%);
+  background:linear-gradient(90deg,rgba(115,149,168,.12),rgba(225,240,245,.4),rgba(109,145,163,.2));
+  transform:none;
+  filter:none;
+  animation:none;
+}
+.tornadoCore i {
+  height:22px;
+  border:0;
+  border-top:2px solid rgba(229,245,249,.65);
+  background:linear-gradient(180deg,rgba(192,217,229,.45),rgba(123,159,178,.1));
+  box-shadow:none;
+  animation:weatherFunnelSway .9s ease-in-out infinite alternate;
+}
+.tornadoCore i:nth-child(1) { top:7px; width:104px; height:27px; animation-duration:1.1s; }
+.tornadoCore i:nth-child(2) { top:35px; width:76px; height:24px; animation-duration:.9s; }
+.tornadoCore i:nth-child(3) { top:62px; width:52px; height:21px; animation-duration:.75s; }
+.tornadoCore i:nth-child(4) { top:86px; width:29px; height:25px; animation-duration:.65s; border-radius:50%; }
+.tornadoLoot em { background:none; box-shadow:none; animation-duration:2s; }
+
+@keyframes weatherHorizontalGust { from { transform:translate3d(0,0,0); opacity:0; } 12%,80% { opacity:.7; } to { transform:translate3d(calc(100vw + 360px),var(--wd),0); opacity:0; } }
+@keyframes weatherRainFall { from { transform:translate3d(0,0,0) rotate(12deg); } to { transform:translate3d(-70px,calc(100dvh + 120px),0) rotate(12deg); } }
+@keyframes weatherParticleFall { from { transform:translate3d(0,0,0) rotate(-12deg); } to { transform:translate3d(var(--wd),calc(100dvh + 120px),0) rotate(30deg); } }
+@keyframes weatherGoldenRise { 0% { transform:translate3d(0,0,0); opacity:0; } 20%,70% { opacity:.65; } 100% { transform:translate3d(var(--wd),-100dvh,0); opacity:0; } }
+@keyframes weatherWaterRipple { from { transform:translateX(-30px) scaleX(.75); opacity:.2; } to { transform:translateX(30px) scaleX(1.15); opacity:.65; } }
+@keyframes weatherWaterSurface { from { transform:translateX(-20px) scaleY(.6); } to { transform:translateX(20px) scaleY(1); } }
+@keyframes weatherSoftLightning { 0%,77%,81%,100% { opacity:0; } 78%,80% { opacity:.65; } }
+@keyframes weatherFunnelSway { from { transform:translateX(-53%) skewX(-7deg) scaleX(.94); } to { transform:translateX(-47%) skewX(7deg) scaleX(1.04); } }
+
+@media (max-width:700px), (max-height:500px) and (pointer:coarse) {
+  body #weatherFx .weatherParticle:nth-child(n+15) { display:none; }
+  body.weather-flood #weatherFx .weatherParticle:nth-child(n+9) { display:none; }
+  .weatherClickable { animation-name:weatherClickableFall; }
+  .weatherClickable-tornado { animation-name:weatherTornadoMove; }
+}
+body:has(.slidePanel.open) #weatherFx,
+body.mobileShopOpen #weatherFx { visibility:hidden; }
+body:has(.slidePanel.open) #weatherFx *,
+body.mobileShopOpen #weatherFx * { animation-play-state:paused !important; }
+@media (prefers-reduced-motion:reduce) {
+  body #weatherFx .weatherParticle,
+  body #weatherFx::before,
+  body #weatherFx::after { animation:none !important; }
+  body #weatherFx .weatherParticle { top:var(--wy); opacity:.3; }
+  body.weather-wind #weatherFx .weatherParticle,
+  body.weather-tornado #weatherFx .weatherParticle { left:var(--wx); }
+  .tornadoCore i, .tornadoLoot em, .tornadoDust, .tornadoCore::after { animation:none; }
+}
