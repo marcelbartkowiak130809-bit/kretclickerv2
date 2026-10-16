@@ -1,4 +1,5 @@
 /* Weather scenes use small moving elements instead of repainting tiled screens. */
+.weatherRollOverlay { z-index:5000; box-sizing:border-box; }
 #topHud, #rebirthBtn, #shop { z-index:8; }
 body #weatherFx[data-scene] {
   filter:none !important;

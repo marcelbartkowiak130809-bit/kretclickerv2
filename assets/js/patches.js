@@ -73,7 +73,7 @@ let lastFreeRewardsPlaytimeSaveAt = 0;
 let lastEggDenyAt = 0;
 let lastCrateDenyAt = 0;
 let lastWeatherSlotKey = "";
-let weatherRollBusy = false;
+let activeWeatherRoll = null;
 let lastWeatherClickableAt = 0;
 let lastFloodShipAt = 0;
 let lastFloodFishAt = 0;
@@ -455,8 +455,10 @@ function renderWeatherHud(){
 }
 
 function renderWeatherRoll(weather){
-  if(!weather || weatherRollBusy) return;
-  weatherRollBusy = true;
+  if(!weather) return;
+  const key = `${weather.id}:${weather.slotStart}:${weather.mega ? 1 : 0}`;
+  if(activeWeatherRoll?.key === key) return;
+  activeWeatherRoll?.cancel();
   const def = getWeatherDef(weather.id);
   const reel = [];
   for(let i = 0; i < 3; i++){
@@ -467,11 +469,12 @@ function renderWeatherRoll(weather){
   reel.push(def, ...WEATHER_CATALOG.slice(0, 6));
   const overlay = document.createElement("div");
   overlay.className = "weatherRollOverlay";
+  overlay.dataset.weatherId = def.id;
   overlay.innerHTML = `
     <div class="weatherRollBox">
       <div class="weatherRollGlow"></div>
       <div class="weatherRollPointer"></div>
-      <div class="weatherRollStrip">${reel.map((w, index)=>`<span class="${index === winningIndex ? "winner" : ""}">${w.icon}</span>`).join("")}</div>
+      <div class="weatherRollStrip">${reel.map((w, index)=>`<span data-weather-id="${w.id}" class="${index === winningIndex ? "winner" : ""}">${w.icon}</span>`).join("")}</div>
       <div class="weatherRollResult">
         <span>?</span>
         <b>Losowanie pogody...</b>
@@ -482,24 +485,47 @@ function renderWeatherRoll(weather){
   document.body.appendChild(overlay);
   const box = overlay.querySelector(".weatherRollBox");
   const strip = overlay.querySelector(".weatherRollStrip");
-  const itemStep = 76;
-  const itemCenter = 31;
-  const target = Math.round((box?.clientWidth || 560) / 2 - (winningIndex * itemStep + itemCenter));
-  strip?.style.setProperty("--weather-roll-end", `${target}px`);
+  const winner = strip.querySelector(".winner");
+  strip.style.animation = "none";
+  // Offset measurements include actual borders, gaps and the box's padding.
+  const frames = () => {
+    const target = box.clientWidth / 2 - strip.offsetLeft - winner.offsetLeft - winner.offsetWidth / 2;
+    return [
+      {transform:"translateX(0)", offset:0},
+      {transform:`translateX(${target - 42}px)`, offset:.78},
+      {transform:`translateX(${target}px)`, offset:1}
+    ];
+  };
+  const animation = strip.animate(frames(), {
+    duration:window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1450,
+    easing:"cubic-bezier(.08,.86,.18,1)",
+    fill:"forwards"
+  });
+  let hideTimer;
+  const resize = () => animation.effect.setKeyframes(frames());
+  const cancel = () => {
+    clearTimeout(hideTimer);
+    window.removeEventListener("resize", resize);
+    animation.cancel();
+    overlay.remove();
+    if(activeWeatherRoll?.overlay === overlay) activeWeatherRoll = null;
+  };
+  activeWeatherRoll = {key, overlay, cancel};
+  window.addEventListener("resize", resize);
   window.kretAudio?.reward?.();
-  setTimeout(()=>{
+  animation.finished.then(()=>{
+    if(!overlay.isConnected) return;
     overlay.classList.add("done");
     const resultIcon = overlay.querySelector(".weatherRollResult span");
     const resultText = overlay.querySelector(".weatherRollBox b");
     if(resultIcon) resultIcon.innerHTML = def.icon;
     if(resultText) resultText.textContent = `${weather.mega ? "MEGA " : ""}${def.name}`;
     window.kretAudio?.rare?.();
-  }, 1400);
-  setTimeout(()=>{
-    overlay.remove();
-    weatherRollBusy = false;
-    renderWeatherHud();
-  }, 2500);
+    hideTimer = setTimeout(()=>{
+      cancel();
+      renderWeatherHud();
+    }, 1100);
+  }).catch(()=>{});
 }
 
 function syncWeatherSystem(){
@@ -3545,7 +3571,6 @@ function setupAdminWeatherControls(){
       console.warn("Global weather set failed:", err);
       if(status) status.textContent = `Nie zapisano globalnie. Lokalnie ustawiono: ${mega ? "MEGA " : ""}${def.name}`;
     }
-    renderWeatherRoll(getCurrentWeather() || game.weather.manual);
     syncWeatherSystem();
     renderWeatherPanel();
     update(true, true);
