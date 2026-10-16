@@ -199,10 +199,11 @@ function rollWeatherForSlot(slotStart){
     };
   }
   if(weatherHash(`active:${slotStart}`) > 0.8) return null;
-  const total = WEATHER_CATALOG.reduce((sum, item)=>sum + item.chance, 0);
+  const available = WEATHER_CATALOG.filter(item=>(!item.availableFrom || slotStart >= item.availableFrom) && (!item.availableUntil || slotStart < item.availableUntil));
+  const total = available.reduce((sum, item)=>sum + item.chance, 0);
   let roll = weatherHash(`type:${slotStart}`) * total;
   let picked = WEATHER_CATALOG[0];
-  for(const weather of WEATHER_CATALOG){
+  for(const weather of available){
     roll -= weather.chance;
     if(roll <= 0){ picked = weather; break; }
   }
@@ -344,7 +345,7 @@ function renderWeatherPanel(){
         <em class="weatherNowState">${current?.mega ? "MEGA" : current ? "AKTYWNA" : "SPOKOJ"}</em>
       </div>
       <div class="weatherForecastBox weatherPanelSection">
-        <div class="weatherSectionHeading"><b>Prognoza pogody</b><span>${level ? `${level}/2` : `${discovered}/10`}</span></div>
+        <div class="weatherSectionHeading"><b>Prognoza pogody</b><span>${level ? `${level}/2` : `${discovered}/${WEATHER_CATALOG.length}`}</span></div>
         <div class="weatherForecastActions">
           ${level < 1 ? `<button type="button" class="weatherActionBtn" onclick="buyWeatherForecast(1)"><span>Odblokuj prognoze I</span><b>3 pogody · ${formatDiamond(500)}</b></button>` : ""}
           ${level < 2 ? `<button type="button" class="weatherActionBtn" onclick="buyWeatherForecast(2)"><span>Odblokuj prognoze II</span><b>7 pogod · ${formatDiamond(1000)}</b></button>` : ""}
@@ -352,7 +353,7 @@ function renderWeatherPanel(){
       ${level ? forecast.slice(0, level).map((item, i)=>{
         const def = item ? getWeatherDef(item.id) : null;
         return `<div class="weatherForecastItem"><span>${def?.icon || "&#10060;"}</span><div><b>${item ? `${level >= 2 && item.mega ? "MEGA " : ""}${def.name}` : "Brak pogody"}</b><small>Za ${formatWeatherTime((getWeatherSlotStart(Date.now()) + (i+1)*WEATHER_SLOT_MS) - Date.now())}</small></div><em>${i + 1}</em></div>`;
-      }).join("") : `<small class="weatherSectionHint">Odkryte pogody: ${discovered}/10</small>`}
+      }).join("") : `<small class="weatherSectionHint">Odkryte pogody: ${discovered}/${WEATHER_CATALOG.length}</small>`}
       </div>
       <div class="weatherForecastBox weatherShellShop weatherPanelSection">
         <div class="weatherSectionHeading"><b>Powodz: muszelki</b><span>${format(game.weather.shells || 0)} &#128026;</span></div>
@@ -4913,6 +4914,7 @@ function handleNormalClick(){
     return;
   }
   lastManualClickAt = now;
+  window.kretHalloween?.onMainClick();
   let val = getNormalClickPower();
 
   const isCrit = Math.random()<game.critChance;
@@ -5506,6 +5508,7 @@ function getPetStyleClass(pet){
   if(id.includes("crystal")) classes.push("petStyleCrystal", "petAuraCrystal");
   if(id.includes("crystal_overlord")) classes.push("petStyleCrystalOverlord", "petAuraCrystalStrong");
   if(id.includes("weather_avatar")) classes.push("petStyleAvatar", "petAuraAvatar");
+  if(id.includes("halloween_") || id.includes("bloodmoon_")) classes.push("petStyleHalloween");
   if(id.includes("tornado")) classes.push("petStyleTornado", "petAuraWind");
   if(id.includes("water_")) classes.push("petStyleWater", "petAuraWater");
   if(pet?.secret) classes.push("petStyleSecret", "petAuraSecret");
@@ -6317,6 +6320,7 @@ function getWaterEggChanceRows(){
 }
 
 function getInventoryEggChanceRows(eggId){
+  if(INVENTORY_EGG_CATALOG[eggId]?.chanceRows) return INVENTORY_EGG_CATALOG[eggId].chanceRows();
   return eggId === "water_event_egg" ? getWaterEggChanceRows() : getCrystalEggChanceRows();
 }
 
@@ -6431,7 +6435,7 @@ function hatchInventoryEggBatch(eggId, requestedCount){
   if(typeof trackExist === "function") trackExist("items", `egg_${eggId}`, -count);
   const pets = [];
   for(let i = 0; i < count; i++){
-    const pet = eggId === "water_event_egg" ? rollWaterPet() : makeCrystalPet(rollCrystalPetTemplate());
+    const pet = egg.rollPet ? egg.rollPet() : eggId === "water_event_egg" ? rollWaterPet() : makeCrystalPet(rollCrystalPetTemplate());
     game.pets = Array.isArray(game.pets) ? game.pets : [];
     game.pets.push(pet);
     if(typeof trackExist === "function") trackExist("pets", pet.templateId);
@@ -7912,6 +7916,7 @@ function canSpendCrystalCurrency(){
 let renderedCrystalEventPhase = "";
 
 function syncCrystalEventPhaseUi(){
+  if(window.kretHalloween) return window.kretHalloween.sync();
   const phase = getCrystalEventPhase();
   if(crystalEventCountdownText){
     const label = crystalEventCountdownText.previousElementSibling;

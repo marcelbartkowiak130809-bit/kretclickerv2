@@ -295,6 +295,7 @@ let game = {
   bossRewardBoosts: Array.isArray(raw?.bossRewardBoosts) ? raw.bossRewardBoosts : [],
   bossClaimedRewards: raw?.bossClaimedRewards ?? {},
   crystalEvent: raw?.crystalEvent && typeof raw.crystalEvent === "object" ? raw.crystalEvent : {},
+  halloweenEvent: raw?.halloweenEvent && typeof raw.halloweenEvent === "object" ? raw.halloweenEvent : {},
   weeklyLeaderboardRewards: Array.isArray(raw?.weeklyLeaderboardRewards) ? raw.weeklyLeaderboardRewards : [],
   adminInbox: raw?.adminInbox && typeof raw.adminInbox === "object" ? raw.adminInbox : {},
   endlessUpgrades: raw?.endlessUpgrades && typeof raw.endlessUpgrades === "object" ? raw.endlessUpgrades : {},

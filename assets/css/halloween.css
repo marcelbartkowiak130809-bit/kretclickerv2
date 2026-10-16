@@ -1,0 +1,81 @@
+/* Seasonal accents stay behind the interactive game surface. */
+body.autumnTheme { --app-stroke:rgba(239,173,104,.19); --app-stroke-soft:rgba(239,173,104,.1); }
+.autumnTheme h1, .autumnTheme h2, .autumnTheme h3,
+.autumnTheme .slideHeader b, .autumnTheme .sectionTitle { color:#ffc58b; }
+.autumnTheme .dockBtn.active, .autumnTheme .panelTab.active { border-color:#e8b27466; box-shadow:inset 0 1px #ffe7bf33,0 4px 16px #0003; }
+.autumnTheme #topHud { border-color:#e8b27438; }
+#limitedEventDockBtn[data-season="halloween"]::after { content:"HALLOWEEN"; font-size:6px; padding:2px 4px; }
+#autumnDecor { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; display:none; }
+.autumnTheme #autumnDecor { display:block; }
+.autumnCorner { position:absolute; width:130px; height:auto; opacity:.58; pointer-events:none; user-select:none; }
+.autumnCornerA { left:-48px; top:calc(21% + var(--decor-offset)); transform:rotate(calc(-14deg + var(--decor-tilt))); }
+.autumnCornerB { right:-45px; bottom:calc(5% + var(--decor-offset)); width:145px; transform:rotate(calc(167deg + var(--decor-tilt))); opacity:.42; }
+.autumnCornerC { left:calc(23% + var(--decor-offset)); bottom:-65px; width:100px; transform:rotate(calc(32deg + var(--decor-tilt))); opacity:.35; }
+.halloweenEventView { background:linear-gradient(155deg,#211b24,#111015 65%,#1c1714); backdrop-filter:none; }
+.halloweenEventView .crystalTransitionVeil, .halloweenEventView .crystalParticles { display:none; }
+.halloweenEventView .crystalCaveShell { grid-template-rows:auto auto 1fr; }
+.halloweenTabs { display:none; }
+.halloweenNotice { margin:0; padding:5px 0; color:#d3bca6; font-size:12px; text-align:center; }
+.halloweenEventView .crystalEventTop,
+.halloweenEventView .crystalMineCard,
+.halloweenEventView .crystalUpgradeCard,
+.halloweenEventView .crystalEggCard,
+.halloweenEventView .crystalShopCard { background:linear-gradient(145deg,#343036,#232126); border-color:#d5a16b44; backdrop-filter:none; box-shadow:inset 0 1px #ffe6c417,0 12px 30px #0003; }
+.halloweenEventView .crystalEventTop span,
+.halloweenEventView .crystalEventTop h2,
+.halloweenEventView .crystalCurrencyPill b span { color:#ffd1a0; text-shadow:none; }
+.halloweenEventView .crystalMineCard { min-height:360px; }
+.halloweenEventView .crystalMole { width:230px; height:220px; margin:20px auto; background:transparent url('../icons/pumpkin-mole.svg') center/contain no-repeat; border-radius:0; box-shadow:none; }
+.halloweenEventView .crystalMole::before,
+.halloweenEventView .crystalMole::after,
+.halloweenEventView .crystalMoleFace { display:none; }
+.halloweenEventView .crystalPickaxe { right:-5px; top:20px; width:70px; height:92px; transform:rotate(-25deg); transform-origin:65% 80%; }
+.halloweenEventView .crystalPickaxe::before { content:""; position:absolute; top:0; left:24px; width:24px; height:61px; border-radius:3px 4px 15px 2px; background:linear-gradient(95deg,#78838b,#f0f4ef 47%,#bdc4c2 51%,#757d7e); filter:drop-shadow(2px 4px 2px #0005); }
+.halloweenEventView .crystalPickaxe::after { content:""; display:block; position:absolute; top:58px; left:28px; width:16px; height:33px; border-radius:3px 3px 6px 6px; background:linear-gradient(90deg,#49332b,#815b43 50%,#3c2b26); box-shadow:inset 0 9px #bba78c; }
+.halloweenEventView .crystalMole.hit .crystalPickaxe { animation:pumpkinSlice .28s ease-out; }
+@keyframes pumpkinSlice { 0% { transform:translateY(-12px) rotate(-40deg); } 55% { transform:translate(-32px,22px) rotate(-80deg); } 100% { transform:rotate(-25deg); } }
+.pumpkinSeed { display:inline-block; box-sizing:border-box; flex:none; width:12px; height:18px; margin:0 3px; vertical-align:middle; border:1px solid #bb8d52; border-radius:70% 70% 55% 55%; background:linear-gradient(90deg,#c7a16c,#fff0c9 45%,#d6b782); transform:rotate(24deg); box-shadow:inset 2px 0 #fff3; }
+.halloweenEventView .crystalCurrencyPill .pumpkinSeed { width:16px; height:23px; }
+.halloweenAction, #halloweenEventBackBtn, #halloweenOpenEggBtn { min-height:40px; padding:8px 12px; color:#271b16; border:1px solid #ffd6a266; border-radius:10px; background:linear-gradient(145deg,#f0b16a,#df8d45); font-size:12px; font-weight:800; cursor:pointer; }
+.halloweenAction:disabled, #halloweenOpenEggBtn:disabled { opacity:.45; cursor:default; }
+.halloweenEventView .crystalShopItem > small { display:block; margin:5px 0; color:#cdbba8; }
+.halloweenEventView .crystalEggVisual { background:repeating-linear-gradient(95deg,#cf6e27 0 16px,#f3aa50 18px 36px,#e58b35 39px 53px); box-shadow:inset -8px -10px 15px #77391d77,inset 6px 5px 10px #fff3; border:1px solid #f7d59a66; }
+.halloweenEventView .crystalPetChance { border-color:#da9b6033; }
+.halloweenEventView .crystalCooldownBar i { background:linear-gradient(90deg,#db8d4d,#f9d18b); }
+.petStyleHalloween { box-shadow:inset 0 0 0 2px #ffe6b333,0 0 15px #da8b3833; }
+#kret.skin-halloween-pumpkin { background:transparent url('../icons/pumpkin-mole.svg') center/contain no-repeat !important; border-radius:0; box-shadow:none; }
+#kret.skin-halloween-pumpkin .eye, #kret.skin-halloween-pumpkin .nose { display:none; }
+.skinPreview.skin-halloween-pumpkin { background:transparent url('../icons/pumpkin-mole.svg') center/contain no-repeat !important; border-radius:0; }
+
+/* A dim lunar disc and drifting red embers identify the limited weather. */
+body.weather-bloodmoon #weatherFx { background:linear-gradient(180deg,#8e35401c,transparent 65%); }
+body.weather-bloodmoon #weatherFx::before { content:""; position:absolute; right:7%; top:22%; width:72px; height:72px; border-radius:50%; background:radial-gradient(circle at 32% 28%,#bc6b68 0 8%,transparent 10%),radial-gradient(circle at 62% 58%,#5f2737 0 11%,transparent 13%),radial-gradient(circle at 40% 76%,#7c3542 0 9%,transparent 11%),linear-gradient(135deg,#d98b77,#943f4e 60%,#4a2335); box-shadow:inset -10px -5px 15px #25172899,0 0 20px #ac475c22; }
+body.weather-bloodmoon #weatherFx .weatherParticle { top:100%; width:3px; height:3px; background:#ce7a83; opacity:.5; animation:weatherGoldenRise calc(var(--wslow) * 1.4) var(--wdelay) linear infinite; }
+@media (max-width:700px), (max-height:500px) and (pointer:coarse) {
+ .autumnCornerA { left:-30px; top:calc(26% + var(--decor-offset)); width:65px; opacity:.42; }
+ .autumnCornerB { right:-30px; top:calc(39% + var(--decor-offset)); bottom:auto; width:67px; opacity:.35; }
+ .autumnCornerC { display:none; }
+ .halloweenEventView { box-sizing:border-box; padding:10px; }
+ .halloweenEventView .crystalCaveShell { gap:10px; min-height:0; grid-template-rows:auto auto auto 1fr; }
+ .halloweenTabs { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px; padding:4px; border:1px solid #d5a16b44; border-radius:14px; background:#302c31; }
+ .halloweenTabs button { min-width:0; min-height:40px; padding:4px; border:0; border-radius:10px; background:transparent; color:#d9c7b7; font-size:11px; font-weight:700; }
+ .halloweenTabs button[aria-pressed="true"] { background:#e6a566; color:#261b18; box-shadow:inset 0 1px #fff5; }
+ .halloweenEventView .crystalEventGrid > section { display:none; }
+ .halloweenEventView[data-halloween-tab="harvest"] .crystalMineCard { display:grid; }
+ .halloweenEventView[data-halloween-tab="upgrades"] .crystalUpgradeCard,
+ .halloweenEventView[data-halloween-tab="egg"] .crystalEggCard,
+ .halloweenEventView[data-halloween-tab="shop"] .crystalShopCard { display:block; }
+ .halloweenEventView .crystalEventTop { grid-template-columns:1fr 1fr; text-align:left; padding:12px; gap:8px; }
+ .halloweenEventView .crystalEventTop > div:first-child { grid-column:1 / -1; }
+ .halloweenEventView .crystalEventTop h2 { font-size:26px; line-height:32px; }
+ .halloweenEventView .crystalEventCountdown, .halloweenEventView .crystalCurrencyPill { min-width:0; width:auto; }
+ .halloweenEventView .crystalEventTop .crystalEventCountdown b, .halloweenEventView .crystalCurrencyPill b span { font-size:17px; }
+ #halloweenEventBackBtn { grid-column:1 / -1; min-height:44px; }
+ .halloweenEventView .crystalEventGrid { grid-template-columns:1fr; }
+ .halloweenEventView .crystalMineCard { min-height:280px; padding:12px; }
+ .halloweenEventView .crystalMole { width:210px; height:200px; margin:10px auto; }
+ .halloweenEventView .crystalUpgradeCard, .halloweenEventView .crystalEggCard, .halloweenEventView .crystalShopCard { padding:12px; }
+ .halloweenAction, #halloweenOpenEggBtn { min-height:44px; width:100%; }
+ body.weather-bloodmoon #weatherFx::before { width:48px; height:48px; right:12px; top:25%; }
+}
+@media (prefers-reduced-motion:reduce) { .halloweenEventView .crystalMole.hit .crystalPickaxe { animation:none; } body.weather-bloodmoon #weatherFx .weatherParticle { animation:none; top:var(--wy); } }

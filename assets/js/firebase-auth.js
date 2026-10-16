@@ -451,6 +451,7 @@ function makeFreshSave(){
     bossRewardBoosts:[],
     bossClaimedRewards:{},
     crystalEvent:{},
+    halloweenEvent:{},
     weeklyLeaderboardRewards:[],
     adminInbox:{},
     adminGlobalClaimed:{},
@@ -495,6 +496,7 @@ function normalizeSave(save){
   normalized.bossRewardBoosts = Array.isArray(normalized.bossRewardBoosts) ? normalized.bossRewardBoosts : [];
   normalized.bossClaimedRewards = normalized.bossClaimedRewards && typeof normalized.bossClaimedRewards === "object" ? normalized.bossClaimedRewards : {};
   normalized.crystalEvent = normalized.crystalEvent && typeof normalized.crystalEvent === "object" ? normalized.crystalEvent : {};
+  normalized.halloweenEvent = normalized.halloweenEvent && typeof normalized.halloweenEvent === "object" ? normalized.halloweenEvent : {};
   normalized.weeklyLeaderboardRewards = Array.isArray(normalized.weeklyLeaderboardRewards) ? normalized.weeklyLeaderboardRewards : [];
   normalized.adminInbox = normalized.adminInbox && typeof normalized.adminInbox === "object" ? normalized.adminInbox : {};
   normalized.adminGlobalClaimed = normalized.adminGlobalClaimed && typeof normalized.adminGlobalClaimed === "object" ? normalized.adminGlobalClaimed : {};

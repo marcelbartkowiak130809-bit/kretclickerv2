@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 220">
+ <defs>
+  <linearGradient id="leaf" x2=".7" y2="1"><stop stop-color="#f8c26c"/><stop offset=".55" stop-color="#c57e37"/><stop offset="1" stop-color="#854626"/></linearGradient>
+  <linearGradient id="red" x2=".5" y2="1"><stop stop-color="#e79b66"/><stop offset="1" stop-color="#8e3f37"/></linearGradient>
+  <linearGradient id="p" x2=".8" y2="1"><stop stop-color="#f8b359"/><stop offset="1" stop-color="#ad5426"/></linearGradient>
+  <g id="maple"><path d="m0 0-13-19-5 7-14-7 6 20-11 4 24 15-4 13L0 22l17 4-5-13L35-1l-10-4 4-18-14 9-5-8Z" fill="url(#leaf)"/><path d="M0 28V-10m0 25 19-17M0 14-19 0" stroke="#82502d" stroke-width="1.4" fill="none"/><path d="m0 25 4 19" stroke="#986836" stroke-width="2"/></g>
+ </defs>
+ <path d="M10 207Q70 165 112 89T177 10" stroke="#674e38" stroke-width="3" fill="none"/>
+ <use href="#maple" transform="translate(43 171) rotate(-46) scale(1.15)"/>
+ <use href="#maple" transform="translate(113 118) rotate(28) scale(.85)"/>
+ <use href="#maple" transform="translate(136 62) rotate(-17) scale(.65)"/>
+ <use href="#maple" transform="translate(71 85) rotate(-79) scale(.7)"/>
+ <path d="M125 177q31-31 47-8-16 27-47 8" fill="url(#red)"/>
+ <path d="m127 177 35-3" stroke="#7d4631" fill="none"/>
+ <g transform="translate(19 139) rotate(12)"><ellipse cx="40" cy="39" rx="36" ry="29" fill="url(#p)"/><ellipse cx="39" cy="38" rx="16" ry="29" fill="#eca052"/><path d="m39 12 2-13 8-2-4 16" fill="#6b7846"/><path d="M17 23q-8 18 2 32m42-32q9 17-1 32" stroke="#a55b29" fill="none" stroke-width="2" opacity=".55"/></g>
+ <g transform="translate(121 192) rotate(28)"><path d="M0 0q-13 22 3 26Q18 19 9 0" fill="#b08a50"/><path d="M-3 3Q-1-9 12-1l1 9Z" fill="#735b3d"/><path d="m3-4 3-8" stroke="#735b3d" stroke-width="2"/></g>
+</svg>
