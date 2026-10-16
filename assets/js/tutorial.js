@@ -50,7 +50,7 @@ const tutorialSteps = [
 
 const mobileTutorialSteps = [
   {target:"#kret", textKey:"tutorial.mobile.clickMole"},
-  {target:"#upgradeHubDockBtn", textKey:"tutorial.mobile.upgrades"},
+  {target:"#mobileShopToggle", textKey:"tutorial.mobile.upgrades"},
   {target:"#eggDockBtn", textKey:"tutorial.mobile.eggs"},
   {target:"#petDockBtn", textKey:"tutorial.mobile.pets"},
   {target:"#rebirthBtn", textKey:"tutorial.mobile.rebirth"},
@@ -64,7 +64,10 @@ function isMobileTutorial(){
 }
 
 function getActiveTutorialSteps(){
-  return isMobileTutorial() ? mobileTutorialSteps : tutorialSteps;
+  if(!isMobileTutorial()) return tutorialSteps;
+  return mobileTutorialSteps.map(step => step.target === "#mobileShopToggle" && !document.body.classList.contains("compactPhone")
+    ? {...step, target:"#upgradeHubDockBtn"}
+    : step);
 }
 
 function shouldAskTutorial(){

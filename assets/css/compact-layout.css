@@ -1,0 +1,434 @@
+/* Phone layout lives here so desktop coordinates stay independent. */
+#mobileNavigation, #mobileUtility, #mobileShopToggle, #mobileShopPanel { display:none; }
+html:has(body.compactPhone) { height:100%; overflow:hidden; overscroll-behavior:none; background:#15151a; }
+
+body.compactPhone {
+  --phone-top:max(8px, env(safe-area-inset-top));
+  --phone-bottom:max(8px, env(safe-area-inset-bottom));
+  --phone-start:calc(var(--phone-top) + 178px);
+  --phone-end:calc(var(--phone-bottom) + 210px);
+  box-sizing:border-box;
+  width:100%;
+  height:100dvh;
+  min-height:0;
+  max-height:100dvh;
+  margin:0;
+  padding:0;
+  overflow:hidden;
+  overscroll-behavior:none;
+}
+
+body.compactPhone #topHud {
+  position:fixed;
+  inset:var(--phone-top) 8px auto;
+  width:auto;
+  height:94px;
+  margin:0;
+  padding:10px 12px;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:5px;
+  text-align:left;
+  border-radius:18px;
+}
+body.compactPhone #topTitle { padding-right:150px; }
+body.compactPhone h1 { font-size:16px; line-height:20px; letter-spacing:0; }
+body.compactPhone #rebirthLabel { margin-top:0; font-size:9px; line-height:14px; letter-spacing:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+body.compactPhone #topCurrencies { min-width:0; width:100%; justify-items:center; gap:1px; }
+body.compactPhone #ui { width:100%; justify-content:center; gap:12px; font-size:22px; line-height:26px; }
+body.compactPhone #ui .diamondCurrency { font-size:22px !important; }
+body.compactPhone #stats { font-size:10px; line-height:14px; }
+body.compactPhone #accountStatus {
+  top:calc(var(--phone-top) + 6px);
+  right:14px;
+  max-width:148px;
+  min-height:28px;
+  padding:3px 5px;
+  gap:4px;
+  flex-wrap:nowrap;
+  border-radius:12px;
+  z-index:245;
+}
+body.compactPhone #accountStatusText { max-width:55px; font-size:10px; }
+body.compactPhone #cloudSaveStatus { width:7px; min-width:7px; padding:0; overflow:hidden; font-size:0; border:0; background:none; }
+body.compactPhone #cloudSaveStatus::before { flex:none; box-shadow:none; }
+body.compactPhone #logoutBtn { min-height:28px; padding:4px 6px; font-size:10px; white-space:nowrap; }
+
+body.compactPhone #autoOpenToggle,
+body.compactPhone #autoCrateToggle,
+body.compactPhone #codesBtn {
+  box-sizing:border-box;
+  position:fixed;
+  top:calc(var(--phone-top) + 102px);
+  bottom:auto;
+  height:36px;
+  min-height:36px;
+  min-width:0;
+  max-width:none;
+  margin:0;
+  padding:0 5px;
+  font-size:9px;
+  border-radius:12px;
+  transform:none;
+  z-index:245;
+}
+body.compactPhone #autoOpenToggle { left:8px; width:calc((100% - 96px) / 2); }
+body.compactPhone #autoCrateToggle { left:calc((100% - 96px) / 2 + 14px); width:calc((100% - 96px) / 2); }
+body.compactPhone #codesBtn { left:auto; right:8px; width:68px; }
+body.compactPhone #autoOpenToggle::before,
+body.compactPhone #autoCrateToggle::before { content:none; }
+
+body.compactPhone .globalBossEventBannerBtn {
+  position:fixed;
+  top:calc(var(--phone-top) + 144px);
+  left:8px;
+  width:calc(100% - 16px);
+  height:28px;
+  min-height:0;
+  margin:0;
+  padding:4px 8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  border-radius:10px;
+  z-index:5;
+}
+body.compactPhone .globalBossEventBannerBtn b { font-size:11px; letter-spacing:0; }
+body.compactPhone .globalBossEventBannerBtn small { display:none; }
+body.compactPhone #mainPlay {
+  position:fixed;
+  inset:var(--phone-start) 8px var(--phone-end);
+  width:auto;
+  min-height:0;
+  margin:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+body.compactPhone #kretWrap {
+  flex:1 1 0;
+  min-height:0;
+  width:min(100%, 280px);
+  height:auto;
+  max-height:280px;
+  display:grid;
+  place-items:center;
+  container-type:size;
+}
+body.compactPhone #kret {
+  width:min(220px, 80cqw, 88cqh);
+  height:min(220px, 80cqw, 88cqh);
+  flex:none;
+  margin:0;
+}
+body.compactPhone #kret .eye { width:8%; height:8%; top:33%; }
+body.compactPhone #kret .eye.left { left:28%; }
+body.compactPhone #kret .eye.right { right:28%; }
+body.compactPhone #kret .nose { width:13%; height:13%; top:53%; }
+body.compactPhone #activePetStage { inset:auto 0 0; height:32px; display:flex; justify-content:center; gap:4px; }
+body.compactPhone .activePetWrap { position:relative !important; inset:auto !important; transform:none !important; width:32px; height:32px; }
+body.compactPhone .activePet { transform:scale(.52); transform-origin:top left; }
+body.compactPhone #rightPanels {
+  position:static !important;
+  width:100%;
+  max-width:420px;
+  margin:0 !important;
+  transform:none !important;
+  display:flex;
+  flex-direction:row;
+  align-items:stretch;
+  gap:5px;
+  flex:none;
+}
+body.compactPhone #rightPanels > div {
+  box-sizing:border-box;
+  flex:1 1 0;
+  min-width:0;
+  width:auto;
+  min-height:0;
+  max-width:none;
+  height:44px;
+  padding:6px;
+  margin:0;
+  gap:3px;
+  border-radius:10px;
+}
+body.compactPhone #holdTitle,
+body.compactPhone #autoTitle,
+body.compactPhone #diamondClickTitle { font-size:9px; letter-spacing:0; }
+body.compactPhone #holdState,
+body.compactPhone #autoState { margin:0; padding:0; font-size:8px; line-height:11px; }
+body.compactPhone #autoTitle,
+body.compactPhone #diamondClickTitle { padding-right:30px; font-size:8px; }
+body.compactPhone .panelToggleBtn { top:4px; right:4px; min-width:28px; width:28px; min-height:30px; height:30px; padding:2px; font-size:9px; }
+body.compactPhone #holdMeta,
+body.compactPhone #autoMeta,
+body.compactPhone #diamondClickMeta,
+body.compactPhone #holdHint,
+body.compactPhone #autoHint,
+body.compactPhone #diamondClickHint { display:none; }
+body.compactPhone #holdBar,
+body.compactPhone #autoBar,
+body.compactPhone #diamondClickBar { height:5px; margin:0; }
+
+body.compactPhone #rebirthBtn {
+  box-sizing:border-box;
+  position:fixed;
+  left:8px;
+  bottom:calc(var(--phone-bottom) + 148px);
+  width:calc(100% - 112px);
+  height:56px;
+  min-height:0;
+  margin:0;
+  padding:6px 10px;
+  gap:3px;
+  border-radius:14px;
+}
+body.compactPhone .rebirthBtnTop b { font-size:15px; letter-spacing:0; }
+body.compactPhone .rebirthBtnTop small { padding:2px 5px; font-size:10px; }
+body.compactPhone .rebirthBtnBottom { font-size:10px; line-height:12px; }
+body.compactPhone .rebirthBtnProgress { height:4px; }
+body.compactPhone #mobileShopToggle {
+  position:fixed;
+  right:8px;
+  bottom:calc(var(--phone-bottom) + 148px);
+  display:block;
+  width:90px;
+  height:56px;
+  padding:4px;
+  border:1px solid rgba(160,224,255,.4);
+  border-radius:14px;
+  color:#fff;
+  background:linear-gradient(145deg,rgba(71,167,221,.65),rgba(18,76,120,.85));
+  box-shadow:inset 0 1px rgba(255,255,255,.22);
+  font-size:12px;
+  font-weight:800;
+  z-index:240;
+}
+
+body.compactPhone #mobileNavigation {
+  position:fixed;
+  inset:auto 8px var(--phone-bottom);
+  box-sizing:border-box;
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  grid-auto-rows:44px;
+  gap:4px;
+  padding:5px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:18px;
+  background:rgba(30,31,35,.96);
+  box-shadow:inset 0 1px rgba(255,255,255,.12),0 6px 24px #0005;
+  z-index:240;
+}
+body.compactPhone #mobileNavigation #leftDock,
+body.compactPhone #mobileNavigation #rightDock { display:contents; }
+body.compactPhone #mobileNavigation .dockBtn {
+  position:relative;
+  box-sizing:border-box;
+  width:100%;
+  height:44px;
+  min-width:0;
+  min-height:0;
+  margin:0;
+  padding:4px;
+  border-radius:12px;
+  font-size:22px;
+  backdrop-filter:none;
+}
+body.compactPhone #mobileUtility {
+  position:fixed;
+  left:8px;
+  right:8px;
+  bottom:calc(var(--phone-bottom) + 104px);
+  height:38px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:5px;
+  z-index:240;
+}
+body.compactPhone #mobileUtility > * {
+  position:relative;
+  inset:auto;
+  box-sizing:border-box;
+  flex:none;
+  min-width:0;
+  width:36px;
+  height:36px;
+  min-height:0;
+  margin:0;
+  padding:3px;
+  border-radius:12px;
+  backdrop-filter:none;
+}
+body.compactPhone #mobileUtility #streakHud { width:58px; gap:3px; }
+body.compactPhone #mobileUtility #audioControl { width:114px; display:flex; gap:4px; z-index:auto; }
+body.compactPhone #audioControl button { flex:none; width:28px; height:28px; }
+body.compactPhone #audioControl input { min-width:0; width:66px; }
+body.compactPhone #weatherHud {
+  top:var(--phone-start);
+  left:8px;
+  bottom:auto;
+  right:auto;
+  max-width:145px;
+  padding:4px 6px;
+  gap:5px;
+  border-radius:10px;
+  pointer-events:none;
+  z-index:6;
+}
+body.compactPhone #weatherHud > span { width:24px; height:24px; font-size:17px; border-radius:7px; }
+body.compactPhone #weatherHud b { font-size:10px; }
+body.compactPhone #weatherHud small { font-size:9px; }
+
+body.compactPhone .slidePanel,
+body.compactPhone .slidePanel.rightSide {
+  top:calc(var(--phone-top) + 38px) !important;
+  left:8px !important;
+  right:8px !important;
+  bottom:calc(var(--phone-bottom) + 104px) !important;
+  width:auto !important;
+  height:auto;
+  max-height:none !important;
+  display:flex;
+  flex-direction:column;
+  border-radius:18px;
+}
+body.compactPhone .slideHeader { flex:none; padding:10px 44px 10px 12px; backdrop-filter:none; }
+body.compactPhone .slideHeader b { font-size:16px; letter-spacing:0; }
+body.compactPhone .slideHeader span { font-size:11px; }
+body.compactPhone .panelScroll { flex:1 1 0; min-height:0; max-height:none !important; padding:10px; overscroll-behavior:contain; }
+body.compactPhone .panelTabs { flex:none; padding:6px 10px; gap:4px; }
+body.compactPhone #petPanel .panelTabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); }
+body.compactPhone .panelTab { min-height:32px; padding:5px; font-size:11px; }
+body.compactPhone .panelActions { flex:none; padding:6px 10px; gap:6px; }
+body.compactPhone .panelAction { min-height:36px; font-size:11px; }
+body.compactPhone #petPanel .activePetSlot { min-height:120px; }
+body.compactPhone #mobileShopContent .card { padding:10px 12px; min-height:94px; }
+
+/* Translate one tiled rain layer instead of repainting full-screen backgrounds. */
+body.compactPhone #weatherFx { filter:none !important; }
+body.compactPhone.weather-rain #weatherFx i,
+body.compactPhone.weather-storm #weatherFx i,
+body.compactPhone.weather-toxic #weatherFx i {
+  inset:-180px -90px;
+  background-size:112px 178px;
+  background-position:0 0;
+  animation:phoneRain 1.5s linear infinite !important;
+  filter:none;
+  will-change:transform;
+}
+@keyframes phoneRain { from { transform:translateY(-178px); } to { transform:translateY(0); } }
+body.compactPhone .slidePanel { backdrop-filter:none; background:linear-gradient(145deg,#39393b,#222225); }
+
+body.compactPhone #mobileShopPanel {
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:flex-end;
+  padding:var(--phone-top) 8px var(--phone-bottom);
+  box-sizing:border-box;
+  z-index:1000;
+  background:#0008;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .22s ease,visibility 0s .24s;
+}
+body.compactPhone #mobileShopPanel.open { opacity:1; visibility:visible; pointer-events:auto; transition-delay:0s; }
+body.compactPhone #mobileShopPanel > section {
+  display:flex;
+  flex-direction:column;
+  width:100%;
+  max-height:100%;
+  height:82%;
+  overflow:hidden;
+  border:1px solid #ffffff2e;
+  border-radius:20px;
+  background:#202124;
+  box-shadow:0 12px 42px #0008,inset 0 1px #ffffff20;
+  transform:translateY(24px);
+  transition:transform .24s cubic-bezier(.2,.8,.2,1);
+}
+body.compactPhone #mobileShopPanel.open > section { transform:translateY(0); }
+body.compactPhone #mobileShopPanel header { flex:none; display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-bottom:1px solid #ffffff20; }
+body.compactPhone #mobileShopPanel header button { width:36px; height:36px; padding:0; border:1px solid #fff3; border-radius:50%; color:#fff; background:#ffffff12; font-size:22px; }
+body.compactPhone #mobileShopContent { flex:1; min-height:0; padding:10px; overflow:auto; overscroll-behavior:contain; }
+body.compactPhone #mobileShopContent #shop { width:100%; margin:0; gap:8px; }
+body.compactPhone #mobileShopContent .shopColumn { width:100%; max-width:none; }
+body.compactPhone #mobileShopContent .card { width:100%; max-width:none; margin:0 0 8px; }
+body.compactPhone:has(.slidePanel.open) #weatherFx,
+body.compactPhone.mobileShopOpen #weatherFx { visibility:hidden; }
+body.compactPhone:has(.slidePanel.open) #weatherFx *,
+body.compactPhone.mobileShopOpen #weatherFx * { animation-play-state:paused; }
+body.compactPhone.mobileShopOpen #weatherHud { visibility:hidden; }
+body.compactPhone .potionBuffHud { top:calc(var(--phone-start) + 38px); bottom:auto; max-width:130px; }
+body.compactPhone .itemDropFeed { bottom:var(--phone-end); max-height:64px; pointer-events:none; }
+body.compactPhone .nextUpdateCountdown { display:none; }
+body.compactPhone #adminToggle { bottom:var(--phone-end); right:8px; }
+
+/* Dialogs must sit above the fixed controls and mobile drawers. */
+body.compactPhone #eggChoiceOverlay,
+body.compactPhone .codesOverlay,
+body.compactPhone .freeRewardsOverlay,
+body.compactPhone .appInstallOverlay { z-index:1200; }
+body.compactPhone #upgradeInfoOverlay { z-index:1300; }
+body.compactPhone #hatchOverlay { z-index:6000; box-sizing:border-box; padding:8px; }
+body.compactPhone #hatchCard { box-sizing:border-box; width:100%; max-height:calc(100dvh - 16px); padding:14px 10px; gap:10px; }
+body.compactPhone #hatchCard:has(#hatchResult.show) #hatchEggsRow { display:none; }
+body.compactPhone #hatchPetsGrid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+body.compactPhone .hatchPetCard:not(.batchSpotlight) { display:flex; flex-direction:column; gap:4px; align-items:center; min-height:0; padding:8px 5px; text-align:center; }
+body.compactPhone .hatchPetCard:not(.batchSpotlight) .hatchPetVisual { width:44px; height:44px; flex:none; margin:0; }
+body.compactPhone .hatchPetCard:not(.batchSpotlight) .hatchPetName { font-size:11px; line-height:14px; }
+body.compactPhone .hatchPetCard:not(.batchSpotlight) .hatchRarityBadge { font-size:8px; padding:2px 4px; margin:0; }
+body.compactPhone .hatchPetCard:not(.batchSpotlight) .hatchPetStats { font-size:9px; line-height:12px; }
+body.compactPhone .hatchPetCard:not(.batchSpotlight) .petTinyFace::before { left:28%; top:33%; width:8%; height:8%; }
+body.compactPhone .hatchPetCard:not(.batchSpotlight) .petTinyFace::after { right:28%; top:33%; width:8%; height:8%; }
+body.compactPhone .hatchPetCard:not(.batchSpotlight) .petTinyMouth { left:43%; top:55%; width:14%; height:12%; }
+body.compactPhone .hatchPetCard:not(.batchSpotlight) .petTinyIcon { font-size:12px; }
+body.compactPhone #hatchOverlay.autoMode #hatchCard { padding-top:60px; }
+body.compactPhone #stopAutoEggBtn { top:var(--phone-top); right:12px; min-height:44px; }
+
+/* Short landscape screens use the same controls with a two-column play area. */
+@media (orientation:landscape) {
+  body.compactPhone { --phone-start:calc(var(--phone-top) + 82px); --phone-end:calc(var(--phone-bottom) + 110px); }
+  body.compactPhone #topHud { right:calc(50% + 4px); height:74px; }
+  body.compactPhone #topTitle { padding-right:0; }
+  body.compactPhone #topCurrencies { display:flex; align-items:center; justify-content:space-between; }
+  body.compactPhone #ui { width:auto; font-size:18px; }
+  body.compactPhone #ui .diamondCurrency { font-size:18px !important; }
+  body.compactPhone #accountStatus { right:12px; top:calc(var(--phone-top) + 2px); }
+  body.compactPhone #autoOpenToggle { left:calc(50% + 4px); top:calc(var(--phone-top) + 38px); width:calc((50% - 96px) / 2); }
+  body.compactPhone #autoCrateToggle { left:calc(50% + 10px + (50% - 96px) / 2); top:calc(var(--phone-top) + 38px); width:calc((50% - 96px) / 2); }
+  body.compactPhone #codesBtn { top:calc(var(--phone-top) + 38px); }
+  body.compactPhone #mainPlay { left:16%; right:16%; flex-direction:row; }
+  body.compactPhone #kretWrap { height:100%; width:65%; max-height:100%; }
+  body.compactPhone #rightPanels { width:34%; flex-direction:column; }
+  body.compactPhone #rightPanels > div { flex:0 0 44px; min-height:44px; }
+  body.compactPhone #mobileNavigation { left:auto; width:49%; grid-auto-rows:40px; }
+  body.compactPhone #mobileNavigation .dockBtn { height:40px; }
+  body.compactPhone #mobileUtility { right:52%; bottom:var(--phone-bottom); }
+  body.compactPhone #rebirthBtn { width:calc(50% - 112px); bottom:calc(var(--phone-bottom) + 44px); }
+  body.compactPhone #mobileShopToggle { right:calc(50% + 8px); bottom:calc(var(--phone-bottom) + 44px); }
+  body.compactPhone .globalBossEventBannerBtn { top:calc(var(--phone-top) + 2px); left:calc(50% + 6px); width:calc(50% - 174px); height:28px; }
+  body.compactPhone .globalBossEventBannerBtn b { font-size:9px; }
+  body.compactPhone .slidePanel, body.compactPhone .slidePanel.rightSide { top:var(--phone-top) !important; bottom:calc(var(--phone-bottom) + 104px) !important; }
+  body.compactPhone #hatchPetsGrid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+}
+
+/* Small desktop refresh, preserving all existing positions and sizes. */
+@media (min-width:701px) and (hover:hover) {
+  .dockBtn, .panelTab, .panelAction, #rebirthBtn { transition:transform .18s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease; }
+  .panelTab:hover { border-color:rgba(255,255,255,.35); }
+}
+body.compactPhone button { transition:transform .16s ease,background-color .16s ease,box-shadow .16s ease; }
+body.compactPhone button:active { transform:scale(.96); }
+body.compactPhone #mobileNavigation .dockBtn { transition:transform .16s ease,background .18s ease; }
+@media (prefers-reduced-motion:reduce) {
+  body.compactPhone #mobileShopPanel, body.compactPhone #mobileShopPanel > section, body.compactPhone button { transition:none; }
+  body.compactPhone #weatherFx i { animation:none !important; }
+}
