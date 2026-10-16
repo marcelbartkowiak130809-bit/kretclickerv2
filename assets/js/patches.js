@@ -2132,7 +2132,7 @@ function getPetLevelBonusPercent(pet){
 }
 
 function formatPetXp(value){
-  return formatPoint(Math.max(0, Math.floor(Number(value) || 0)));
+  return format(Math.max(0, Math.floor(Number(value) || 0)));
 }
 
 function getPetLevelProgress(pet){
@@ -5736,7 +5736,7 @@ function renderActivePetSlots(){
     </div>
     <div class="activePetSlots">
       ${slots.map((pet, index)=>pet ? `
-        <button class="activePetSlot filled ${getPetVisualClasses(pet)} ${pet.secret ? "raritySecret" : getRarityClass(pet.rarity)}" data-active-pet="${pet.uid}" type="button" title="${appendExistTitle("Kliknij, aby zdjac", "pets", pet.templateId)}">
+        <button class="activePetSlot filled ${pet.secret ? "raritySecret" : getRarityClass(pet.rarity)}" data-active-pet="${pet.uid}" type="button" title="${appendExistTitle("Kliknij, aby zdjac", "pets", pet.templateId)}">
           <span class="activePetSlotIndex">${index + 1}</span>
           <span class="petCircle ${getPetVisualClasses(pet)}" style="background:${petVisualClass(pet)}"></span>
           <span class="activePetSlotName">${pet.displayName || pet.name}</span>
@@ -5764,7 +5764,8 @@ function renderActivePetSlots(){
 
 function renderPetPanel(){
   petList.innerHTML = "";
-  const groups = groupPetsByTemplate();
+  const ownedGroups = groupPetsByTemplate();
+  const groups = window.kretInventory?.filterPetGroups(ownedGroups) || ownedGroups;
   const activeCount = game.activePetIds.length;
   const totals = getPetBonusTotals();
   const title = petPanel.querySelector(".slideHeader span");
@@ -5775,7 +5776,7 @@ function renderPetPanel(){
   summary.className = "petCard inventoryBonusCard";
   summary.innerHTML = `
     <b>Aktywne bonusy</b>
-    <small>Punkty x${(1 + totals.multi).toFixed(2)} | Diamenty x${(1 + totals.diamond).toFixed(2)}<br>+${totals.click} do kliku</small>
+    <small>Punkty x${(1 + totals.multi).toFixed(2)} | Diamenty x${(1 + totals.diamond).toFixed(2)}<br>+${format(totals.click)} do kliku</small>
   `;
   petList.appendChild(summary);
 
@@ -5785,10 +5786,10 @@ function renderPetPanel(){
   petList.appendChild(listHeader);
 
   if(!groups.length){
-    if(title) title.textContent = `Plecak: 0 | Aktywne: 0/${getMaxActivePets()}`;
+    if(title) title.textContent = `Plecak: ${getOwnedPets().length} | Aktywne: ${activeCount}/${getMaxActivePets()}`;
     const empty = document.createElement("div");
     empty.className = "petCard locked petEmpty";
-    empty.innerHTML = `<b>Brak petow</b><small>Otworz jajko, zeby zdobyc pierwszego pupila.</small>`;
+    empty.innerHTML = ownedGroups.length ? `<b>Brak pasujacych petow</b><small>Zmien wyszukiwanie lub filtr.</small>` : `<b>Brak petow</b><small>Otworz jajko, zeby zdobyc pierwszego pupila.</small>`;
     petList.appendChild(empty);
     return;
   }
@@ -5805,6 +5806,14 @@ function renderPetPanel(){
     stack.className = "petCard petInventoryCard " + (group.secret ? "raritySecret" : getRarityClass(group.rarity)) + (selectedCount ? " petSelected" : "");
     stack.title = appendExistTitle(`${getPetPowerSummary(pet)} | ${getPetLevelSummary(pet)}`, "pets", pet.templateId);
     stack.onclick = ()=>togglePetStack(group.key);
+    stack.tabIndex = 0;
+    stack.setAttribute("role", "button");
+    stack.addEventListener("keydown", event=>{
+      if(event.target === stack && (event.key === "Enter" || event.key === " ")){
+        event.preventDefault();
+        togglePetStack(group.key);
+      }
+    });
     const variantClass = getPetVariantClass(pet);
     const label = getPetVariantLabel(pet);
 
@@ -5816,7 +5825,7 @@ function renderPetPanel(){
         <div class="petCircle ${getPetVisualClasses(pet)}" style="background:${petVisualClass(pet)}"></div>
         <div class="petMeta">
           <b>${group.name}</b>
-          <small>${group.rarity} | ${getPetVariantLabel(pet)}<br>${getPetPowerSummary(pet)}<br>Najlepszy: ${getPetLevelSummary(pet)}</small>
+          <small>${group.rarity}<br>${getPetPowerSummary(pet)}</small>
         </div>
       </div>
       ${getPetLevelProgressHtml(pet)}
@@ -5831,6 +5840,12 @@ function renderPetPanel(){
     petList.appendChild(stack);
   });
 
+  if(!petList.querySelector(".petInventoryCard")){
+    const empty = document.createElement("div");
+    empty.className = "petCard petEmpty";
+    empty.innerHTML = `<b>Brak wolnych petow w tym widoku</b><small>Pasujace pety sa juz zalozone.</small>`;
+    petList.appendChild(empty);
+  }
   if(title) title.textContent = `Plecak: ${getOwnedPets().length} | Aktywne: ${activeCount}/${getMaxActivePets()}`;
 }
 
@@ -6624,13 +6639,13 @@ renderInventoryPanel = function(){
   const fruitTabBtn = document.getElementById("fruitTabBtn");
   const enchantListEl = document.getElementById("enchantList");
   const enchantTabBtn = document.getElementById("enchantTabBtn");
-  petList.style.display = tab === "pets" ? "block" : "none";
-  skinList.style.display = tab === "skins" ? "block" : "none";
-  if(potionListEl) potionListEl.style.display = tab === "potions" ? "block" : "none";
-  if(bagListEl) bagListEl.style.display = tab === "bags" ? "block" : "none";
-  if(inventoryEggList) inventoryEggList.style.display = tab === "eggs" ? "block" : "none";
-  if(fruitListEl) fruitListEl.style.display = tab === "fruits" ? "block" : "none";
-  if(enchantListEl) enchantListEl.style.display = tab === "enchants" ? "block" : "none";
+  petList.style.display = tab === "pets" ? "grid" : "none";
+  skinList.style.display = tab === "skins" ? "grid" : "none";
+  if(potionListEl) potionListEl.style.display = tab === "potions" ? "grid" : "none";
+  if(bagListEl) bagListEl.style.display = tab === "bags" ? "grid" : "none";
+  if(inventoryEggList) inventoryEggList.style.display = tab === "eggs" ? "grid" : "none";
+  if(fruitListEl) fruitListEl.style.display = tab === "fruits" ? "grid" : "none";
+  if(enchantListEl) enchantListEl.style.display = tab === "enchants" ? "grid" : "none";
   petActions.style.display = tab === "pets" ? "flex" : "none";
   petTabBtn.classList.toggle("active", tab === "pets");
   skinTabBtn.classList.toggle("active", tab === "skins");
@@ -6639,6 +6654,7 @@ renderInventoryPanel = function(){
   inventoryEggTabBtn?.classList.toggle("active", tab === "eggs");
   fruitTabBtn?.classList.toggle("active", tab === "fruits");
   enchantTabBtn?.classList.toggle("active", tab === "enchants");
+  window.kretInventory?.syncTab(tab);
 
   if(tab === "skins") renderSkinPanel();
   else if(tab === "potions") renderPotionPanel();
