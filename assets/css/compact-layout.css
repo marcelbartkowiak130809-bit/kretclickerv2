@@ -106,7 +106,7 @@ body.compactPhone #mainPlay {
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:6px;
+  gap:10px;
 }
 body.compactPhone #kretWrap {
   flex:1 1 0;
@@ -128,7 +128,10 @@ body.compactPhone #kret .eye { width:8%; height:8%; top:33%; }
 body.compactPhone #kret .eye.left { left:28%; }
 body.compactPhone #kret .eye.right { right:28%; }
 body.compactPhone #kret .nose { width:13%; height:13%; top:53%; }
-body.compactPhone #activePetStage { inset:auto 0 0; height:32px; display:flex; justify-content:center; gap:4px; }
+body.compactPhone #kretWrap:has(.activePetWrap) { grid-template-rows:minmax(0,1fr) 32px; row-gap:8px; }
+body.compactPhone #kretWrap:has(.activePetWrap) #kret { grid-row:1; width:min(220px,80cqw,calc(100cqh - 40px)); height:min(220px,80cqw,calc(100cqh - 40px)); }
+body.compactPhone #activePetStage { position:static; grid-row:2; width:100%; height:32px; display:flex; justify-content:center; gap:4px; }
+body.compactPhone #activePetStage:empty { display:none; }
 body.compactPhone .activePetWrap { position:relative !important; inset:auto !important; transform:none !important; width:32px; height:32px; }
 body.compactPhone .activePet { transform:scale(.52); transform-origin:top left; }
 body.compactPhone #rightPanels {
@@ -150,29 +153,41 @@ body.compactPhone #rightPanels > div {
   width:auto;
   min-height:0;
   max-width:none;
-  height:44px;
-  padding:6px;
+  height:64px;
+  padding:8px;
   margin:0;
-  gap:3px;
-  border-radius:10px;
+  gap:4px;
+  justify-content:space-between;
+  border-radius:12px;
+  border-color:rgba(255,255,255,.14);
+  background:linear-gradient(145deg,rgba(55,58,66,.86),rgba(26,28,34,.94));
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
 }
 body.compactPhone #holdTitle,
 body.compactPhone #autoTitle,
-body.compactPhone #diamondClickTitle { font-size:9px; letter-spacing:0; }
+body.compactPhone #diamondClickTitle { flex:none; min-height:12px; font-size:9px; line-height:12px; letter-spacing:0; opacity:1; }
+body.compactPhone #holdTitle::after,
+body.compactPhone #autoTitle::after,
+body.compactPhone #diamondClickTitle::after { display:none; }
 body.compactPhone #holdState,
-body.compactPhone #autoState { margin:0; padding:0; font-size:8px; line-height:11px; }
+body.compactPhone #autoState { flex:none; margin:0; padding:0; border:0; background:none; font-size:9px; line-height:12px; letter-spacing:0; }
 body.compactPhone #autoTitle,
-body.compactPhone #diamondClickTitle { padding-right:30px; font-size:8px; }
-body.compactPhone .panelToggleBtn { top:4px; right:4px; min-width:28px; width:28px; min-height:30px; height:30px; padding:2px; font-size:9px; }
+body.compactPhone #diamondClickTitle { padding-right:36px; font-size:8px; line-height:11px; }
+body.compactPhone .panelToggleBtn { top:8px; right:7px; box-sizing:border-box; min-width:34px; width:34px; min-height:32px; height:32px; padding:2px; border-radius:9px; font-size:10px; box-shadow:inset 0 1px 0 rgba(255,255,255,.24); }
+body.compactPhone .panelToggleBtn::before { content:""; position:absolute; inset:-6px -5px; }
 body.compactPhone #holdMeta,
-body.compactPhone #autoMeta,
 body.compactPhone #diamondClickMeta,
 body.compactPhone #holdHint,
 body.compactPhone #autoHint,
 body.compactPhone #diamondClickHint { display:none; }
+body.compactPhone #autoMeta { display:block; min-width:0; width:100%; margin-top:auto; line-height:12px; }
+body.compactPhone #autoMeta > div { display:none; }
+body.compactPhone #autoMeta #autoGainLine { display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; margin:0; padding:0; border:0; background:none; font-size:9px; line-height:12px; }
 body.compactPhone #holdBar,
 body.compactPhone #autoBar,
-body.compactPhone #diamondClickBar { height:5px; margin:0; }
+body.compactPhone #diamondClickBar { box-sizing:border-box; flex:none; height:5px; min-height:5px; margin:0; }
 
 body.compactPhone #rebirthBtn {
   box-sizing:border-box;
@@ -395,7 +410,8 @@ body.compactPhone #stopAutoEggBtn { top:var(--phone-top); right:12px; min-height
   body.compactPhone #mainPlay { left:16%; right:16%; flex-direction:row; }
   body.compactPhone #kretWrap { height:100%; width:65%; max-height:100%; }
   body.compactPhone #rightPanels { width:34%; flex-direction:column; }
-  body.compactPhone #rightPanels > div { flex:0 0 44px; min-height:44px; }
+  body.compactPhone #rightPanels > div { flex:0 0 52px; height:52px; min-height:52px; padding:6px 8px; gap:2px; }
+  body.compactPhone .panelToggleBtn { top:4px; }
   body.compactPhone #mobileNavigation { left:auto; width:49%; grid-auto-rows:40px; }
   body.compactPhone #mobileNavigation .dockBtn { height:40px; }
   body.compactPhone #mobileUtility { right:52%; bottom:var(--phone-bottom); }
