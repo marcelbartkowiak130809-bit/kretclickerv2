@@ -1,6 +1,7 @@
 /* Weather scenes use small moving elements instead of repainting tiled screens. */
 .weatherRollOverlay { z-index:5000; box-sizing:border-box; }
 #topHud, #rebirthBtn, #shop { z-index:8; }
+#weatherHud { z-index:6; }
 body #weatherFx[data-scene] {
   filter:none !important;
   opacity:.65;
@@ -227,6 +228,8 @@ body.weather-flood #weatherFx .weatherParticle {
 }
 body:has(.slidePanel.open) #weatherFx,
 body.mobileShopOpen #weatherFx { visibility:hidden; }
+body:has(.slidePanel.open) #weatherHud,
+body.mobileShopOpen #weatherHud { visibility:hidden; pointer-events:none; }
 body:has(.slidePanel.open) #weatherFx *,
 body.mobileShopOpen #weatherFx * { animation-play-state:paused !important; }
 @media (prefers-reduced-motion:reduce) {
