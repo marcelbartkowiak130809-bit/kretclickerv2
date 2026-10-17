@@ -4120,7 +4120,7 @@ function openEggAutoDeleteSettings(eggId){
       <div class="autoDeleteList">
         ${egg.pets.map(pet=>`
           <button type="button" class="autoDeleteOption ${isPetAutoDeleted(egg.id, pet.id) ? "active" : ""}" data-auto-delete-pet="${pet.id}">
-            <span class="petCircle ${getPetStyleClass(pet)} ${pet.secret ? "petStyleSecret" : ""}" style="background:${petVisualClass(pet)}"></span>
+            <span class="petCircle ${getPetVisualClasses(pet)} ${pet.secret ? "petStyleSecret" : ""}" style="background:${petVisualClass(pet)}">${getPetAccessoryHtml(pet)}</span>
             <span><b>${getEggPetDisplayName(pet)}</b><small>${pet.rarity} | ${pet.chanceLabel || getPetChanceLabel(egg, pet)}</small></span>
             <em>${isPetAutoDeleted(egg.id, pet.id) ? "USUWANE" : "ZOSTAJE"}</em>
           </button>
@@ -4380,6 +4380,7 @@ function runEggReveal(egg, pets){
         <div class="petTinyFace"></div>
         <div class="petTinyMouth"></div>
         <div class="petTinyIcon">${pet.icon}</div>
+        ${getPetAccessoryHtml(pet)}
       </div>
       ${pet.autoDeleted ? `<div class="hatchTrashOverlay">🗑</div>` : ""}
       <div class="hatchRarityBadge">${getPetVariantLabel(pet)} | ${pet.rarity}</div>
@@ -5521,7 +5522,11 @@ function getPetStyleClass(pet){
 }
 
 function getPetVisualClasses(pet){
-  return `${getPetVariantClass(pet)} ${getPetStyleClass(pet)}`.trim();
+  return `${getPetVariantClass(pet)} ${getPetStyleClass(pet)} ${window.kretPetWardrobe?.classFor(pet) || ""}`.trim();
+}
+
+function getPetAccessoryHtml(pet){
+  return window.kretPetWardrobe?.html(pet) || "";
 }
 
 function getPetDisplayNameWithVariant(baseName, variant, shiny){
@@ -5738,7 +5743,7 @@ function renderActivePetSlots(){
       ${slots.map((pet, index)=>pet ? `
         <button class="activePetSlot filled ${pet.secret ? "raritySecret" : getRarityClass(pet.rarity)}" data-active-pet="${pet.uid}" type="button" title="${appendExistTitle("Kliknij, aby zdjac", "pets", pet.templateId)}">
           <span class="activePetSlotIndex">${index + 1}</span>
-          <span class="petCircle ${getPetVisualClasses(pet)}" style="background:${petVisualClass(pet)}"></span>
+          <span class="petCircle ${getPetVisualClasses(pet)}" style="background:${petVisualClass(pet)}">${getPetAccessoryHtml(pet)}</span>
           <span class="activePetSlotName">${pet.displayName || pet.name}</span>
           <small>${getPetVariantLabel(pet)} | ${pet.rarity}</small>
           ${getPetLevelProgressHtml(pet)}
@@ -5822,7 +5827,7 @@ function renderPetPanel(){
       <div class="petStack">x${count}</div>
       ${label !== "NORMAL" ? `<div class="petVariantBadge ${variantClass.includes("diamond") ? "diamond" : ""} ${variantClass.includes("shiny") ? "shiny" : ""}">${label}</div>` : ""}
       <div class="petTop">
-        <div class="petCircle ${getPetVisualClasses(pet)}" style="background:${petVisualClass(pet)}"></div>
+        <div class="petCircle ${getPetVisualClasses(pet)}" style="background:${petVisualClass(pet)}">${getPetAccessoryHtml(pet)}</div>
         <div class="petMeta">
           <b>${group.name}</b>
           <small>${group.rarity}<br>${getPetPowerSummary(pet)}</small>
@@ -6812,6 +6817,7 @@ function renderActivePets(force=false){
       <div class="petTinyFace"></div>
       <div class="petTinyMouth"></div>
       <div class="petTinyIcon">${pet.icon}</div>
+      ${getPetAccessoryHtml(pet)}
     `;
     wrap.appendChild(badge);
     activePetStage.appendChild(wrap);
@@ -6943,12 +6949,12 @@ function renderVariantForgePanel({mode, dockBtn, panel, list, unlockRebirth, loc
     card.innerHTML = `
       <div class="petStack">x${count}/5</div>
       <div class="petTop">
-        <div class="petCircle ${getPetVisualClasses(pet)}" style="background:${petVisualClass(pet)}"></div>
+        <div class="petCircle ${getPetVisualClasses(pet)}" style="background:${petVisualClass(pet)}">${getPetAccessoryHtml(pet)}</div>
         <div class="petMeta">
           <b>${group.name}</b>
           <small>${getPetVariantLabel(pet)} -> ${targetLabel}<br>${helpText}</small>
         </div>
-        ${targetPreview ? `<div class="petCircle ${getPetVisualClasses(targetPreview)}" style="background:${petVisualClass(targetPreview)}"></div>` : ""}
+        ${targetPreview ? `<div class="petCircle ${getPetVisualClasses(targetPreview)}" style="background:${petVisualClass(targetPreview)}">${getPetAccessoryHtml(targetPreview)}</div>` : ""}
       </div>
       <div class="petBadge">${canForge ? "5 petow = 1 mocniejszy" : "Za malo petow"}</div>
     `;

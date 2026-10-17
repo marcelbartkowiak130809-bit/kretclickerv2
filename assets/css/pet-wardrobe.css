@@ -1,0 +1,43 @@
+/* A single static atlas keeps detailed outfits inexpensive on phones. */
+.petOutfit {
+  position:absolute; inset:-30%; width:160%; height:160%; z-index:3;
+  display:block; pointer-events:none; user-select:none;
+  background-image:url('../icons/pet-outfits.svg'); background-repeat:no-repeat;
+  background-size:800% 400%; background-position:var(--outfit-x) var(--outfit-y);
+}
+.petCircle.petDressed, .activePet.petDressed, .hatchPetVisual.petDressed {
+  --outfit-aura:#a0dcd9; isolation:isolate; overflow:visible;
+  box-shadow:inset 0 1px 2px #fff5,inset 0 -4px 8px #0003,0 0 8px color-mix(in srgb,var(--outfit-aura) 35%,transparent);
+}
+/* Old pseudo-element hats are replaced, not stacked over the new wardrobe. */
+.petCircle.petDressed::before, .petCircle.petDressed::after {
+  content:""; position:absolute; inset:0; width:auto; height:auto; border:0; border-radius:50%;
+  box-shadow:none; clip-path:none; filter:none; transform:none; animation:none !important;
+  z-index:1; pointer-events:none; opacity:1;
+}
+.petCircle.petDressed::before {
+  background:radial-gradient(ellipse 7% 8% at 33% 43%,#17141c 95%,transparent 100%),radial-gradient(ellipse 7% 8% at 67% 43%,#17141c 95%,transparent 100%);
+}
+.petCircle.petDressed::after { background:radial-gradient(ellipse 8% 6% at 50% 63%,#ffabb7 95%,transparent 100%); }
+.activePet.petDressed::before, .activePet.petDressed::after,
+.hatchPetVisual.petDressed::before, .hatchPetVisual.petDressed::after { content:none; }
+.petDressed > .petTinyIcon { display:none; }
+.petLook-singer, .petLook-bat, .petLook-moonKnight { --outfit-aura:#e8a1be !important; }
+.petLook-miner, .petLook-sun, .petLook-king, .petLook-lightning, .petLook-chrono { --outfit-aura:#f7d590 !important; }
+.petLook-mechanic, .petLook-robot, .petLook-boss { --outfit-aura:#b7c9e5 !important; }
+.petLook-explorer, .petLook-harvest, .petLook-sprout { --outfit-aura:#b8d69f !important; }
+.petLook-ninja, .petLook-star, .petLook-nebula, .petLook-echo, .petLook-oracle,
+.petLook-abyss, .petLook-singularity, .petLook-overlord, .petLook-witch { --outfit-aura:#bca7e4 !important; }
+.petLook-diamond, .petLook-cosmic, .petLook-scout, .petLook-crystalOracle,
+.petLook-crystalKing, .petLook-diver, .petLook-admiral, .petLook-sailor { --outfit-aura:#a3e9f1 !important; }
+.petLook-lantern { --outfit-aura:#ffd799 !important; }
+.petDressed.gold { outline:1px solid #f5d57888; }
+.petDressed.diamond { outline:1px solid #c3f6ff99; }
+.petDressed.shiny { filter:drop-shadow(0 0 3px #fff6); }
+/* Inventory cards keep room for a hat above the face and a prop beside it. */
+#petPanel.inventoryView .petInventoryCard .petTop { padding-top:6px; }
+#petPanel.inventoryView .petInventoryCard .petCircle.petDressed { margin:3px 8px 3px 4px; }
+#petPanel.inventoryView .activePetSlot .petCircle.petDressed { margin-top:5px; margin-bottom:10px; }
+@media (max-width:700px), (max-height:500px) and (pointer:coarse) {
+  .petCircle.petDressed, .activePet.petDressed { box-shadow:inset 0 1px 2px #fff4,inset 0 -3px 6px #0003,0 0 5px color-mix(in srgb,var(--outfit-aura) 30%,transparent); }
+}
