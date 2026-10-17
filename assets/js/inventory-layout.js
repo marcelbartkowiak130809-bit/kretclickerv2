@@ -1,5 +1,27 @@
 (() => {
   const panel = document.getElementById("petPanel");
+  const tabs = panel.querySelector(".panelTabs");
+  const lens = document.createElement("i");
+  lens.className = "inventoryTabLens";
+  lens.setAttribute("aria-hidden", "true");
+  tabs.appendChild(lens);
+  const reducedMotion = matchMedia("(prefers-reduced-motion:reduce)");
+  let lastTab = null, contentTransition = null, lensFrame = 0;
+  reducedMotion.addEventListener("change", () => {
+    if(reducedMotion.matches) contentTransition?.cancel();
+  });
+  function positionLens() {
+    cancelAnimationFrame(lensFrame);
+    lensFrame = requestAnimationFrame(() => {
+      const active = tabs.querySelector(".panelTab.active");
+      if(!active || !panel.classList.contains("open")) return;
+      lens.style.width = `${active.offsetWidth}px`;
+      lens.style.height = `${active.offsetHeight}px`;
+      lens.style.transform = `translate3d(${active.offsetLeft}px,${active.offsetTop}px,0)`;
+      tabs.classList.add("lensReady");
+    });
+  }
+  new ResizeObserver(positionLens).observe(tabs);
   const backdrop = document.createElement("div");
   backdrop.className = "inventoryBackdrop";
   backdrop.setAttribute("aria-hidden", "true");
@@ -25,6 +47,15 @@
     panel.dataset.inventoryTab = tab;
     tools.hidden = tab !== "pets";
     panel.querySelectorAll(".panelTab").forEach(button => button.setAttribute("aria-pressed", String(button.classList.contains("active"))));
+    positionLens();
+    if(lastTab !== null && tab !== lastTab) {
+      contentTransition?.cancel();
+      if(panel.classList.contains("open") && !reducedMotion.matches) {
+        const list = Array.from(panel.querySelectorAll(".panelScroll")).find(node => node.style.display !== "none");
+        contentTransition = list?.animate([{opacity:.35,transform:"translateY(7px)"},{opacity:1,transform:"translateY(0)"}], {duration:240,easing:"cubic-bezier(.2,.8,.2,1)"});
+      }
+    }
+    lastTab = tab;
   }
   function refresh() {
     renderInventoryPanelStable(true);
