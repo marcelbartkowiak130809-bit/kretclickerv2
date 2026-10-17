@@ -3,7 +3,7 @@
 body:has(#petPanel.open) .inventoryBackdrop { opacity:1; visibility:visible; pointer-events:auto; transition-delay:0s; }
 body #petPanel.inventoryView {
   --inventory-edge:50px;
-  --inventory-side:80px;
+  --inventory-side:110px;
   position:fixed; inset:max(var(--inventory-edge),env(safe-area-inset-top)) max(var(--inventory-side),env(safe-area-inset-right)) max(var(--inventory-edge),env(safe-area-inset-bottom)) max(var(--inventory-side),env(safe-area-inset-left)) !important; width:auto !important; height:auto;
   max-width:none !important; max-height:none !important; box-sizing:border-box;
   z-index:1000 !important; display:grid; grid-template-columns:190px minmax(0,1fr);
@@ -125,7 +125,7 @@ body #petPanel.inventoryView .fruitCard { width:100%; box-sizing:border-box; min
 body #petPanel.inventoryView .chancePreviewBtn { position:static; display:inline-flex; align-items:center; align-self:flex-start; min-height:32px; box-sizing:border-box; margin-top:auto; padding:6px 10px; font-size:10px; }
 body #petPanel.inventoryView :focus-visible { outline:2px solid #f7b16e; outline-offset:3px; }
 @media (max-width:700px), (max-height:500px) and (pointer:coarse) {
-  body #petPanel.inventoryView { --inventory-edge:12px; --inventory-side:18px; grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto auto auto minmax(0,1fr); grid-template-areas:"header" "tabs" "tools" "actions" "content"; -webkit-backdrop-filter:blur(12px) saturate(120%); backdrop-filter:blur(12px) saturate(120%); }
+  body #petPanel.inventoryView { --inventory-edge:12px; --inventory-side:24px; grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto auto auto minmax(0,1fr); grid-template-areas:"header" "tabs" "tools" "actions" "content"; -webkit-backdrop-filter:blur(12px) saturate(120%); backdrop-filter:blur(12px) saturate(120%); }
   body #petPanel.inventoryView > .slideHeader { padding:12px 66px 10px 14px; }
   body #petPanel.inventoryView > .slideHeader b { font-size:20px; line-height:24px; }
   body #petPanel.inventoryView .panelCloseBtn { top:10px; right:12px; }
