@@ -5798,8 +5798,8 @@ function renderPetPanel(){
     const visibleItems = group.items.filter(p=>!game.activePetIds.includes(p.uid));
     if(!visibleItems.length) return;
     const visibleGroup = {...group, items:visibleItems};
-    const count = group.items.length;
-    const selectedCount = count - visibleItems.length;
+    const count = visibleItems.length;
+    const selectedCount = group.items.length - count;
     const pet = visibleItems[0];
     const protectedItem = visibleItems.some(isProtectedPet);
     const stack = document.createElement("div");
@@ -5829,7 +5829,7 @@ function renderPetPanel(){
         </div>
       </div>
       ${getPetLevelProgressHtml(pet)}
-      <div class="petBadge">${selectedCount ? `Zaloz kolejnego (${visibleItems.length} wolnych)` : "Kliknij, aby zalozyc"}</div>
+      <div class="petBadge">Kliknij, aby zalozyc</div>
     `;
     if(protectedItem) stack.querySelector("[data-delete-pet]")?.remove();
     stack.querySelector("[data-delete-pet]")?.addEventListener("click", (event)=>{
