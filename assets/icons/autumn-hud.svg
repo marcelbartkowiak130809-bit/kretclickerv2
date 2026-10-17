@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 150">
+ <defs>
+  <linearGradient id="gold" x2=".8" y2="1"><stop stop-color="#ffdb87"/><stop offset=".5" stop-color="#ef9e39"/><stop offset="1" stop-color="#af512c"/></linearGradient>
+  <linearGradient id="copper" x2=".7" y2="1"><stop stop-color="#ffb475"/><stop offset="1" stop-color="#b44f42"/></linearGradient>
+  <linearGradient id="pumpkin" x2=".8" y2="1"><stop stop-color="#ffcc72"/><stop offset=".55" stop-color="#ef913d"/><stop offset="1" stop-color="#b75829"/></linearGradient>
+  <g id="leaf"><path d="m0 0-13-19-5 7-14-7 6 20-11 4 24 15-4 13L0 22l17 4-5-13L35-1l-10-4 4-18-14 9-5-8Z" fill="url(#gold)"/><path d="M0 28V-10m0 25 19-17M0 14-19 0" stroke="#9c5e2f" stroke-width="1.3" fill="none"/><path d="m0 25 3 13" stroke="#b18142" stroke-width="2"/></g>
+  <g id="oval"><path d="M-24 3Q-13-27 26-8 16 19-24 3" fill="url(#copper)"/><path d="m-26 4 45-11" stroke="#9c5540" stroke-width="1.4"/></g>
+  <g id="p"><path d="m-1-17 2-15 7-2-3 19" fill="#94a35a"/><ellipse rx="30" ry="23" fill="url(#pumpkin)"/><ellipse rx="18" ry="23" fill="none" stroke="#b96931" stroke-width="1.5" opacity=".65"/><ellipse rx="7" ry="23" fill="#ffbc61"/><path d="M-21-8q-6 10-1 17" fill="none" stroke="#ffdf95" stroke-width="2.5" stroke-linecap="round"/></g>
+  <g id="acorn"><path d="M-7 0q-3 18 7 22Q11 15 7 0" fill="#d1a663"/><path d="M-10 4q1-15 19-3l1 6Z" fill="#927043"/><path d="m0-5 3-7" stroke="#927043" stroke-width="2"/></g>
+ </defs>
+ <path d="M240 145q90-77 190-58t151-33 198 19 171-65" stroke="#bd8543" stroke-width="2" fill="none" opacity=".35"/>
+ <use href="#leaf" transform="translate(54 14) rotate(24) scale(1.15)"/>
+ <use href="#oval" transform="translate(147 133) rotate(-27)"/>
+ <use href="#leaf" transform="translate(256 119) rotate(-61) scale(.82)"/>
+ <use href="#p" transform="translate(325 147) rotate(-12) scale(1.25)"/>
+ <use href="#oval" transform="translate(361 43) rotate(58) scale(.7)"/>
+ <use href="#leaf" transform="translate(398 14) rotate(-16) scale(.9)"/>
+ <use href="#leaf" transform="translate(450 102) rotate(36) scale(1.05)"/>
+ <use href="#acorn" transform="translate(483 35) rotate(27) scale(.9)"/>
+ <use href="#p" transform="translate(524 137) rotate(11) scale(.9)"/>
+ <use href="#oval" transform="translate(551 38) rotate(-33)"/>
+ <use href="#leaf" transform="translate(590 77) rotate(-47) scale(.85)"/>
+ <use href="#leaf" transform="translate(640 2) rotate(18) scale(1.2)"/>
+ <use href="#oval" transform="translate(657 132) rotate(21) scale(1.15)"/>
+ <use href="#p" transform="translate(708 86) rotate(-17) scale(.85)"/>
+ <use href="#leaf" transform="translate(745 144) rotate(118) scale(.95)"/>
+ <use href="#acorn" transform="translate(776 48) rotate(-32)"/>
+ <use href="#oval" transform="translate(809 14) rotate(25) scale(.85)"/>
+ <use href="#leaf" transform="translate(840 92) rotate(48) scale(.8)"/>
+ <use href="#p" transform="translate(911 147) rotate(8) scale(1.15)"/>
+ <use href="#leaf" transform="translate(953 17) rotate(-27) scale(.9)"/>
+ <use href="#oval" transform="translate(1042 117) rotate(-39) scale(1.1)"/>
+ <use href="#leaf" transform="translate(1160 16) rotate(31)"/>
+ <g fill="#f6c476" opacity=".65"><circle cx="420" cy="61" r="2"/><circle cx="474" cy="137" r="2.5"/><circle cx="614" cy="119" r="1.5"/><circle cx="686" cy="35" r="2"/><circle cx="861" cy="44" r="2.5"/><circle cx="878" cy="115" r="1.5"/></g>
+</svg>
