@@ -1,12 +1,15 @@
-/* Keep the existing inventory actions, but give them a dedicated screen. */
+/* A roomy inventory window leaves a blurred view of the game around it. */
+.inventoryBackdrop { position:fixed; inset:0; z-index:999; background:#08090c55; backdrop-filter:blur(5px); opacity:0; visibility:hidden; pointer-events:none; transition:opacity .2s ease,visibility 0s linear .24s; }
+body:has(#petPanel.open) .inventoryBackdrop { opacity:1; visibility:visible; pointer-events:auto; transition-delay:0s; }
 body #petPanel.inventoryView {
-  position:fixed; inset:0 !important; width:auto !important; height:100dvh;
+  --inventory-edge:50px;
+  position:fixed; inset:max(var(--inventory-edge),env(safe-area-inset-top)) max(var(--inventory-edge),env(safe-area-inset-right)) max(var(--inventory-edge),env(safe-area-inset-bottom)) max(var(--inventory-edge),env(safe-area-inset-left)) !important; width:auto !important; height:auto;
   max-width:none !important; max-height:none !important; box-sizing:border-box;
   z-index:1000 !important; display:grid; grid-template-columns:190px minmax(0,1fr);
   grid-template-rows:auto auto auto minmax(0,1fr);
   grid-template-areas:"header header" "tabs tools" "tabs actions" "tabs content";
-  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-  border:0; border-radius:0; background:#19191c; backdrop-filter:none; box-shadow:none;
+  padding:0;
+  border:1px solid #ffffff26; border-radius:20px; background:#19191c; backdrop-filter:none; box-shadow:0 24px 80px #0008;
   overflow:hidden; isolation:isolate; clip-path:none !important;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; letter-spacing:0;
   transform:translateY(12px); opacity:0; visibility:hidden; pointer-events:none;
@@ -101,7 +104,7 @@ body #petPanel.inventoryView .fruitCard { width:100%; box-sizing:border-box; min
 body #petPanel.inventoryView .chancePreviewBtn { position:static; display:inline-flex; align-items:center; align-self:flex-start; min-height:32px; box-sizing:border-box; margin-top:auto; padding:6px 10px; font-size:10px; }
 body #petPanel.inventoryView :focus-visible { outline:2px solid #f7b16e; outline-offset:3px; }
 @media (max-width:700px), (max-height:500px) and (pointer:coarse) {
-  body #petPanel.inventoryView { grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto auto auto minmax(0,1fr); grid-template-areas:"header" "tabs" "tools" "actions" "content"; }
+  body #petPanel.inventoryView { --inventory-edge:12px; grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto auto auto minmax(0,1fr); grid-template-areas:"header" "tabs" "tools" "actions" "content"; }
   body #petPanel.inventoryView > .slideHeader { padding:12px 66px 10px 14px; }
   body #petPanel.inventoryView > .slideHeader b { font-size:20px; line-height:24px; }
   body #petPanel.inventoryView .panelCloseBtn { top:10px; right:12px; }

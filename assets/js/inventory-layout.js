@@ -1,5 +1,10 @@
 (() => {
   const panel = document.getElementById("petPanel");
+  const backdrop = document.createElement("div");
+  backdrop.className = "inventoryBackdrop";
+  backdrop.setAttribute("aria-hidden", "true");
+  panel.before(backdrop);
+  backdrop.addEventListener("click", () => closeSlidePanel(panel));
   const tools = document.getElementById("inventoryTools");
   const search = document.getElementById("inventorySearch");
   const filter = document.getElementById("inventoryFilter");
