@@ -1,7 +1,7 @@
 (() => {
   const START = Date.parse("2026-10-17T00:00:00+02:00");
-  const END = Date.parse("2026-11-01T20:00:00+01:00");
-  const SHOP_END = Date.parse("2026-11-08T20:00:00+01:00");
+  const END = Date.parse("2026-12-01T00:00:00+01:00");
+  const SHOP_END = Date.parse("2026-12-08T00:00:00+01:00");
   const EGG_COST = 10000;
   const SHOP_INTERVAL = 15 * 60 * 1000;
   const eventPets = [
@@ -49,7 +49,7 @@
   view.querySelector(".crystalShopTop h3").textContent = "Halloweenowy sklep";
   const notice = document.createElement("p");
   notice.className = "halloweenNotice";
-  notice.textContent = "Zbiory do 1 listopada, 20:00. Sklep do 8 listopada, 20:00 (czas polski).";
+  notice.textContent = "Zbiory do konca 30 listopada. Sklep do konca 7 grudnia (czas polski).";
   view.querySelector(".crystalCaveShell").prepend(notice);
   view.dataset.halloweenTab="harvest";
   const tabs=document.createElement("nav");tabs.className="halloweenTabs";tabs.setAttribute("aria-label","Halloween");
@@ -183,7 +183,7 @@
   document.addEventListener("keydown",event=>{if(event.key==="Escape"&&view.classList.contains("open"))closeEvent();});
   document.getElementById("limitedEventDockBtn").onclick=()=>{closeAllSlidePanels();view.classList.remove("closing");view.classList.add("open");view.scrollTop=0;document.body.classList.add("halloweenEventActive");sync();render();window.kretAudio?.panel?.();};
 
-  WEATHER_CATALOG.push({id:"bloodmoon",name:"Blood Moon",icon:"&#127761;",chance:4,duration:8*60*1000,luck:1.2,allMoney:1.15,availableFrom:START,availableUntil:END,desc:"+15% punktow, +20% szczescia. Reczne kliki: 1/18 000 na osobne Jajko Krwawego Ksiezyca (MEGA: 1/15 000). Maks. 2 na pogode, tylko do 1 listopada, 20:00."});
+  WEATHER_CATALOG.push({id:"bloodmoon",name:"Blood Moon",icon:"&#127761;",chance:4,duration:8*60*1000,luck:1.2,allMoney:1.15,availableFrom:START,availableUntil:END,desc:"+15% punktow, +20% szczescia. Reczne kliki: 1/18 000 na osobne Jajko Krwawego Ksiezyca (MEGA: 1/15 000). Maks. 2 na pogode, tylko do konca 30 listopada."});
   function onMainClick() {
     if(phase()!=="active")return;
     const weather=getCurrentWeather();if(weather?.id!=="bloodmoon")return;

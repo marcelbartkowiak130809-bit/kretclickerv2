@@ -1,0 +1,78 @@
+/* Reveal layout is isolated from the inventory and its responsive card rules. */
+body #hatchOverlay { box-sizing:border-box; z-index:6000; padding:24px; background:#090a10b8; }
+body #hatchOverlay #hatchCard {
+  box-sizing:border-box; width:min(var(--hatch-dialog-width,700px),100%); min-height:min(320px,calc(100dvh - 48px));
+  max-height:calc(100dvh - 48px); padding:22px 26px; gap:18px; border-radius:24px;
+  justify-content:center; overflow:auto; overscroll-behavior:contain;
+  border:1px solid color-mix(in srgb,var(--reveal-color,#fff) 35%,#ffffff20);
+  background:linear-gradient(145deg,#ffffff0a,transparent 45%),linear-gradient(160deg,#303036f5,#18181ff5);
+  box-shadow:inset 0 1px #ffffff24,0 24px 80px #0007;
+}
+body #hatchOverlay #hatchCard::before { content:none; }
+body #hatchOverlay.autoMode #hatchCard { padding-top:54px; }
+body #hatchOverlay #hatchCard:has(#hatchResult.show) { min-height:0; justify-content:flex-start; }
+body #hatchOverlay #hatchCard:has(#hatchResult.show) #hatchEggsRow { display:none; }
+body #hatchOverlay #hatchPhaseLabel { max-width:100%; box-sizing:border-box; margin:0; padding:8px 14px; font-size:12px; line-height:17px; letter-spacing:0; background:#ffffff0b; border-color:#ffffff1c; box-shadow:inset 0 1px #ffffff12; }
+body #hatchOverlay #hatchEggsRow { grid-template-columns:repeat(var(--hatch-columns,1),minmax(0,1fr)); justify-items:center; align-items:center; gap:22px; max-width:none; margin:20px auto; }
+body #hatchOverlay .hatchEggVisual { box-sizing:border-box; width:64px; height:84px; min-width:64px; max-width:64px; min-height:84px; max-height:84px; }
+body #hatchOverlay #hatchResult { width:100%; gap:0; }
+body #hatchOverlay #hatchPetsGrid { box-sizing:border-box; width:100%; grid-template-columns:repeat(var(--hatch-columns,1),minmax(0,1fr)); gap:12px; align-items:stretch; justify-items:center; }
+body #hatchOverlay .hatchPetCard {
+  box-sizing:border-box; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  width:100%; min-width:0; min-height:0; margin:0; padding:28px 12px 16px; gap:7px;
+  text-align:center; border-radius:12px; border:1px solid #ffffff23;
+  background:linear-gradient(145deg,#ffffff10,#ffffff03); box-shadow:inset 0 1px #ffffff14,0 6px 18px #0002;
+}
+body #hatchOverlay[data-hatch-size="single"] .hatchPetCard { max-width:260px; }
+body #hatchOverlay .hatchPetVisual {
+  --hatch-pet-size:86px;
+  box-sizing:border-box; width:var(--hatch-pet-size); height:var(--hatch-pet-size);
+  min-width:var(--hatch-pet-size); max-width:var(--hatch-pet-size); min-height:var(--hatch-pet-size); max-height:var(--hatch-pet-size);
+  aspect-ratio:1; flex:0 0 var(--hatch-pet-size); grid-row:auto; border-radius:50%; margin:8px auto 16px;
+}
+body #hatchOverlay .hatchPetVisual .petTinyFace { position:absolute; inset:0; width:100%; height:100%; }
+body #hatchOverlay .hatchPetVisual .petTinyFace::before,
+body #hatchOverlay .hatchPetVisual .petTinyFace::after { top:37%; width:8%; height:9%; }
+body #hatchOverlay .hatchPetVisual .petTinyFace::before { left:29%; }
+body #hatchOverlay .hatchPetVisual .petTinyFace::after { right:29%; }
+body #hatchOverlay .hatchPetVisual .petTinyMouth { width:14%; height:10%; left:43%; top:60%; }
+body #hatchOverlay .hatchRarityBadge { box-sizing:border-box; width:auto; max-width:100%; min-height:0; margin:0; padding:4px 8px; border-radius:6px; font-size:9px; line-height:13px; letter-spacing:0; white-space:normal; }
+body #hatchOverlay .hatchPetName { width:100%; min-height:34px; margin:0; font-size:13px; line-height:17px; overflow-wrap:anywhere; text-shadow:none; }
+body #hatchOverlay .hatchPetStats { width:100%; margin:0; font-size:11px; line-height:16px; overflow-wrap:anywhere; color:#d2d2dc; }
+body #hatchOverlay .hatchPetCard:is(.dropTier2,.dropTier3,.dropTier4,.dropTier5) { border-color:color-mix(in srgb,var(--drop-color,#ddd) 48%,#ffffff22); box-shadow:inset 0 1px #ffffff20,0 0 18px color-mix(in srgb,var(--drop-color,#ddd) 12%,transparent); }
+body #hatchOverlay #hatchResult.show .hatchPetCard { animation:hatchResultArrive .48s cubic-bezier(.2,.85,.25,1) calc(var(--reveal-index,0) * 55ms) both; }
+body #hatchOverlay .hatchPetCard::before { animation:hatchResultShine 1.15s ease calc(var(--reveal-index,0) * 55ms + .25s) both; opacity:.5; }
+body #hatchOverlay #hatchResult.spotlightActive #hatchPetsGrid { grid-template-columns:minmax(0,1fr); max-width:440px; }
+body #hatchOverlay #hatchResult.spotlightActive .hatchPetCard.batchBackdrop { display:none; }
+body #hatchOverlay #hatchResult.spotlightActive .hatchPetCard.batchSpotlight { max-width:440px; min-height:340px; padding-top:54px; animation:hatchHeroArrive .7s cubic-bezier(.18,.85,.25,1) both; background:linear-gradient(150deg,color-mix(in srgb,var(--spotlight-color,#fff) 16%,#303036),#24242b); }
+body #hatchOverlay #hatchResult.spotlightActive .hatchPetVisual { --hatch-pet-size:124px; margin:16px auto 20px; }
+body #hatchOverlay #hatchResult.spotlightActive .hatchPetName { font-size:20px; line-height:26px; min-height:0; }
+body #hatchOverlay .hatchSpotlightLabel { top:12px; max-width:90%; white-space:nowrap; font-size:10px; line-height:16px; letter-spacing:0; }
+body #hatchOverlay .hatchFxRays { opacity:.4; }
+@keyframes hatchResultArrive { from { opacity:0; transform:translateY(16px) scale(.88); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes hatchHeroArrive { 0% { opacity:0; transform:translateY(30px) scale(.8); } 65% { opacity:1; transform:translateY(-3px) scale(1); } 100% { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes hatchResultShine { from { transform:translateX(-60%) rotate(18deg); } to { transform:translateX(440%) rotate(18deg); } }
+@media (max-width:700px), (max-height:500px) and (pointer:coarse) {
+  body #hatchOverlay { padding:10px; }
+  body #hatchOverlay #hatchCard { width:100%; max-height:calc(100dvh - 20px); min-height:min(260px,calc(100dvh - 20px)); padding:14px 10px; gap:12px; border-radius:20px; }
+  body #hatchOverlay #hatchPetsGrid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  body #hatchOverlay[data-hatch-size="single"] #hatchPetsGrid { grid-template-columns:minmax(0,1fr); }
+  body #hatchOverlay[data-hatch-size="large"] #hatchPetsGrid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  body #hatchOverlay #hatchEggsRow { grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+  body #hatchOverlay[data-hatch-size="single"] #hatchEggsRow { grid-template-columns:minmax(0,1fr); }
+  body #hatchOverlay .hatchPetCard { padding:20px 6px 10px; gap:5px; }
+  body #hatchOverlay .hatchPetVisual { --hatch-pet-size:56px; margin:6px auto 12px; }
+  body #hatchOverlay[data-hatch-size="large"] .hatchPetVisual { --hatch-pet-size:46px; }
+  body #hatchOverlay .hatchPetName { font-size:11px; line-height:14px; min-height:28px; }
+  body #hatchOverlay .hatchRarityBadge { font-size:8px; line-height:11px; padding:3px 4px; }
+  body #hatchOverlay .hatchPetStats { font-size:9px; line-height:12px; }
+  body #hatchOverlay #hatchResult.spotlightActive .hatchPetVisual { --hatch-pet-size:106px; }
+  body #hatchOverlay #hatchResult.spotlightActive .hatchPetCard.batchSpotlight { min-height:300px; }
+  body #hatchOverlay.autoMode #hatchCard { padding-top:58px; }
+  body #hatchOverlay .hatchSpark:nth-child(n+25) { display:none; }
+}
+@media (prefers-reduced-motion:reduce) {
+  body #hatchOverlay #hatchCard, body #hatchOverlay #hatchResult.show .hatchPetCard,
+  body #hatchOverlay #hatchResult.spotlightActive .hatchPetCard.batchSpotlight,
+  body #hatchOverlay .hatchPetCard::before { animation:none !important; transition:none; }
+}

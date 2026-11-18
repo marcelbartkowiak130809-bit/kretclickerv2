@@ -4321,7 +4321,11 @@ function spawnHatchSparks(tier, phase="impact"){
   }
 }
 
-function prepareHatchReveal(tier, {crate=false, voidDrop=false, autoMode=false}={}){
+function prepareHatchReveal(tier, {crate=false, voidDrop=false, autoMode=false, count=1}={}){
+  const columns = count <= 3 ? count : count === 4 ? 2 : count <= 9 ? 3 : 5;
+  hatchOverlay.dataset.hatchSize = count === 1 ? "single" : count <= 3 ? "small" : count <= 6 ? "medium" : "large";
+  hatchOverlay.style.setProperty("--hatch-columns", String(columns));
+  hatchOverlay.style.setProperty("--hatch-dialog-width", `${Math.min(1000, Math.max(380, columns * 180 + 70))}px`);
   hatchOverlay.classList.remove("crateMode", "voidOpening", "rareDrop", "revealCharge", "revealCrack", "revealImpact", ...HATCH_REVEAL_TIERS.map(item=>`dropTier${item.level}`));
   hatchOverlay.classList.toggle("crateMode", crate);
   hatchOverlay.classList.toggle("voidOpening", voidDrop);
@@ -4350,7 +4354,7 @@ function runEggReveal(egg, pets){
 
   hatchBusy = true;
   hatchOverlay.classList.add("open");
-  prepareHatchReveal(tier, {voidDrop:!!egg.voidEgg, autoMode:autoWillContinue});
+  prepareHatchReveal(tier, {voidDrop:!!egg.voidEgg, autoMode:autoWillContinue, count:list.length});
   window.kretAudio?.hatchCharge?.(tier.level);
   if(stopAutoEggBtn) stopAutoEggBtn.textContent = "WYLACZ AUTO";
   hatchPhaseLabel.textContent = autoWillContinue ? `${egg.name.toUpperCase()} - AUTO` : "ENERGIA ROSNIE...";
@@ -4374,6 +4378,7 @@ function runEggReveal(egg, pets){
     petCard.className = `hatchPetCard ${rarityClass} ${variantClass} dropTier${petTier.level} ${isSpotlight ? "batchSpotlight" : "batchBackdrop"} ${pet.secret ? "secretDrop" : ""} ${pet.autoDeleted ? "autoDeletedDrop" : ""}`;
     petCard.style.setProperty("--reveal-index", String(index));
     petCard.style.setProperty("--spotlight-color", petTier.color);
+    petCard.style.setProperty("--drop-color", petTier.color);
     petCard.innerHTML = `
       ${isSpotlight ? `<div class="hatchSpotlightLabel">JACKPOT DROP</div>` : ""}
       <div class="hatchPetVisual ${getPetVisualClasses(pet)}" style="background:${petVisualClass(pet)}">

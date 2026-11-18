@@ -49,9 +49,14 @@ body.autumnTheme { --app-stroke:rgba(239,173,104,.19); --app-stroke-soft:rgba(23
 #kret.skin-halloween-pumpkin .eye, #kret.skin-halloween-pumpkin .nose { display:none; }
 .skinPreview.skin-halloween-pumpkin { background:transparent url('../icons/pumpkin-mole.svg') center/contain no-repeat !important; border-radius:0; }
 
-/* A dim lunar disc and drifting red embers identify the limited weather. */
-body.weather-bloodmoon #weatherFx { background:linear-gradient(180deg,#8e35401c,transparent 65%); }
-body.weather-bloodmoon #weatherFx::before { content:""; position:absolute; right:7%; top:22%; width:72px; height:72px; border-radius:50%; background:radial-gradient(circle at 32% 28%,#bc6b68 0 8%,transparent 10%),radial-gradient(circle at 62% 58%,#5f2737 0 11%,transparent 13%),radial-gradient(circle at 40% 76%,#7c3542 0 9%,transparent 11%),linear-gradient(135deg,#d98b77,#943f4e 60%,#4a2335); box-shadow:inset -10px -5px 15px #25172899,0 0 20px #ac475c22; }
+/* Static atmosphere avoids animating large filters on mobile. */
+body.weather-bloodmoon #weatherFx { z-index:0; background:radial-gradient(ellipse at 80% 25%,#d528425c,transparent 60%),linear-gradient(180deg,#730b284d,#3d081d33 65%,#b9163338); }
+body.weather-bloodmoon #weatherFx::before { content:""; position:absolute; right:5%; top:15%; width:clamp(240px,30vw,440px); aspect-ratio:1; height:auto; border-radius:50%; background:radial-gradient(ellipse at 32% 28%,#f7a18e66 0 8%,transparent 10%),radial-gradient(ellipse at 62% 58%,#5f192b88 0 11%,transparent 14%),radial-gradient(ellipse at 40% 76%,#7c253c99 0 9%,transparent 12%),radial-gradient(ellipse at 70% 26%,#87203977 0 5%,transparent 8%),radial-gradient(circle at 35% 30%,#ffbb97,#db4b58 48%,#802039 78%,#390e26); box-shadow:inset -24px -15px 36px #25102099,inset 3px 3px 10px #ffd6aa66,0 0 45px #f33c5766,0 0 120px #c3204244; }
+body.weather-bloodmoon #weatherFx::after { content:""; position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse at center,transparent 25%,#780d2940 100%); }
+body.weather-bloodmoon #topHud,
+body.weather-bloodmoon .dockBtn,
+body.weather-bloodmoon #rebirthCard { border-color:#ed6b7c88; box-shadow:inset 0 1px #ffc4be26,0 0 22px #d52a4238; }
+body.weather-bloodmoon #kret { box-shadow:0 0 36px #f3495f55,0 0 85px #b81c3d44; }
 body.weather-bloodmoon #weatherFx .weatherParticle { top:100%; width:3px; height:3px; background:#ce7a83; opacity:.5; animation:weatherGoldenRise calc(var(--wslow) * 1.4) var(--wdelay) linear infinite; }
 @media (max-width:700px), (max-height:500px) and (pointer:coarse) {
  .autumnCornerA { left:-48px; top:calc(26% + var(--decor-offset)); width:105px; opacity:.8; }
@@ -79,6 +84,6 @@ body.weather-bloodmoon #weatherFx .weatherParticle { top:100%; width:3px; height
  .halloweenEventView .crystalMole { width:210px; height:200px; margin:10px auto; }
  .halloweenEventView .crystalUpgradeCard, .halloweenEventView .crystalEggCard, .halloweenEventView .crystalShopCard { padding:12px; }
  .halloweenAction, #halloweenOpenEggBtn { min-height:44px; width:100%; }
- body.weather-bloodmoon #weatherFx::before { width:48px; height:48px; right:12px; top:25%; }
+ body.weather-bloodmoon #weatherFx::before { width:clamp(180px,55vw,280px); height:auto; right:-4%; top:24%; }
 }
 @media (prefers-reduced-motion:reduce) { .halloweenEventView .crystalMole.hit .crystalPickaxe { animation:none; } body.weather-bloodmoon #weatherFx .weatherParticle { animation:none; top:var(--wy); } }
